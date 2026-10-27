@@ -20,6 +20,7 @@ Status legend: **[branch]** = implemented on branch `worktree-vita-port-build-se
 | vitacompanion (optional) | Vita plugin: FTP on :1337 and a command port on :1338 (`launch`, `destroy`). Makes the device loop scriptable | 1 |
 | Host SDL2 dev libs | `libsdl2-dev`, `libsdl2-image-dev`, `libsdl2-mixer-dev`, `libsdl2-ttf-dev`, `libsdl2-gfx-dev` (or a Docker Ubuntu image). Only for the host smoke test | testing |
 | `libshacccg.suprx` | Vita runtime shader compiler. **Not needed** as long as SDL uses its native `VITA gxm` renderer (forced in code). Only needed if we ever fall back to SDL's GLES2/vitaGL renderer | — |
+| `vita-parse-core` | Turns a Vita crash dump (`.psp2dmp`) into a symbolized backtrace. Python tool from the VitaSDK project | 1 |
 | Timidity patches (e.g. freepats, ~30 MB) **or** offline MIDI→OGG converter (timidity/fluidsynth on PC) | For music | 6 |
 
 ---
@@ -50,13 +51,17 @@ Changes:
 - `MainLoop.cpp`: `__vita__` branch for the user directory. It skips the "config.xml in working directory" hack, because the working directory on Vita is the read-only `app0:`.
 - `BaseGameApp.cpp`: `RezArchive` may now be an absolute path. On Vita the config uses `AssetsFolder=app0:/` and `RezArchive=ux0:/data/openclaw/CLAW.REZ`.
 - Renderer: forces SDL's `VITA gxm` driver. The SDK's SDL would otherwise pick GLES2 through vitaGL, which needs `libshacccg.suprx` on the device. The available drivers and the chosen one are logged.
-- `main.cpp`: explicit newlib heap (128 MB) and main-thread stack (1 MB).
+- `main.cpp`: explicit newlib heap (128 MB; read by newlib's `sbrk`) and main-thread stack (1 MB; read by `vita-elf-create`).
 - `vita/config.xml`: 960×544, vsync on, resource cache 50 MB, sound effects on, **music off**.
 
 Resources: `CLAW.REZ`; Vita3K + firmware PUP and/or a Vita with VitaShell.
 Verification:
-- `ux0:data/SDL_Log.txt` (SDL's Vita log sink; every log line is appended there) contains `Renderer: VITA gxm`, `Resource cache successfully initialized` and `Display successfully initialized`, and has no `ERROR` lines.
+- Delete `ux0:data/SDL_Log.txt` before each run; SDL only ever appends to it.
+- The log contains `Renderer: VITA gxm`, `Resource cache successfully initialized` and `Display successfully initialized`, and no `ERROR` lines except one expected `Mix_LoadMUS_RW` error per music track. With `MusicOn=false` the engine still loads each track (paused, so music can be switched on in the menu), and without a Timidity config that load fails. Stage 6 removes it.
 - The menu renders at full screen and responds to the D-pad and Cross.
+- On a crash the Vita writes a `.psp2dmp` file to `ux0:data/`. `vita-parse-core` symbolizes it against the unstripped `build-vita/openclaw` ELF, so keep that ELF next to every VPK you test.
+
+Not yet confirmed on a device: that the `app0:/` and `ux0:/data/...` path forms open correctly, that `VITA gxm` is the exact driver name, and that SDL has a controller mapping for the built-in controls (the log says so either way).
 
 Open questions to settle here: does 960×544 at `Scale` 1 look right, or is 480×272 at `Scale` 2 closer to the original's framing? (The game was designed for 640×480.)
 

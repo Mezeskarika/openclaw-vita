@@ -12,6 +12,7 @@
 #endif
 
 #ifdef __vita__
+#include <cstdio>
 #include <sys/stat.h>
 
 // app0: (the installed VPK) is read-only, so the writable files are seeded from it on first start
@@ -23,10 +24,21 @@ static void CopyFileIfMissing(const std::string& srcPath, const std::string& dst
     }
 
     std::ifstream src(srcPath, std::ios::binary);
-    std::ofstream dst(dstPath, std::ios::binary);
-    dst << src.rdbuf();
-    if (!src.good() || !dst.good())
+    if (!src.is_open())
     {
+        LOG_ERROR("Failed to open " + srcPath);
+        return;
+    }
+
+    bool copied = false;
+    {
+        std::ofstream dst(dstPath, std::ios::binary);
+        copied = dst.is_open() && (dst << src.rdbuf()) && dst.flush();
+    }
+    if (!copied)
+    {
+        // Don't leave a partial file behind, it would stop the next start from retrying
+        remove(dstPath.c_str());
         LOG_ERROR("Failed to copy " + srcPath + " to " + dstPath);
         return;
     }
