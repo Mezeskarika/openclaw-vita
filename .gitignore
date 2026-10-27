@@ -32,3 +32,5 @@ Build_Release/vim.exe.stackdump
 *.iobj
 *.ipdb
 *.exp
+build-vita/
+build-tests/

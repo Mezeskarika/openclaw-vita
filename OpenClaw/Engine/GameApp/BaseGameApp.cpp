@@ -48,6 +48,7 @@ BaseGameApp::BaseGameApp()
     m_pAudio = NULL;
     m_pConsoleFont = NULL;
     m_pTouchManager = nullptr;
+    m_pGameController = nullptr;
     m_IsRunning = false;
     m_QuitRequested = false;
     m_IsQuitting = false;
@@ -346,6 +347,47 @@ void BaseGameApp::OnEvent(SDL_Event& event)
                 {
                     (*iter)->VOnEvent(event);
                 }
+            }
+            break;
+        }
+        case SDL_CONTROLLERBUTTONDOWN:
+        case SDL_CONTROLLERBUTTONUP:
+        case SDL_CONTROLLERAXISMOTION:
+        {
+            // Views only understand keys, so the gamepad is fed to them as keyboard events
+            std::vector<SDL_Event> keyEvents;
+            m_GamepadMapper.TranslateEvent(event, keyEvents);
+            for (SDL_Event& keyEvent : keyEvents)
+            {
+                OnEvent(keyEvent);
+            }
+            break;
+        }
+        case SDL_CONTROLLERDEVICEADDED:
+        {
+            if (m_pGameController == nullptr)
+            {
+                m_pGameController = SDL_GameControllerOpen(event.cdevice.which);
+                if (m_pGameController)
+                {
+                    const char* name = SDL_GameControllerName(m_pGameController);
+                    LOG("Game controller opened: " + std::string(name ? name : "(unnamed)"));
+                }
+                else
+                {
+                    LOG_WARNING("Failed to open game controller: " + std::string(SDL_GetError()));
+                }
+            }
+            break;
+        }
+        case SDL_CONTROLLERDEVICEREMOVED:
+        {
+            if (m_pGameController &&
+                SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(m_pGameController)) == event.cdevice.which)
+            {
+                LOG("Game controller removed");
+                SDL_GameControllerClose(m_pGameController);
+                m_pGameController = nullptr;
             }
             break;
         }
@@ -774,10 +816,19 @@ bool BaseGameApp::InitializeDisplay(GameOptions& gameOptions)
 {
     LOG(">>>>> Initializing display...");
 
-    if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO) != 0)
+    if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0)
     {
         LOG_ERROR("Failed to initialize SDL2 library. Error: %s" + std::string(SDL_GetError()));
         return false;
+    }
+
+    // Controllers get opened on SDL_CONTROLLERDEVICEADDED. A joystick without a controller mapping
+    // never sends that event, so make that case visible in the log.
+    for (int i = 0; i < SDL_NumJoysticks(); i++)
+    {
+        const char* name = SDL_JoystickNameForIndex(i);
+        LOG("Joystick " + ToStr(i) + ": " + std::string(name ? name : "(unnamed)") +
+            (SDL_IsGameController(i) ? " (game controller)" : " (no game controller mapping)"));
     }
 
     m_pWindow = SDL_CreateWindow(VGetGameTitle(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
@@ -807,11 +858,31 @@ bool BaseGameApp::InitializeDisplay(GameOptions& gameOptions)
         rendererFlags |= SDL_RENDERER_PRESENTVSYNC;
     }
 
+#ifdef __vita__
+    // SDL would pick its GLES2 driver, which runs on vitaGL and needs libshacccg.suprx on the device
+    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "VITA gxm");
+#endif
+
+    for (int i = 0; i < SDL_GetNumRenderDrivers(); i++)
+    {
+        SDL_RendererInfo driverInfo;
+        if (SDL_GetRenderDriverInfo(i, &driverInfo) == 0)
+        {
+            LOG("Available render driver: " + std::string(driverInfo.name));
+        }
+    }
+
     m_pRenderer = SDL_CreateRenderer(m_pWindow, -1, rendererFlags);
     if (m_pRenderer == NULL)
     {
         LOG_ERROR("Failed to create SDL2 Renderer. Error: %s" + std::string(SDL_GetError()));
         return false;
+    }
+
+    SDL_RendererInfo rendererInfo;
+    if (SDL_GetRendererInfo(m_pRenderer, &rendererInfo) == 0)
+    {
+        LOG("Renderer: " + std::string(rendererInfo.name));
     }
 
     SDL_RenderSetScale(m_pRenderer, (float)gameOptions.scale, (float)gameOptions.scale);
@@ -857,7 +928,14 @@ bool BaseGameApp::InitializeResources(GameOptions& gameOptions)
         return false;
     }
 
-    std::string rezArchivePath = gameOptions.assetsFolder + gameOptions.rezArchive;
+    // RezArchive may be absolute, e.g. on Vita the bundled assets are in app0: but CLAW.REZ is on ux0:
+    std::string rezArchivePath = gameOptions.rezArchive;
+    bool isAbsoluteRezPath = rezArchivePath.find(':') != std::string::npos ||
+                             (!rezArchivePath.empty() && rezArchivePath[0] == '/');
+    if (!isAbsoluteRezPath)
+    {
+        rezArchivePath = gameOptions.assetsFolder + rezArchivePath;
+    }
 
     IResourceFile* rezArchive = new ResourceRezArchive(rezArchivePath);
     std::shared_ptr<ResourceCache> m_pResourceCache { new ResourceCache(gameOptions.resourceCacheSize, rezArchive, ORIGINAL_RESOURCE) };

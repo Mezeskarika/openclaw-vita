@@ -1,0 +1,87 @@
+<Configuration>
+  <!-- PS Vita defaults. Bundled as app0:config.xml and copied to ux0:data/openclaw/config.xml on first start;
+       edit the ux0: copy to change settings on the device. -->
+  <Display>
+    <Size width="960" height="544" />
+    <Scale>1</Scale>
+    <UseVerticalSync>true</UseVerticalSync>
+    <IsFullscreen>false</IsFullscreen>
+    <IsFullscreenDesktop>false</IsFullscreenDesktop>
+  </Display>
+  <Audio>
+    <Frequency>44100</Frequency>
+    <SoundChannels>1</SoundChannels>
+    <MixingChannels>64</MixingChannels>
+    <ChunkSize>2048</ChunkSize>
+    <SoundVolume>10</SoundVolume>
+    <MusicVolume>1</MusicVolume>
+    <SoundOn>true</SoundOn>
+    <!-- Music (MIDI via Timidity) is dealt with in a later stage -->
+    <MusicOn>false</MusicOn>
+    <MusicRpcServerPath></MusicRpcServerPath>
+  </Audio>
+  <Font>
+    <Fontt>clacon.ttf</Fontt>
+    <ConsoleFont font="clacon.ttf" size="20" />
+  </Font>
+  <Assets>
+    <!-- Bundled read-only assets live in the VPK; the original game archive is supplied by the user -->
+    <AssetsFolder>app0:/</AssetsFolder>
+    <RezArchive>ux0:/data/openclaw/CLAW.REZ</RezArchive>
+    <CustomArchive>ASSETS.ZIP</CustomArchive>
+    <ResourceCacheSize>50</ResourceCacheSize>
+    <TempDir>ux0:/data/openclaw/</TempDir>
+    <SavesFile>SAVES.XML</SavesFile>
+  </Assets>
+  <Console>
+    <BackgroundImagePath>console02.tga</BackgroundImagePath>
+    <StretchBackgroundImage>
+    </StretchBackgroundImage>
+    <WidthRatio>1.0</WidthRatio>
+    <HeightRatio>0.5</HeightRatio>
+    <LineSeparatorHeight>3</LineSeparatorHeight>
+    <CommandPromptOffsetY>10</CommandPromptOffsetY>
+    <ConsoleAnimationSpeed>0.7</ConsoleAnimationSpeed>
+    <FontPath>clacon.ttf</FontPath>
+    <FontColor r="255" g="255" b="255" />
+    <FontHeight>20</FontHeight>
+    <LeftOffset>5</LeftOffset>
+    <CommandPrompt>&gt; </CommandPrompt>
+  </Console>
+  <GlobalOptions>
+    <MaxJumpSpeed>8.8</MaxJumpSpeed>
+    <MaxFallSpeed>14.0</MaxFallSpeed>
+    <IdleSoundQuoteInterval>15000</IdleSoundQuoteInterval>
+    <PlatformSpeedModifier>0.015</PlatformSpeedModifier>
+    <MaxJumpHeight>155</MaxJumpHeight>
+    <PowerupMaxJumpHeight>205</PowerupMaxJumpHeight>
+    <StartLookUpOrDownTime>1500</StartLookUpOrDownTime>
+    <FreezeTime>2000</FreezeTime>
+    <MaxLookUpOrDownDistance>250</MaxLookUpOrDownDistance>
+    <LookUpOrDownSpeed>250</LookUpOrDownSpeed>
+    <ClawRunningSpeed>4.5</ClawRunningSpeed>
+    <SpringBoardSpringHeight>UNUSED</SpringBoardSpringHeight>
+    <SpringBoardSpringSpeed>11</SpringBoardSpringSpeed>
+    <ClawMinFallHeight>500</ClawMinFallHeight>
+    <LoadAllLevelSaves>false</LoadAllLevelSaves>
+    <!-- On while the port is being verified -->
+    <ShowFps>true</ShowFps>
+    <ShowPosition>false</ShowPosition>
+  </GlobalOptions>
+  <ControlOptions>
+    <UseAlternateControls>false</UseAlternateControls>
+    <TouchScreen>
+      <!-- The Android touch controls are not wired up for the Vita yet -->
+      <Enable>false</Enable>
+      <DistanceThreshold>0.05</DistanceThreshold>
+      <TimeThreshold>100</TimeThreshold>
+    </TouchScreen>
+  </ControlOptions>
+  <DebugOptions>
+    <SkipMenu>false</SkipMenu>
+    <SkipMenuToLevel>1</SkipMenuToLevel>
+    <LastImplementedLevel>13</LastImplementedLevel>
+    <SkipBossFightIntro>false</SkipBossFightIntro>
+    <CpuDelay>0</CpuDelay>
+  </DebugOptions>
+</Configuration>

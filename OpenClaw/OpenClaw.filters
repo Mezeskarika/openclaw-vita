@@ -117,6 +117,9 @@
     <ClCompile Include="Engine\UserInterface\Console.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\UserInterface\GamepadMapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Engine\Graphics2D\Image.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -453,6 +456,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine\UserInterface\Console.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\UserInterface\GamepadMapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics2D\Image.h">

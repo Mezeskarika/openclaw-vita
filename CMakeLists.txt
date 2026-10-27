@@ -7,6 +7,11 @@ option(Emscripten "Build as WASM" OFF)
 option(Extern_Config "Do not embed config file" ON)
 set(EMSCRIPTEN_PATH "CHANGE ME PLEASE!!!/emsdk")
 
+option(Vita "Build for PS Vita (needs VITASDK)" OFF)
+if (Vita AND NOT CMAKE_TOOLCHAIN_FILE)
+    set(CMAKE_TOOLCHAIN_FILE "$ENV{VITASDK}/share/vita.toolchain.cmake" CACHE PATH "VitaSDK toolchain file")
+endif (Vita AND NOT CMAKE_TOOLCHAIN_FILE)
+
 project(OpenClaw)
 
 #if(NOT CMAKE_BUILD_TYPE)
@@ -35,7 +40,16 @@ endif (WIN32)
 # Directories with headers
 include_directories(./Box2D/)
 include_directories(./libwap/)
-include_directories(./ThirdParty/)
+if (Vita)
+    # ThirdParty/SDL2 holds the Windows SDL 2.0.4 headers, which would shadow the VitaSDK ones.
+    # Expose only the other ThirdParty headers.
+    file(COPY ./ThirdParty/Tinyxml ./ThirdParty/FastDelegate
+        DESTINATION ${CMAKE_BINARY_DIR}/ThirdParty
+        FILES_MATCHING PATTERN "*.h")
+    include_directories(${CMAKE_BINARY_DIR}/ThirdParty/)
+else (Vita)
+    include_directories(./ThirdParty/)
+endif (Vita)
 include_directories(./ThirdParty/Tinyxml/)
 if (Emscripten)
     include_directories("${EMSCRIPTEN_PATH}/upstream/emscripten/system/include/emscripten/")
@@ -49,7 +63,12 @@ if (WIN32)
     link_directories(./Build_Release)
 endif (WIN32)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ../Build_Release)
+if (Vita)
+    # vita_create_self() expects the ELF next to the CMake binary dir
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+else (Vita)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ../Build_Release)
+endif (Vita)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ../android/libs/armeabi-v7a)
 
 # Cmake target definitions
@@ -75,6 +94,23 @@ if (Emscripten)
         set(CONFIG_PRELOAD_FILE "--preload-file ../Build_Release/config.xml@config.xml")
     endif (Extern_Config)
     set_target_properties(openclaw PROPERTIES LINK_FLAGS "-s FETCH -s WASM=1 -s BINARYEN_METHOD='native-wasm' -s EXPORTED_FUNCTIONS='[_main]' -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='[\"pcx\",\"png\",\"tga\"]' -s USE_SDL_TTF=2 -s USE_SDL_GFX=2 -s ASYNCIFY=1 -s TOTAL_MEMORY=268435456 ${CONFIG_PRELOAD_FILE} --preload-file ../Build_Release/CLAW.REZ@CLAW.REZ --preload-file ../Build_Release/ASSETS.ZIP@ASSETS.ZIP --preload-file ../Build_Release/console02.tga@console02.tga --preload-file ../Build_Release/clacon.ttf@clacon.ttf")
+elseif (Vita)
+    # Everything is static on the Vita, so the order matters: SDL add-ons, their codecs,
+    # SDL2 with its vitaGL backend, then the system stubs. The SDK's CMake configs and
+    # pkg-config files both leave some of these out (zlib, libpng, SceShaccCgExt, pthread).
+    list(APPEND TARGET_LIBS
+            SDL2_mixer SDL2_ttf SDL2_image SDL2_gfx
+            opusfile opus vorbisfile vorbis ogg modplug xmp-lite
+            freetype png16 bz2 webpdemux webp sharpyuv z
+            SDL2 vitaGL vitashark SceShaccCgExt mathneon taihen_stub
+            SceShaccCg_stub SceKernelDmacMgr_stub SceIme_stub SceGxm_stub SceDisplay_stub
+            SceCtrl_stub SceAppMgr_stub SceAppUtil_stub SceAudio_stub SceAudioIn_stub
+            SceSysmodule_stub SceIofilemgr_stub SceCommonDialog_stub SceTouch_stub SceHid_stub
+            SceMotion_stub ScePower_stub SceProcessmgr_stub
+            stdc++
+            pthread
+            m
+            )
 else (Emscripten)
     list(APPEND TARGET_LIBS
             SDL2
@@ -106,3 +142,7 @@ else (Emscripten)
 endif (Emscripten)
 
 target_link_libraries(openclaw ${TARGET_LIBS})
+
+if (Vita)
+    include(vita/Vita.cmake)
+endif (Vita)

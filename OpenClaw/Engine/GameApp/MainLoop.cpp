@@ -2,13 +2,37 @@
 #include "MainLoop.h"
 #include <fstream>
 
-#if !(defined(__ANDROID__) || defined(__WINDOWS__))
+#if !(defined(__ANDROID__) || defined(__WINDOWS__) || defined(__vita__))
 #include <pwd.h>
 #include <unistd.h>
 #endif
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+#endif
+
+#ifdef __vita__
+#include <sys/stat.h>
+
+// app0: (the installed VPK) is read-only, so the writable files are seeded from it on first start
+static void CopyFileIfMissing(const std::string& srcPath, const std::string& dstPath)
+{
+    if (TryToFindFile(dstPath.c_str()))
+    {
+        return;
+    }
+
+    std::ifstream src(srcPath, std::ios::binary);
+    std::ofstream dst(dstPath, std::ios::binary);
+    dst << src.rdbuf();
+    if (!src.good() || !dst.good())
+    {
+        LOG_ERROR("Failed to copy " + srcPath + " to " + dstPath);
+        return;
+    }
+
+    LOG("Copied " + srcPath + " to " + dstPath);
+}
 #endif
 
 int RunGameEngine(int argc, char** argv)
@@ -24,6 +48,12 @@ int RunGameEngine(int argc, char** argv)
     userDirectory = "/sdcard/claw/";
 #elif defined(__WINDOWS__)
     userDirectory = "";
+#elif defined(__vita__)
+    userDirectory = "ux0:/data/openclaw/";
+
+    mkdir(userDirectory.c_str(), 0777);
+    CopyFileIfMissing("app0:/config.xml", userDirectory + "config.xml");
+    CopyFileIfMissing("app0:/SAVES.XML", userDirectory + "SAVES.XML");
 #else
     const char* homedir;
 
@@ -39,12 +69,15 @@ int RunGameEngine(int argc, char** argv)
 
     LOG("Looking for: " + userDirectory + "config.xml");
 
+#ifndef __vita__
     // Temporary hack - always prefer config in the same folder as binary to default config
+    // (not on Vita, where the working directory is the read-only app0:)
     if (TryToFindFile("config.xml"))
     {
         // File was found in a working directory
         userDirectory = "";
     }
+#endif
 
     LOG("Expecting config.xml in path: " + userDirectory + "config.xml");
 

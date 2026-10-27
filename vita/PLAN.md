@@ -3,7 +3,7 @@
 The goal is a build that can be installed and checked on a Vita (or in an emulator) as early as possible.
 Each stage ends in something testable. Music comes last.
 
-Status legend: **[branch]** = implemented on branch `worktree-vita-port-build-setup`, compiled but not yet run on Vita3K or hardware.
+Status legend: **[branch]** = implemented on branch `worktree-vita-port-build-setup`. The VPK builds and the host unit tests pass, but nothing has run on Vita3K or hardware yet.
 **[todo]** = not started.
 
 ---
@@ -29,7 +29,8 @@ Status legend: **[branch]** = implemented on branch `worktree-vita-port-build-se
 **Goal:** `vita/build.sh` produces `openclaw.vpk` in a clean checkout, with no Vita and no game data.
 
 Changes:
-- `CMakeLists.txt`: `-DVita=ON` option. It picks up the VitaSDK toolchain, links the SDK's static SDL2 libraries, and packages `eboot.bin` + LiveArea + bundled files into a VPK.
+- `CMakeLists.txt`: `-DVita=ON` option. It picks up the VitaSDK toolchain, links the SDK's static SDL2 libraries, and packages `eboot.bin` + LiveArea + bundled files into a VPK (`vita/Vita.cmake`).
+- The static link list is spelled out by hand. The SDK's SDL CMake configs and pkg-config files both leave out zlib, libpng, `SceShaccCgExt` and pthread, and the link fails without them.
 - Header fix: `ThirdParty/SDL2/` contains Windows SDL **2.0.4** headers. With `include_directories(./ThirdParty/)` they shadow the SDK's SDL 2.32 headers and the Vita build fails with 113 errors in `SDL_stdinc.h`. The Vita build stages only the `Tinyxml/` and `FastDelegate/` headers into the build tree and uses that instead. Other platforms are untouched.
 - SDL2_gfx stays: the SDK ships it, so `PhysicsDebugDrawer.cpp` compiles unchanged. (This corrects `assessment.md`, which suggested compiling it out.)
 - `vita/sce_sys/`: placeholder icon and LiveArea images (8-bit indexed PNGs, which the Vita requires). Title ID `OCLW00001`.
@@ -64,7 +65,7 @@ Open questions to settle here: does 960×544 at `Scale` 1 look right, or is 480�
 **Goal:** level 1 can be completed with the buttons, and a save is written to `ux0:`.
 
 Changes:
-- `SDL_INIT_GAMECONTROLLER` is now part of `SDL_Init` (all platforms, so desktop gamepads work too and the host test can use the same path).
+- `SDL_INIT_GAMECONTROLLER` is now part of `SDL_Init` on all platforms, so the host test can use the same path. Side effect: on desktop, a connected gamepad now also drives the game. The log lists every joystick and whether SDL has a controller mapping for it; without a mapping no input arrives.
 - `Engine/UserInterface/GamepadMapper.{h,cpp}`: turns controller events into the key events the game already handles, so gameplay, menus, the in-game menu and the end-of-level screen all work without touching them. Gameplay reads key *events* (`ActorController::VOnKeyDown`), so synthesized events are enough. Nothing in gameplay polls `SDL_GetKeyboardState` (only the debug free camera does).
 - The developer console opens on the grave key (`~`), which no button produces, so it is effectively disabled on Vita.
 
@@ -129,10 +130,11 @@ Ordered from cheapest to most realistic. Layers A and B are set up on this branc
 
 ### A. Build gate: no game data, no device **[branch]**
 `vita/build.sh` compiles in the pinned VitaSDK container and checks the VPK contents. This catches compiler/linker breakage on every change and can run in CI as-is (GitHub Actions supports the same image).
+The desktop Linux build should be gated the same way, since the Vita changes touch shared engine code. It was checked by hand in an `ubuntu:22.04` container with the `libsdl2-*-dev` packages; a script for it is a candidate for CI.
 
 ### B. Host unit tests: no game data, no SDL runtime **[branch]**
 `tests/` builds with the host compiler and the bundled SDL headers only (no SDL library, because the code under test makes no SDL calls). It uses the Catch framework already in `libwap_tests/`.
-Covered so far: `GamepadMapper` (button → key, stick thresholds, D-pad/stick overlap, release ordering).
+Covered so far: `GamepadMapper` (button → key, stick thresholds, D-pad/stick overlap, release ordering), 167 assertions.
 Candidates: path resolution for `RezArchive`, config defaults.
 Run: `tests/run.sh`.
 

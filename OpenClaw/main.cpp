@@ -10,6 +10,16 @@
 
 ClawGameApp testApp;
 
+#ifdef __vita__
+// Read by the VitaSDK runtime at startup. Sized explicitly rather than relying on the SDK defaults;
+// the resource cache alone may take ResourceCacheSize MB. Tune both together.
+extern "C"
+{
+    int _newlib_heap_size_user = 128 * 1024 * 1024;
+    unsigned int sceUserMainThreadStackSize = 1 * 1024 * 1024;
+}
+#endif
+
 int main(int argc, char* argv[]);
 
 #ifdef ANDROID

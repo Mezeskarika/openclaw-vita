@@ -143,6 +143,7 @@
     <ClCompile Include="Engine\Resource\ZipFile.cpp" />
     <ClCompile Include="Engine\Scene\HUDSceneNode.cpp" />
     <ClCompile Include="Engine\UserInterface\Console.cpp" />
+    <ClCompile Include="Engine\UserInterface\GamepadMapper.cpp" />
     <ClCompile Include="Engine\Actor\Actor.cpp" />
     <ClCompile Include="Engine\Actor\ActorFactory.cpp" />
     <ClCompile Include="Engine\Actor\Components\AnimationComponent.cpp" />
@@ -276,6 +277,7 @@
     <ClInclude Include="Engine\Scene\HUDSceneNode.h" />
     <ClInclude Include="Engine\SoundStrings.h" />
     <ClInclude Include="Engine\UserInterface\Console.h" />
+    <ClInclude Include="Engine\UserInterface\GamepadMapper.h" />
     <ClInclude Include="Engine\Actor\Actor.h" />
     <ClInclude Include="Engine\Actor\ActorComponent.h" />
     <ClInclude Include="Engine\Actor\ActorFactory.h" />

@@ -9,6 +9,7 @@
 #include "../UserInterface/Console.h"
 #include "CommandHandler.h"
 #include "../UserInterface/Touch/TouchManager.h"
+#include "../UserInterface/GamepadMapper.h"
 
 const int DEFAULT_SCREEN_WIDTH = 1280;
 const int DEFAULT_SCREEN_HEIGHT = 768;
@@ -315,6 +316,8 @@ protected:
     TTF_Font* m_pConsoleFont;
     Audio* m_pAudio;
     TouchManager *m_pTouchManager;
+    SDL_GameController* m_pGameController;
+    GamepadMapper m_GamepadMapper;
 
     LocalizedStringsMap m_LocalizedStringsMap;
     FontMap m_FontMap;
