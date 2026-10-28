@@ -8,7 +8,6 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(../ThirdParty/)
-include_directories(../libwap_tests/)
 
 add_executable(openclaw_tests
     TestMain.cpp
