@@ -600,6 +600,8 @@ bool BaseGameApp::LoadGameOptions(const char* inConfigFile)
             audioElem->FirstChildElement("MixingChannels"));
         ParseValueFromXmlElem(&m_GameOptions.chunkSize,
             audioElem->FirstChildElement("ChunkSize"));
+        ParseValueFromXmlElem(&m_GameOptions.timidityCfg,
+            audioElem->FirstChildElement("TimidityCfg"));
         ParseValueFromXmlElem(&m_GameOptions.midiRpcServerPath,
             audioElem->FirstChildElement("MusiscRpcServerPath"));
         ParseValueFromXmlElem(&m_GameOptions.soundVolume,

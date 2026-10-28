@@ -8,6 +8,8 @@ set(VITA_VERSION  "01.00")
 
 vita_create_self(eboot.bin openclaw)
 
+include(vita/Freepats.cmake)
+
 # CLAW.REZ is not bundled - the user copies it to ux0:data/openclaw/
 vita_create_vpk(openclaw.vpk ${VITA_TITLEID} eboot.bin
     VERSION ${VITA_VERSION}
@@ -21,4 +23,5 @@ vita_create_vpk(openclaw.vpk ${VITA_TITLEID} eboot.bin
     FILE Build_Release/ASSETS.ZIP ASSETS.ZIP
     FILE Build_Release/clacon.ttf clacon.ttf
     FILE Build_Release/console02.tga console02.tga
+    FILE ${FREEPATS_VPK_FILES}
 )

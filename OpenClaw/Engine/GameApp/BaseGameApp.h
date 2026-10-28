@@ -38,6 +38,7 @@ struct GameOptions
         soundOn = true;
         musicOn = true;
         midiRpcServerPath = "MidiProc.exe";
+        timidityCfg = "";
 
         fontNames.push_back("clacon.ttf");
         consoleFontName = "clacon.ttf";
@@ -78,6 +79,8 @@ struct GameOptions
     bool soundOn;
     bool musicOn;
     std::string midiRpcServerPath;
+    // Timidity config for MIDI music through SDL_mixer. Empty: SDL_mixer's default search
+    std::string timidityCfg;
 
     // Font
     std::vector<const char*> fontNames;

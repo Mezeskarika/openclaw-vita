@@ -16,11 +16,14 @@
     <MixingChannels>64</MixingChannels>
     <ChunkSize>2048</ChunkSize>
     <SoundVolume>10</SoundVolume>
-    <MusicVolume>1</MusicVolume>
+    <!-- 0-20; the desktop default of 1 was tuned for Windows' MIDI player and is near silent here -->
+    <MusicVolume>15</MusicVolume>
     <SoundOn>true</SoundOn>
-    <!-- Music (MIDI via Timidity) is dealt with in a later stage -->
-    <MusicOn>false</MusicOn>
+    <!-- Music is the game's MIDI tracks, played by SDL_mixer's Timidity with the FreePats
+         instruments bundled in the VPK -->
+    <MusicOn>true</MusicOn>
     <MusicRpcServerPath></MusicRpcServerPath>
+    <TimidityCfg>app0:/freepats/timidity.cfg</TimidityCfg>
   </Audio>
   <Font>
     <Fontt>clacon.ttf</Fontt>

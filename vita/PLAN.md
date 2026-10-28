@@ -21,7 +21,7 @@ Status legend: **[branch]** = implemented on branch `worktree-vita-port-build-se
 | Host SDL2 dev libs | `libsdl2-dev`, `libsdl2-image-dev`, `libsdl2-mixer-dev`, `libsdl2-ttf-dev`, `libsdl2-gfx-dev` (or a Docker Ubuntu image). Only for the host smoke test | testing |
 | `libshacccg.suprx` | Vita runtime shader compiler. **Not needed** as long as SDL uses its native `VITA gxm` renderer (forced in code). Only needed if we ever fall back to SDL's GLES2/vitaGL renderer | — |
 | `vita-parse-core` | Turns a Vita crash dump (`.psp2dmp`) into a symbolized backtrace. Python tool from the VitaSDK project | 1 |
-| Timidity patches (e.g. freepats, ~30 MB) **or** offline MIDI→OGG converter (timidity/fluidsynth on PC) | For music | 6 |
+| FreePats 20060219 GUS patches (downloaded by the build, 15 MB of it bundled) | For music | 6 |
 
 ---
 
@@ -126,15 +126,20 @@ Resources: hardware (Vita3K timing is not representative).
 
 Sound effects (WAV via `Mix_Chunk`) are on from stage 1 because the engine requires audio to initialize. This stage verifies them properly: channel count, latency (`ChunkSize`), volume, crackling. If they cause trouble earlier, set `<SoundOn>false</SoundOn>` in `ux0:data/openclaw/config.xml`.
 
-## Stage 6: Music **[todo]**
+## Stage 6: Music **[branch, not yet heard on Vita]**
 
-The game's music is XMI, converted to MIDI at runtime and played with `Mix_LoadMUS_RW` on a separate thread (`Audio.cpp:157-185`).
+The game's music is 50 XMI tracks in `CLAW.REZ`, converted to MIDI at runtime and played by SDL_mixer's built-in Timidity (`Audio.cpp`, `SetupPlayMusicThread`). The VitaSDK's SDL2_mixer is built with Timidity on, so nothing extra has to be compiled.
 
-- **Option A: Timidity on the device.** The SDK's SDL2_mixer is built with `SDL2MIXER_MIDI_TIMIDITY=ON` (checked in the vitasdk `sdl2_mixer` VITABUILD), so this is code-free apart from shipping a `timidity.cfg` + patches to `ux0:data/openclaw/` and calling `Mix_SetTimidityCfg`. Risk: CPU cost on the A9.
-- **Option B: pre-rendered OGG.** Convert all XMI tracks to OGG on a PC and load those on Vita instead. More work up front, cheap at runtime.
+Done:
+- Instruments: FreePats 20060219 (GPL-2.0-or-later with an exception for compositions), the original GUS-patch release. The build downloads it from Debian with a pinned SHA-256 (`vita/Freepats.cmake`) and bundles it in the VPK under `app0:/freepats/` with its `COPYING` and `README`.
+- `vita/timidity.cfg` is generated from FreePats' own `crude.cfg` (which fills FreePats' missing instruments with its nearest patches), trimmed to the 31 programs and 24 drum notes Claw's music uses: 49 patches, 15 MB. All 50 tracks were scanned for this; generator: `vita/tools/make_timidity_cfg.py`.
+- `<TimidityCfg>` config option (`Mix_SetTimidityCfg`), set to `app0:/freepats/timidity.cfg` on Vita. Desktop builds leave it empty and keep using the system Timidity setup.
+- Music track handling: each track change used to leak the previous track, including every instrument Timidity had loaded for it, and two tracks loading at once could finish in the wrong order. Now only the latest request plays, and the replaced track is freed.
+- Vita config: `MusicOn` true, `MusicVolume` 15 (of 20).
 
-Recommendation: try A first, measure CPU, fall back to B.
-Resources: freepats (A) or timidity/fluidsynth + a soundfont on the PC (B).
+To check on Vita3K/hardware: music plays in the menu and level 1, the powerup jingle interrupts and level music comes back, no new `ERROR` lines, frame rate still 60 (`present`/`update` unchanged; Timidity runs on the audio thread), and memory stays flat across several level loads.
+
+Fallback if Timidity is too slow on hardware: pre-rendered OGG (user-run converter, since the rendered music can't be shipped).
 
 ## Stage 7: Release packaging **[todo]**
 

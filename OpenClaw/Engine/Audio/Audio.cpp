@@ -53,6 +53,18 @@ bool Audio::Initialize(const GameOptions& config)
         return false;
     }
 
+    if (!config.timidityCfg.empty())
+    {
+#if SDL_MIXER_MAJOR_VERSION > 2 || (SDL_MIXER_MAJOR_VERSION == 2 && SDL_MIXER_MINOR_VERSION >= 6)
+        // Must be set before music is first opened
+        Mix_SetTimidityCfg(config.timidityCfg.c_str());
+#else
+        // Older SDL_mixer versions only read it from the environment
+        SDL_setenv("TIMIDITY_CFG", config.timidityCfg.c_str(), 1);
+#endif
+        LOG("Timidity config: " + config.timidityCfg);
+    }
+
     // Setup audio mode
     if (Mix_OpenAudio(config.frequency, MIX_DEFAULT_FORMAT, config.soundChannels, config.chunkSize) != 0)
     {
@@ -123,19 +135,30 @@ void Audio::Terminate()
 
 struct _MusicInfo
 {
-    _MusicInfo(const char* pData, size_t size, bool isLooping, int volume)
+    _MusicInfo(const char* pData, size_t size, bool isLooping, int volume, int requestId)
     {
         pMusicData = pData;
         musicSize = size;
         looping = isLooping;
         musicVolume = volume;
+        musicRequestId = requestId;
     }
 
     const char* pMusicData;
     size_t musicSize;
     bool looping;
     int musicVolume;
+    int musicRequestId;
 };
+
+#ifndef _WIN32
+// Music tracks are loaded on their own threads (see PlayMusic), so a later request can finish
+// loading before an earlier one. Only the latest request may start playing, and the track it
+// replaces gets freed: a MIDI track holds its own copy of every instrument it uses.
+static SDL_mutex* g_pMusicMutex = NULL;
+static SDL_atomic_t g_LatestMusicRequestId;
+static Mix_Music* g_pCurrentMusic = NULL;
+#endif
 
 static int SetupPlayMusicThread(void* pData)
 {
@@ -165,10 +188,23 @@ static int SetupPlayMusicThread(void* pData)
     RpcEndExcept;
 #else
     SDL_RWops* pRWops = SDL_RWFromMem((void*)pMusicInfo->pMusicData, pMusicInfo->musicSize);
-    Mix_Music* pMusic = Mix_LoadMUS_RW(pRWops, 0);
+    Mix_Music* pMusic = Mix_LoadMUS_RW(pRWops, 1);
     if (!pMusic) {
         LOG_ERROR("Mix_LoadMUS_RW: " + std::string(Mix_GetError()));
+        SAFE_DELETE(pMusicInfo);
+        return 0;
     }
+
+    SDL_LockMutex(g_pMusicMutex);
+    if (pMusicInfo->musicRequestId != SDL_AtomicGet(&g_LatestMusicRequestId))
+    {
+        // A newer track was requested while this one was loading
+        SDL_UnlockMutex(g_pMusicMutex);
+        Mix_FreeMusic(pMusic);
+        SAFE_DELETE(pMusicInfo);
+        return 0;
+    }
+
     Mix_PlayMusic(pMusic, pMusicInfo->looping ? -1 : 0);
 
     if (pMusicInfo->musicVolume == -1)
@@ -179,6 +215,14 @@ static int SetupPlayMusicThread(void* pData)
     {
         Mix_ResumeMusic();
     }
+
+    // Mix_PlayMusic halted the previous track, so it can go now
+    if (g_pCurrentMusic)
+    {
+        Mix_FreeMusic(g_pCurrentMusic);
+    }
+    g_pCurrentMusic = pMusic;
+    SDL_UnlockMutex(g_pMusicMutex);
 #endif //_WIN32
 
     SAFE_DELETE(pMusicInfo);
@@ -188,7 +232,17 @@ static int SetupPlayMusicThread(void* pData)
 
 void Audio::PlayMusic(const char* musicData, size_t musicSize, bool looping)
 {
-    _MusicInfo* pMusicInfo = new _MusicInfo(musicData, musicSize, looping, m_bMusicOn ? m_MusicVolume : -1);
+#ifndef _WIN32
+    if (g_pMusicMutex == NULL)
+    {
+        g_pMusicMutex = SDL_CreateMutex();
+    }
+    int requestId = SDL_AtomicAdd(&g_LatestMusicRequestId, 1) + 1;
+#else
+    int requestId = 0;
+#endif
+
+    _MusicInfo* pMusicInfo = new _MusicInfo(musicData, musicSize, looping, m_bMusicOn ? m_MusicVolume : -1, requestId);
 
     // Playing music track takes ALOT of time for some reason so play it in another thread
     SDL_Thread* pThread = SDL_CreateThread(SetupPlayMusicThread, "SetupPlayMusicThread", (void*)pMusicInfo);
