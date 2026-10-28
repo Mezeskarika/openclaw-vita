@@ -93,7 +93,7 @@ Verification: play level 1 to the end; pause/resume; check that `ux0:data/opencl
 
 **Goal:** a steady frame rate on level 1 and the busiest later levels. At 60 Hz with vsync the even rates are 60/30/20 fps, so the realistic target is a locked 30, with 20 as the floor.
 
-Stages 1 and 2 are confirmed in Vita3K (tag `vita-vita3k-level1-runs`): the game boots and level 1 is playable, at 7–24 fps.
+Stages 1 and 2 are confirmed in Vita3K (v0.1.0): the game boots and level 1 is playable, at 7–24 fps.
 
 Done:
 - Quit freeze (not yet re-tested on Vita): the quit event now only stops the main loop, instead of tearing everything down and calling `exit()` from inside an event callback. On Vita the teardown is skipped and the process ends with `sceKernelExitProcess`. On desktop the teardown stops audio before freeing sounds and shuts SDL down; checked to exit cleanly on the host.
@@ -128,7 +128,7 @@ Sound effects (WAV via `Mix_Chunk`) are on from stage 1 because the engine requi
 
 ## Stage 6: Music **[done in Vita3K; hardware pending]**
 
-Confirmed in Vita3K (tag `vita-vita3k-music`): the music plays in levels without stutter and sounds close to the original.
+Confirmed in Vita3K (v0.3.0): the music plays in levels without stutter and sounds close to the original.
 
 The game's music is 50 XMI tracks in `CLAW.REZ`, converted to MIDI at runtime and played by SDL_mixer's built-in Timidity (`Audio.cpp`, `SetupPlayMusicThread`). The VitaSDK's SDL2_mixer is built with Timidity on, so nothing extra has to be compiled.
 

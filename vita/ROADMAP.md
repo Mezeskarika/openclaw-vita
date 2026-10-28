@@ -7,7 +7,7 @@ starts.
 Status: **[todo]** not started, **[research]** needs findings before any code, **[blocked]** waits on
 another item.
 
-Current state (tag `vita-vita3k-music`): the game boots in Vita3K, runs at 60 fps, plays music,
+Current state (v0.3.0): the game boots in Vita3K, runs at 60 fps, plays music,
 saves and quits cleanly. Nothing has run on real hardware yet.
 
 **Scope: the PS Vita only.** Changes don't need to keep the Windows, Linux, macOS, Android or
@@ -24,7 +24,7 @@ deciding on deliberately is the Linux host build used for profiling and smoke te
 | 4 | Remappable buttons | code + menu | 3, 8 (page layout) |
 | 5 | Real LiveArea artwork | art | — |
 | 6 | README: installation and config options | docs | — |
-| 7 | CHANGELOG per tagged version, incl. divergences | docs | — |
+| 7 | CHANGELOG per tagged version, incl. divergences | docs, **done** | — |
 | 8 | Research the original game's Options submenus | research | — |
 | 9 | Strip everything the Vita build doesn't need | cleanup | decision on host build |
 | 10 | CI job that builds the VPK | infra | 9 (fewer things to build) |
@@ -33,7 +33,7 @@ deciding on deliberately is the Linux host build used for profiling and smoke te
 | 13 | Implement the disabled Options submenus | code + menu | 3, 4, 8, 11, 12 |
 
 Suggested order: 2, 6 and 9 first (small, visible, and 9 makes everything after it simpler), then
-3 and 8 (they unblock 4, 11, 12, 13), then 1, 4, 11, 12, 13. 5, 7 and 10 can happen any time.
+3 and 8 (they unblock 4, 11, 12, 13), then 1, 4, 11, 12, 13. 5 and 10 can happen any time.
 
 ---
 
@@ -126,29 +126,12 @@ from it, with:
   GPL-3.0, FreePats GPL-2.0-or-later with exception).
 - Building it yourself: `vita/build.sh`, `tests/run.sh`.
 
-## 7. CHANGELOG **[todo]**
+## 7. CHANGELOG **[done]**
 
-`vita/CHANGELOG.md`, one section per tag, from the commit history:
-
-| Tag | Commit | Headline |
-|---|---|---|
-| `vita-vita3k-level1-runs` | `d7ef718` | First build that runs in Vita3K |
-| `vita-vita3k-60fps` | `d805a42` | 60 fps, quit fixed, save crash fixed |
-| `vita-vita3k-music` | `7e353e4` | Music via Timidity + FreePats |
-
-Plus a "Differences from upstream OpenClaw" section (base: upstream `5ee5740`, July 2022):
-- engine fixes that came from the original code: lenient save loading and no longer saving a dying
-  Claw's health, menu Quit no longer calling `exit()` from inside an event handler, music tracks
-  freed and ordered correctly;
-- additions: gamepad support, `<LogFrameStats>`, `<TimidityCfg>`, `<FrontPlaneMode>`, absolute
-  `RezArchive` paths;
-- Vita specifics: forced GXM renderer with batching, 22,050 Hz mixer, CPU/GPU clocks, `app0:`/`ux0:`
-  layout, bundled FreePats;
-- removals from 9.
-
-And a "Differences from the original game" section for anything that plays differently from
-Captain Claw (1997): today the instrument sound (FreePats instead of a 1997 sound card) and the
-missing menus; later difficulty (12) and anything from 13.
+`CHANGELOG.md` at the repo root: one section per version (`v0.1.0`–`v0.3.0`), plus "Differences from
+upstream OpenClaw" and "Differences from the original game". Keep it current with every change
+(see "Versioning and releases" in `CLAUDE.md`), including the removals from 9, difficulty (12) and
+anything from 13.
 
 ## 8. Research the original game's Options submenus **[research]**
 

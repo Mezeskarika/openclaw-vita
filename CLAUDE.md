@@ -1,7 +1,8 @@
 # CLAUDE.md
 
-PS Vita port of OpenClaw (C++11 reimplementation of Captain Claw, 1997), forked from
-`pjasicek/OpenClaw` at upstream commit `5ee5740` (July 2022).
+PS Vita port of OpenClaw (C++11 reimplementation of Captain Claw, 1997), based on
+`pjasicek/OpenClaw` at upstream commit `5ee5740` (July 2022), imported as this repo's first commit.
+Version history: `CHANGELOG.md`.
 
 **Scope is the Vita only.** Other platforms (Windows, desktop Linux, Android, Emscripten) don't need
 to keep working; `vita/ROADMAP.md` item 9 plans removing them. Exception: a Linux host build is
@@ -126,12 +127,36 @@ Build the desktop target in the Ubuntu container (`cmake -S . -B build && make`;
 
 - Remotes: `github` = `Mezeskarika/openclaw-vita` (branch `main`, where work goes), `origin` =
   upstream `pjasicek/OpenClaw` (reference only, don't push).
+- History starts with one import commit holding upstream's tree at `5ee5740`; upstream's own
+  history isn't in this repo. To compare with upstream, `git fetch origin` and diff against
+  `5ee5740`. Don't fetch upstream's tags into this repo (`v0.0`, `v0.2`, `v0.3` would clash with
+  ours).
 - Commits use the GitHub no-reply address configured in the repo's local git config. Never
   commit or tag with a work email; check `git log --format='%ae %ce'` before pushing.
-- Tags `vita-vita3k-*` mark builds that were tested; annotated, with what was verified.
-- Releases: build from a clean `git archive <tag>` export, compare the VPK contents with the tested
-  one, then `gh release create <tag> openclaw.vpk --prerelease` until it has run on hardware.
 - Licence GPL-3.0 (`LICENSE.txt`). FreePats: GPL-2.0-or-later with an exception; its `COPYING`
   and `README` ship in the VPK.
 - **Never add Captain Claw data** to the repo or VPK: `CLAW.REZ`, anything extracted or rendered
   from it (music renders, sprites), Monolith logos/art. That includes LiveArea artwork.
+
+## Versioning and releases
+
+- Semantic versioning, tags `vX.Y.Z` (annotated; message = version, then what was verified and
+  where). `0.x` while untested on real hardware; `1.0.0` once it plays through on a Vita.
+  A new feature or behaviour change bumps the minor version, a fix-only release the patch version.
+- Only tag builds that were tested (Vita3K or hardware), and record where in the tag message.
+- `CHANGELOG.md` (Keep a Changelog): add every user-visible change under `[Unreleased]` in the same
+  commit as the change. At release, rename `[Unreleased]` to the version and date, update the
+  compare links at the bottom, and keep the "Differences from upstream OpenClaw" / "Differences
+  from the original game" sections current.
+- The VPK's own version (`VITA_VERSION` in `vita/Vita.cmake`, format `MM.mm`, shown by the Vita)
+  is `01.00` in 0.1.0–0.3.0. From the next release on, set it in the release commit as
+  major/minor/patch → `0M.mp`, e.g. 0.4.0 → `00.40`, 1.2.3 → `01.23`.
+- Release procedure:
+  1. Changelog and `VITA_VERSION` updated and committed; annotated tag created.
+  2. Build from a clean `git archive <tag>` export with that export's `vita/build.sh`, and compare
+     the VPK contents with the build that was tested.
+  3. Push `main` and the tag **by name** (never `git push --tags`).
+  4. `gh release create <tag> openclaw.vpk --prerelease --title "OpenClaw for PS Vita X.Y.Z"
+     --notes-file …` (pre-release until tested on hardware). Notes: what's new (from the
+     changelog), requirements (own `CLAW.REZ`), install, controls, known limitations, licence.
+     The release page orders by creation, so create releases in version order.

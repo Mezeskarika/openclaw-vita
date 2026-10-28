@@ -1,7 +1,7 @@
 # Vita performance: measurements and options
 
 > **Status (2026-10-28):** In Vita3K, level 1 now runs at a locked 60 fps everywhere,
-> including the foreground columns, after turning SDL draw batching back on (commit `d805a42`).
+> including the foreground columns, after turning SDL draw batching back on (v0.2.0).
 > Next: one run on real hardware. The rest of this document is the history of how we got here
 > and the options kept in reserve in case hardware turns out slower.
 
