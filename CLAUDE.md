@@ -160,7 +160,15 @@ Build the desktop target in the Ubuntu container (`cmake -S . -B build && make`;
   2. Build from a clean `git archive <tag>` export with that export's `vita/build.sh`, and compare
      the VPK contents with the build that was tested.
   3. After approval (see above): push `main` and the tag **by name** (never `git push --tags`).
-  4. After approval: `gh release create <tag> openclaw.vpk --prerelease --title "OpenClaw for PS Vita X.Y.Z"
-     --notes-file …` (pre-release until tested on hardware). Notes: what's new (from the
-     changelog), requirements (own `CLAW.REZ`), install, controls, known limitations, licence.
-     The release page orders by creation, so create releases in version order.
+  4. After approval: copy the VPK to `OpenClaw-Vita-X.Y.Z.vpk` and
+     `gh release create <tag> OpenClaw-Vita-X.Y.Z.vpk --prerelease --title "OpenClaw for PS Vita X.Y.Z"
+     --notes-file …` (pre-release until tested on hardware). The VPK is the only asset to attach.
+     Notes start with a bold download link to the VPK
+     (`…/releases/download/<tag>/OpenClaw-Vita-X.Y.Z.vpk`) and a sentence saying the *Source code*
+     archives are added by GitHub automatically and aren't needed to play (GitHub always adds them;
+     they can't be removed). Then: what's new (from the changelog), requirements (own `CLAW.REZ`),
+     install, controls, known limitations, licence. The release page orders by creation, so create
+     releases in version order.
+  5. The installed `gh` (2.4) has no `release edit`/`delete-asset`: use
+     `gh api -X PATCH repos/<owner>/<repo>/releases/<id> -F body=@notes.md` and
+     `gh api -X DELETE repos/<owner>/<repo>/releases/assets/<id>`.
