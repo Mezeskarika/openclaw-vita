@@ -136,8 +136,10 @@ Done:
 - `<TimidityCfg>` config option (`Mix_SetTimidityCfg`), set to `app0:/freepats/timidity.cfg` on Vita. Desktop builds leave it empty and keep using the system Timidity setup.
 - Music track handling: each track change used to leak the previous track, including every instrument Timidity had loaded for it, and two tracks loading at once could finish in the wrong order. Now only the latest request plays, and the replaced track is freed.
 - Vita config: `MusicOn` true, `MusicVolume` 15 (of 20).
+- Stopping the music now also cancels a track that is still loading, so it can't start playing afterwards.
+- Checked on the host with SDL_mixer 2.8.2 (same version and Timidity build as the Vita package), the trimmed config and 22,050 Hz mono: all 50 tracks load (2–22 ms), none is silent, and the slowest renders 428× faster than real time on one host core. At 20–40× slower on the Vita's A9, that is still roughly 10–20× real time, i.e. about 5–10% of one core.
 
-To check on Vita3K/hardware: music plays in the menu and level 1, the powerup jingle interrupts and level music comes back, no new `ERROR` lines, frame rate still 60 (`present`/`update` unchanged; Timidity runs on the audio thread), and memory stays flat across several level loads.
+To check on Vita3K/hardware (the menu's music is a WAV, so MIDI starts once a level has loaded): music plays in level 1, the powerup jingle interrupts and level music comes back, no new `ERROR` lines, frame rate still 60 (`present`/`update` unchanged; Timidity runs on the audio thread), and memory stays flat across several level loads.
 
 Fallback if Timidity is too slow on hardware: pre-rendered OGG (user-run converter, since the rendered music can't be shipped).
 

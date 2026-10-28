@@ -297,6 +297,8 @@ void Audio::StopMusic()
     }
     RpcEndExcept
 #else
+    // A track still loading on its thread must not start once it's done
+    SDL_AtomicAdd(&g_LatestMusicRequestId, 1);
     Mix_HaltMusic();
 #endif //_WIN32
 }
