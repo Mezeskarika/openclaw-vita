@@ -89,16 +89,23 @@ Default mapping:
 Resources: `CLAW.REZ`, hardware strongly preferred (Vita3K input is via host keyboard).
 Verification: play level 1 to the end; pause/resume; check that `ux0:data/openclaw/SAVES.XML` changes after a checkpoint save.
 
-## Stage 3: Performance and memory **[todo]**
+## Stage 3: Performance and memory **[in progress]**
 
-**Goal:** steady 60 fps (or a stable 30) on level 1 and on the busiest later levels.
+**Goal:** a steady frame rate on level 1 and the busiest later levels. At 60 Hz with vsync the even rates are 60/30/20 fps, so the realistic target is a locked 30, with 20 as the floor.
 
-Tasks:
-- Measure frame time on hardware (the engine has `Util/Profilers.cpp`; add a periodic FPS log line on Vita).
-- Logging cost: SDL on Vita opens and closes `SDL_Log.txt` for every line. Cut log volume in release builds if it shows up in frame times.
+Stages 1 and 2 are confirmed in Vita3K (tag `vita-vita3k-level1-runs`): the game boots and level 1 is playable, at 7–24 fps.
+
+Done:
+- Quitting no longer freezes: the quit event stops the main loop instead of tearing down and calling `exit()` from inside an event callback; SDL audio is stopped before sounds are freed, SDL is shut down, and the Vita process ends with `sceKernelExitProcess`.
+- `<LogFrameStats>`: fps plus update/physics/render/present times and draw count, logged every 2 s.
+- Mixer at 22,050 Hz (the game's sounds are 22 kHz; resampling them stalled the game).
+- CPU 444 MHz / GPU 222 MHz on hardware.
+
+Measurements, analysis and the ranked list of next steps: `vita/PERFORMANCE.md`.
+
+Still open from the original list:
 - Tune `ResourceCacheSize`, the newlib heap size and, if needed, the `ATTRIBUTE2=12` param.sfo flag for extended memory mode.
-- Compiler flags: currently the project's `-O2 -g`. Try `-O3`, and confirm the toolchain targets Cortex-A9 with NEON.
-- Box2D and actor updates are the likely CPU hot spots on the 444 MHz Cortex-A9.
+- Compiler flags: `-O2 -g` today, Cortex-A9/NEON/Thumb-2 confirmed as the toolchain defaults. Try `-O3`/LTO.
 
 Resources: hardware (Vita3K timing is not representative).
 

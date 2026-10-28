@@ -4,6 +4,7 @@
 #include "../Actor/Components/RenderComponent.h"
 #include "../Graphics2D/Image.h"
 #include "../GameApp/BaseGameApp.h"
+#include "../Util/FrameStats.h"
 
 SDL2TilePlaneSceneNode::SDL2TilePlaneSceneNode(const uint32 actorId,
     BaseRenderComponent* pRenderComponent,
@@ -98,6 +99,7 @@ void SDL2TilePlaneSceneNode::VRender(Scene* pScene)
                     tilePixelHeight };
 
                 SDL_RenderCopy(renderer, image->GetTexture(), NULL, &tileRect);
+                FrameStats::AddDrawCall();
             }
         }
     }

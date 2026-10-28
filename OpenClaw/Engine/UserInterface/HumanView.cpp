@@ -1,5 +1,6 @@
 #include "HumanView.h"
 #include "../GameApp/BaseGameApp.h"
+#include "../Util/FrameStats.h"
 #include "../GameApp/BaseGameLogic.h"
 #include "../Events/EventMgr.h"
 #include "../Events/Events.h"
@@ -85,24 +86,29 @@ void HumanView::VOnRender(uint32 msDiff)
 
         SDL_RenderClear(renderer);
 
-        // Sort screen elements
-        m_ScreenElements.sort(SortBy_SharedPtr_Content<IScreenElement>());
-
-        for (shared_ptr<IScreenElement>& screenElement : m_ScreenElements)
         {
-            if (screenElement->VIsVisible())
+            FrameStats::ScopedTimer renderTimer(FrameStats::Section_Render);
+
+            // Sort screen elements
+            m_ScreenElements.sort(SortBy_SharedPtr_Content<IScreenElement>());
+
+            for (shared_ptr<IScreenElement>& screenElement : m_ScreenElements)
             {
-                screenElement->VOnRender(msDiff);
+                if (screenElement->VIsVisible())
+                {
+                    screenElement->VOnRender(msDiff);
+                }
             }
+            //LOG("SCREEN ELEMENTS: " + ToStr(m_ScreenElements.size()))
+
+            g_pApp->GetGameLogic()->VRenderDiagnostics(renderer, m_pCamera);
+
+            m_pConsole->OnRender(renderer);
         }
-        //LOG("SCREEN ELEMENTS: " + ToStr(m_ScreenElements.size()))
-
-        g_pApp->GetGameLogic()->VRenderDiagnostics(renderer, m_pCamera);
-
-        m_pConsole->OnRender(renderer);
 
         if (!m_bPostponeRenderPresent)
         {
+            FrameStats::ScopedTimer presentTimer(FrameStats::Section_Present);
             SDL_RenderPresent(renderer);
         }
     }

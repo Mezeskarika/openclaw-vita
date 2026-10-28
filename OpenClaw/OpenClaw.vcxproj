@@ -190,6 +190,7 @@
     <ClCompile Include="Engine\Graphics2D\Image.cpp" />
     <ClCompile Include="Engine\Util\ClawLevelUtil.cpp" />
     <ClCompile Include="Engine\Util\Converters.cpp" />
+    <ClCompile Include="Engine\Util\FrameStats.cpp" />
     <ClCompile Include="Engine\Util\Memory\MemoryPool.cpp" />
     <ClCompile Include="Engine\Util\PrimeSearch.cpp" />
     <ClCompile Include="Engine\Util\XmlUtil.cpp" />
@@ -267,6 +268,7 @@
     <ClInclude Include="Engine\UserInterface\Touch\TouchRecognizers\TapRecognizer.h" />
     <ClInclude Include="Engine\Util\ClawLevelUtil.h" />
     <ClInclude Include="Engine\Util\Converters.h" />
+    <ClInclude Include="Engine\Util\FrameStats.h" />
     <ClInclude Include="Engine\Util\CustomAssert.h" />
     <ClInclude Include="Engine\GameApp\CommandHandler.h" />
     <ClInclude Include="Engine\GameApp\GameSaves.h" />

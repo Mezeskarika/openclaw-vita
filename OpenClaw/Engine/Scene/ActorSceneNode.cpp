@@ -2,6 +2,7 @@
 #include "ActorSceneNode.h"
 #include "../Actor/Components/RenderComponent.h"
 #include "../Graphics2D/Image.h"
+#include "../Util/FrameStats.h"
 
 SDL2ActorSceneNode::SDL2ActorSceneNode(const uint32 actorId,
     BaseRenderComponent* pRenderComponent,
@@ -77,4 +78,5 @@ void SDL2ActorSceneNode::VRender(Scene* pScene)
     SDL_Renderer* renderer = pScene->GetRenderer();
     SDL_RenderCopyEx(renderer, actorImage->GetTexture(), NULL, &renderRect, 0, NULL, 
         arc->IsMirrored() ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+    FrameStats::AddDrawCall();
 }

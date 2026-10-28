@@ -4,6 +4,7 @@
 #include "../Events/Events.h"
 #include "../GameApp/BaseGameApp.h"
 #include "../GameApp/BaseGameLogic.h"
+#include "../Util/FrameStats.h"
 
 #include "../Graphics2D/Image.h"
 
@@ -395,7 +396,10 @@ void ClawPhysics::VOnUpdate(const uint32 msDiff)
 {
     //PROFILE_CPU("ClawPhysics::VOnUpdate");
 
-    m_pWorld->Step(msDiff / 1000.0f, 10, 8);
+    {
+        FrameStats::ScopedTimer physicsTimer(FrameStats::Section_Physics);
+        m_pWorld->Step(msDiff / 1000.0f, 10, 8);
+    }
 
     // Remove actors form physics simulation which are scheduled to be destroyed
     for (uint32 actorId : m_ActorsToBeDestroyed)

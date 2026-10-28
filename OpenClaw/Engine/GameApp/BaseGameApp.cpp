@@ -21,6 +21,7 @@
 #include "../Resource/Loaders/PngLoader.h"
 
 #include "BaseGameApp.h"
+#include "../Util/FrameStats.h"
 
 #include <cctype>
 
@@ -100,6 +101,13 @@ void BaseGameApp::Terminate()
 {
     LOG("Terminating...");
 
+    // The audio thread keeps mixing until the device is closed, so stop it touching
+    // sounds before they get freed below
+    if (m_pAudio)
+    {
+        m_pAudio->StopAllSounds();
+    }
+
     RemoveAllDelegates();
 
     SAFE_DELETE(m_pGame);
@@ -120,6 +128,11 @@ void BaseGameApp::Terminate()
     m_ActorXmlPrototypeMap.clear();
 
     SaveGameOptions();
+
+    Mix_CloseAudio();
+    SDL_Quit();
+
+    LOG("Terminated.");
 }
 
 #define STARTUP_TEST(condition, error) \
@@ -232,6 +245,7 @@ void BaseGameApp::StepLoop() {
             // Update game
             {
                 //PROFILE_CPU("ONLY GAME UPDATE");
+                FrameStats::ScopedTimer updateTimer(FrameStats::Section_Update);
                 IEventMgr::Get()->VUpdate(20); // Allow event queue to process for up to 20 ms
                 m_pGame->VOnUpdate(elapsedTime);
             }
@@ -248,6 +262,8 @@ void BaseGameApp::StepLoop() {
 
         // Artificially decrease fps. Configurable from console
         Util::Sleep(m_DebugOptions.cpuDelayMs);
+
+        FrameStats::EndFrame();
     }
 }
 
@@ -730,6 +746,9 @@ bool BaseGameApp::LoadGameOptions(const char* inConfigFile)
             pGlobalOptionsRootElem->FirstChildElement("ShowFps"));
         ParseValueFromXmlElem(&m_GlobalOptions.showPosition,
             pGlobalOptionsRootElem->FirstChildElement("ShowPosition"));
+        ParseValueFromXmlElem(&m_GlobalOptions.logFrameStats,
+            pGlobalOptionsRootElem->FirstChildElement("LogFrameStats"));
+        FrameStats::SetEnabled(m_GlobalOptions.logFrameStats);
     }
 
     //-------------------------------------------------------------------------
@@ -1490,8 +1509,9 @@ void BaseGameApp::RemoveAllDelegates()
 
 void BaseGameApp::QuitGameDelegate(IEventDataPtr pEventData)
 {
-    Terminate();
-    exit(0);
+    // Leave the main loop and let Run() shut down. Tearing everything down from inside this
+    // event callback, then calling exit(), hung on the Vita.
+    m_IsRunning = false;
 }
 
 //=====================================================================================================================

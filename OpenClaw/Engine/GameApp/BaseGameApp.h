@@ -147,6 +147,7 @@ struct GlobalOptions
         loadAllLevelSaves = false;
         showFps = true;
         showPosition = true;
+        logFrameStats = false;
     }
 
     double maxJumpSpeed;
@@ -169,6 +170,7 @@ struct GlobalOptions
     bool loadAllLevelSaves;
     bool showFps;
     bool showPosition;
+    bool logFrameStats;
 };
 
 struct ControlOptions

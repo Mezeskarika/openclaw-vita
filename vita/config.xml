@@ -9,7 +9,9 @@
     <IsFullscreenDesktop>false</IsFullscreenDesktop>
   </Display>
   <Audio>
-    <Frequency>44100</Frequency>
+    <!-- Almost all of the game's sounds are 22050 Hz; mixing at 44100 Hz made SDL resample
+         every sound on first use, which stalled the game for a noticeable moment -->
+    <Frequency>22050</Frequency>
     <SoundChannels>1</SoundChannels>
     <MixingChannels>64</MixingChannels>
     <ChunkSize>2048</ChunkSize>
@@ -67,6 +69,8 @@
     <!-- On while the port is being verified -->
     <ShowFps>true</ShowFps>
     <ShowPosition>false</ShowPosition>
+    <!-- Logs fps and a per-frame time breakdown to ux0:data/SDL_Log.txt every 2 seconds -->
+    <LogFrameStats>true</LogFrameStats>
   </GlobalOptions>
   <ControlOptions>
     <UseAlternateControls>false</UseAlternateControls>

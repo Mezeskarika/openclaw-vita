@@ -12,6 +12,8 @@ target_sources(openclaw
     ${CMAKE_CURRENT_SOURCE_DIR}/Util.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Converters.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Converters.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/FrameStats.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/FrameStats.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/PrimeSearch.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/PrimeSearch.h
     ${CMAKE_CURRENT_SOURCE_DIR}/XmlUtil.cpp
