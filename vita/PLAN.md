@@ -126,7 +126,9 @@ Resources: hardware (Vita3K timing is not representative).
 
 Sound effects (WAV via `Mix_Chunk`) are on from stage 1 because the engine requires audio to initialize. This stage verifies them properly: channel count, latency (`ChunkSize`), volume, crackling. If they cause trouble earlier, set `<SoundOn>false</SoundOn>` in `ux0:data/openclaw/config.xml`.
 
-## Stage 6: Music **[branch, not yet heard on Vita]**
+## Stage 6: Music **[done in Vita3K; hardware pending]**
+
+Confirmed in Vita3K (tag `vita-vita3k-music`): the music plays in levels without stutter and sounds close to the original.
 
 The game's music is 50 XMI tracks in `CLAW.REZ`, converted to MIDI at runtime and played by SDL_mixer's built-in Timidity (`Audio.cpp`, `SetupPlayMusicThread`). The VitaSDK's SDL2_mixer is built with Timidity on, so nothing extra has to be compiled.
 
