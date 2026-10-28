@@ -25,6 +25,7 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
 - Menu items that lead nowhere are shown greyed out and can't be selected: Multiplayer,
   Load Custom Level, and Options → Edit Players, Difficulty, Controls, Display.
 
+- GitHub Actions workflow that builds the VPK and runs the unit tests on every push.
 - Menus can be used by tapping the front touchscreen.
 - Sound and music volume and on/off, changed on the Audio page, are saved to `config.xml`
   immediately and kept across restarts.

@@ -17,6 +17,7 @@ decisions), `vita/PERFORMANCE.md` (measurements and why the renderer is set up a
 |---|---|
 | `vita/build.sh` | Builds `build-vita/openclaw.vpk` in the pinned `vitasdk/vitasdk@sha256:…` Docker image, then checks the VPK has every required file. `vita/build.sh clean` starts fresh. No local VitaSDK needed. |
 | `tests/run.sh` | Host unit tests (Catch 1.5, `tests/Catch.hpp`) into `build-tests/`. Compiles only against the bundled SDL headers, no SDL library. |
+| CI | `.github/workflows/build.yml` runs both of the above on every push and pull request and keeps the VPK and ELF as an artifact. |
 
 - The host has no SDL dev packages. Anything that needs real SDL (desktop build, profiling) runs in
   an `ubuntu:22.04` container with `libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev

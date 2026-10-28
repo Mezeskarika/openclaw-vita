@@ -27,7 +27,7 @@ deciding on deliberately is the Linux host build used for profiling and smoke te
 | 7 | CHANGELOG per tagged version, incl. divergences | docs, **done** | — |
 | 8 | Research the original game's Options submenus | research, **done** | — |
 | 9 | Strip everything the Vita build doesn't need | cleanup, **done** | — |
-| 10 | CI job that builds the VPK | infra | 9 (fewer things to build) |
+| 10 | CI job that builds the VPK | infra, **written, not yet run** | — |
 | 11 | Research FOV / resolution settings for the Display menu | research | 8 |
 | 12 | Plan difficulty settings (easy to hard options) | research, **planned** | 8 |
 | 13 | Implement the disabled Options submenus | code + menu | 3, 4, 8, 11, 12 |
@@ -162,17 +162,15 @@ Kept on purpose:
 
 Each step was checked with the Vita build, the host unit tests and the Linux build (level 1 loads).
 
-## 10. CI job that builds the VPK **[todo]**
+## 10. CI job that builds the VPK **[written; runs once pushed]**
 
-- `vita/build.sh` already builds in a pinned Docker image (`vitasdk/vitasdk@sha256:8227da1b…`) and
-  checks the VPK contents; `tests/run.sh` runs the host unit tests. CI only has to call both and
-  keep `build-vita/openclaw.vpk` (plus the unstripped `build-vita/openclaw` ELF for crash dumps) as
-  artifacts.
-- If 9 keeps the Linux host build, compile it too.
-- Open question: where does this repository live from now on? `origin` is still upstream
-  `pjasicek/OpenClaw`, so the CI provider (GitHub Actions, GitLab CI, …) depends on where the fork
-  gets pushed. Decide before writing the job.
-- Network: the build downloads FreePats from deb.debian.org (SHA-256 pinned). Cache it in CI.
+`.github/workflows/build.yml` (GitHub Actions): on every push, pull request or manual run it calls
+`vita/build.sh` and `tests/run.sh` on `ubuntu-24.04` and uploads `openclaw.vpk` and the unstripped
+`openclaw` ELF as an artifact named after the commit. The FreePats download is cached. Checked
+with actionlint; it hasn't run on GitHub yet, because nothing has been pushed.
+
+Left out on purpose: building the Linux host build in CI (a development tool, not a product), and
+release automation (releases stay manual, see `CLAUDE.md`). Either can be added later.
 
 ## 11. Research FOV and resolution for the Display menu **[research]**
 
