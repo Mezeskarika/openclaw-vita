@@ -889,6 +889,9 @@ bool BaseGameApp::InitializeDisplay(GameOptions& gameOptions)
 #ifdef __vita__
     // SDL would pick its GLES2 driver, which runs on vitaGL and needs libshacccg.suprx on the device
     SDL_SetHint(SDL_HINT_RENDER_DRIVER, "VITA gxm");
+    // Naming a driver turns SDL's draw batching off unless it's asked for explicitly. Without it,
+    // every SDL_RenderCopy went to the GPU on its own as soon as it was queued.
+    SDL_SetHint(SDL_HINT_RENDER_BATCHING, "1");
 #endif
 
     for (int i = 0; i < SDL_GetNumRenderDrivers(); i++)

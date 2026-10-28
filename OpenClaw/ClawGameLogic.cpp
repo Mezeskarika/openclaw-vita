@@ -395,7 +395,9 @@ void ClawGameLogic::CheckpointReachedDelegate(IEventDataPtr pEventData)
 
         checkpointSave.checkpointIdx = pCastEventData->GetSaveCheckpointNumber();
         checkpointSave.score = pScoreComponent->GetScore();
-        checkpointSave.health = pHealthComponent->GetHealth();
+        // Claw can touch a checkpoint while dying; never save a health he can't play with
+        checkpointSave.health = pHealthComponent->GetHealth() > 0 ?
+            pHealthComponent->GetHealth() : pHealthComponent->GetMaxHealth();
         checkpointSave.lives = pLifeComponent->GetLives();
         checkpointSave.bulletCount = pAmmoComponent->GetRemainingAmmo(AmmoType_Pistol);
         checkpointSave.magicCount = pAmmoComponent->GetRemainingAmmo(AmmoType_Magic);

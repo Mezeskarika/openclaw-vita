@@ -27,7 +27,34 @@ Its costs are not the hardware's costs, and they can point in opposite direction
 So: optimise for both, but judge results on hardware. Running on a real Vita is safe
 (see `PLAN.md`, stage 1), and nothing replaces a hardware number.
 
-## Measurements
+## Vita3K run with frame stats (2026-10-28)
+
+`FrameStats` lines from the user's run (mixer at 22,050 Hz, `FrontPlaneMode` normal):
+
+| Area | fps | update (ms) | render (ms) | present (ms) | draws |
+|---|---|---|---|---|---|
+| Plain | 20–24 | 2.5–3 | 40–47 | 0.1–0.2 | 300–380 |
+| Enemies / platforms | 10–16 | 3–4 | 60–100 | 0.2–0.3 | 330–430 |
+| Columns | 6.8–8 | 3–5 | 120–143 | 0.3 | 459 |
+| Same, game paused (menu open) | 7 | 2 | 135–138 | 0.3 | 460 |
+
+**Finding: SDL draw batching was off.** `render` (walking the scene and calling
+`SDL_RenderCopy`) took 40–140 ms while `present` took almost nothing, so the draws were being
+executed inside the `SDL_RenderCopy` calls, one at a time. Cause: SDL 2.32 turns batching off
+whenever the app names a render driver (`SDL_render.c`, `SDL_CreateRenderer`), unless
+`SDL_HINT_RENDER_BATCHING` is set. Forcing `VITA gxm` (stage 1) therefore made every tile and
+sprite a separate GPU submission with its own state setup. Fixed by setting the batching hint.
+This affects real hardware too, not only the emulator.
+
+The game's own CPU work (`update`, physics included) is only 2–5 ms per frame in Vita3K.
+
+**Expected after the fix:** `render` drops sharply and `present` grows (that is where SDL now
+runs the batched draws). Consecutive draws only merge into one GPU draw when they share a
+texture, which tiles mostly don't, so draws/frame still matters, but the per-call overhead
+is gone. If the columns are still much slower than plain areas after this, run the
+`FrontPlaneMode` experiment.
+
+## Earlier host measurements
 
 ### Frame breakdown on the host
 
@@ -94,6 +121,7 @@ resamples and this fix does nothing there.
 
 | # | Change | Helps Vita3K | Helps hardware | Effort | Risk | Status |
 |---|---|---|---|---|---|---|
+| 0 | Turn SDL draw batching back on (`SDL_HINT_RENDER_BATCHING`) | **large** | **large** | tiny | none | **done** |
 | 1 | Mixer at 22,050 Hz (removes resampling stalls) | stalls | stalls, mixing CPU | config | none audible | **done** |
 | 2 | CPU 444 MHz / GPU 222 MHz (apps start at 333 MHz) | no | +33% CPU | tiny | none | **done** |
 | 3 | Run `<FrontPlaneMode>` normal/skip/tiny at the columns in Vita3K | decides 5 vs 9 | — | none | none | next |

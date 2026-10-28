@@ -4,6 +4,9 @@
 #include "../SharedDefines.h"
 #include "BaseGameApp.h"
 
+#include <cerrno>
+#include <cstdlib>
+
 #ifdef __EMSCRIPTEN__
 #define IS_SAVE_SUPPORTED false
 #else
@@ -17,6 +20,30 @@ const uint32 LEVELS_COUNT = 14;
 
 // TODO: Should be data driven
 Point GetSpawnPosition(uint32 levelNumber, uint32 checkpointNumber);
+
+// Claw's full health, used when a save holds no usable health value
+const uint32 CHECKPOINT_DEFAULT_HEALTH = 100;
+
+// std::stoi throws on values it can't represent (e.g. a negative health saved as 4294967295)
+// and an uncaught exception aborts the game on start-up, so parse save values leniently
+inline uint32 ParseSaveValue(TiXmlElement* pElem, uint32 defaultValue)
+{
+    const char* text = pElem->GetText();
+    if (text == NULL)
+    {
+        return defaultValue;
+    }
+
+    char* end = NULL;
+    errno = 0;
+    unsigned long long value = strtoull(text, &end, 10);
+    if (end == text || errno == ERANGE || value > UINT32_MAX)
+    {
+        return defaultValue;
+    }
+
+    return (uint32)value;
+}
 
 struct CheckpointSave
 {
@@ -51,31 +78,37 @@ struct CheckpointSave
 
         if (TiXmlElement* pElem = pCheckpointXml->FirstChildElement("CheckpointNumber"))
         {
-            checkpointIdx = std::stoi(pElem->GetText());
+            checkpointIdx = ParseSaveValue(pElem, 0);
         }
         if (TiXmlElement* pElem = pCheckpointXml->FirstChildElement("Score"))
         {
-            score = std::stoi(pElem->GetText());
+            score = ParseSaveValue(pElem, 0);
         }
         if (TiXmlElement* pElem = pCheckpointXml->FirstChildElement("Health"))
         {
-            health = std::stoi(pElem->GetText());
+            health = ParseSaveValue(pElem, CHECKPOINT_DEFAULT_HEALTH);
         }
         if (TiXmlElement* pElem = pCheckpointXml->FirstChildElement("Lives"))
         {
-            lives = std::stoi(pElem->GetText());
+            lives = ParseSaveValue(pElem, 0);
         }
         if (TiXmlElement* pElem = pCheckpointXml->FirstChildElement("BulletCount"))
         {
-            bulletCount = std::stoi(pElem->GetText());
+            bulletCount = ParseSaveValue(pElem, 0);
         }
         if (TiXmlElement* pElem = pCheckpointXml->FirstChildElement("MagicCount"))
         {
-            magicCount = std::stoi(pElem->GetText());
+            magicCount = ParseSaveValue(pElem, 0);
         }
         if (TiXmlElement* pElem = pCheckpointXml->FirstChildElement("DynamiteCount"))
         {
-            dynamiteCount = std::stoi(pElem->GetText());
+            dynamiteCount = ParseSaveValue(pElem, 0);
+        }
+
+        // Older builds could save a checkpoint while Claw was dying; loading it would kill him again
+        if ((int32)health <= 0)
+        {
+            health = CHECKPOINT_DEFAULT_HEALTH;
         }
 
         assert(checkpointIdx <= 2);

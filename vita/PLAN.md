@@ -99,6 +99,8 @@ Done:
 - Quit freeze (not yet re-tested on Vita): the quit event now only stops the main loop, instead of tearing everything down and calling `exit()` from inside an event callback. On Vita the teardown is skipped and the process ends with `sceKernelExitProcess`. On desktop the teardown stops audio before freeing sounds and shuts SDL down; checked to exit cleanly on the host.
 - `<FrontPlaneMode>` debug switch (normal / skip / tiny) to find out why the foreground columns are so slow in Vita3K.
 - The log shows the rate the audio device actually opened at.
+- Startup crash after a checkpoint save: Claw can touch a checkpoint while dying, which saved health -1 as `4294967295`; `std::stoi` threw on it and the game aborted on every later start (all platforms). Saves are now parsed leniently, a non-positive health loads as full health, and it is no longer saved.
+- SDL draw batching re-enabled. Naming the `VITA gxm` driver had silently turned it off, so every draw went to the GPU separately (see `vita/PERFORMANCE.md`).
 - `<LogFrameStats>`: fps plus update/physics/render/present times and draw count, logged every 2 s.
 - Mixer at 22,050 Hz (the game's sounds are 22 kHz; resampling them stalled the game).
 - CPU 444 MHz / GPU 222 MHz on hardware.
