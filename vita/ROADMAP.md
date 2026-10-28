@@ -25,11 +25,11 @@ deciding on deliberately is the Linux host build used for profiling and smoke te
 | 5 | Real LiveArea artwork | art | — |
 | 6 | README: installation and config options | docs, **in progress** | — |
 | 7 | CHANGELOG per tagged version, incl. divergences | docs, **done** | — |
-| 8 | Research the original game's Options submenus | research | — |
+| 8 | Research the original game's Options submenus | research, **done** | — |
 | 9 | Strip everything the Vita build doesn't need | cleanup, **done** | — |
 | 10 | CI job that builds the VPK | infra | 9 (fewer things to build) |
 | 11 | Research FOV / resolution settings for the Display menu | research | 8 |
-| 12 | Plan difficulty settings (easy to hard options) | research | 8 |
+| 12 | Plan difficulty settings (easy to hard options) | research, **planned** | 8 |
 | 13 | Implement the disabled Options submenus | code + menu | 3, 4, 8, 11, 12 |
 
 Suggested order: 2, 6 and 9 first (small, visible, and 9 makes everything after it simpler), then
@@ -122,7 +122,14 @@ upstream OpenClaw" and "Differences from the original game". Keep it current wit
 (see "Versioning and releases" in `CLAUDE.md`), including the removals from 9, difficulty (12) and
 anything from 13.
 
-## 8. Research the original game's Options submenus **[research]**
+## 8. Research the original game's Options submenus **[done]**
+
+Findings in `vita/OPTIONS_RESEARCH.md`, from CLAW.REZ (unused menu images, the original menu
+definition `CLAW.IFC`) and Monolith's Claw Design Bible. In short: the original had no Difficulty
+settings page (difficulty, Normal or Easy, was chosen when creating a player); Controls was a
+keyboard/joypad binding dialog; Display had color depth, detail, front layer, a letterbox
+"game play area" slider and movie mode; Audio also had Voice and Ambient toggles.
+
 
 What did Captain Claw (1997) put behind Edit Players, Difficulty, Controls and Display (and
 Multiplayer, Load Custom Level)?
@@ -185,7 +192,13 @@ Could a Display page offer settings that actually change anything on a Vita?
 - Deliverable: which Display options are worth having (e.g. "View: Original / Wide / Close"),
   what each does on Vita, and the implementation sketch for 13.
 
-## 12. Plan difficulty settings **[research]**
+## 12. Plan difficulty settings **[planned; needs a decision]**
+
+Plan and recommendation in `vita/OPTIONS_RESEARCH.md` ("Difficulty"): the original's Easy mode
+raised Claw's melee damage (5 → 20); OpenClaw hard-codes it in `ClawControllableComponent`.
+Recommended: Normal/Easy with a melee multiplier, optionally plus reduced damage taken. Needs the
+maintainer's choice before 13.
+
 
 The engine has no notion of difficulty today; "Difficulty" appears only as a menu page name.
 Lay out options from cheapest to most involved, then pick one:
