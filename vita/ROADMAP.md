@@ -19,7 +19,7 @@ deciding on deliberately is the Linux host build used for profiling and smoke te
 | # | Item | Kind | Depends on |
 |---|---|---|---|
 | 1 | Navigate menus with touch | code | — |
-| 2 | Disable unimplemented menu items | menu data | — |
+| 2 | Disable unimplemented menu items | menu data, **done** | — |
 | 3 | Save settings to `config.xml` | code | — |
 | 4 | Remappable buttons | code + menu | 3, 8 (page layout) |
 | 5 | Real LiveArea artwork | art | — |
@@ -52,20 +52,15 @@ Tap a menu item on the Vita's front touchscreen to select it.
   in `config.xml`, currently false on Vita), so a tap in a level doesn't count as a click.
 - Check: tap every item on the main menu, Options, Audio and the in-game menu; buttons still work.
 
-## 2. Disable unimplemented menu items **[todo]**
+## 2. Disable unimplemented menu items **[done]**
 
-Options → Edit Players, Difficulty, Controls, Display, plus Main → Multiplayer and
-Single Player → Load Custom Level, point at menu pages that don't exist. Selecting them does nothing
-and logs `Could not switch to page: …, Probably not implemented yet`.
-
-- Pure data change in `Build_Release/ASSETS/MENU.xml` (bundled via `ASSETS.ZIP`): set
-  `<State>Disabled</State>` and give each a `<DisabledImage>`. The engine already supports this
-  (`StringToMenuItemState` in `UserInterface.cpp`; the Audio button has a disabled image, and 66
-  items in `MENU.xml` use one). Check the CLAW.REZ menu images for greyed-out variants
-  (e.g. `009_AUDIO.PCX` is Audio's) and use the matching one for each button.
-- `INGAME_MENU.XML` only links the Audio page, so it needs no change.
-- Make sure up/down navigation skips disabled items.
-- Check: the items look disabled, can't be selected, and the log has no `Could not switch to page`.
+Multiplayer, Single Player → Load Custom Level, and Options → Edit Players, Difficulty, Controls,
+Display are `<State>Disabled</State>` in `Build_Release/ASSETS/MENU.xml`. The game data has no
+greyed-out images for them (only Replay Movies, Audio and Upload Scores have one), so
+`ScreenElementMenuItem::VOnRender` draws a disabled item without a `<DisabledImage>` as its inactive
+image, darkened. Navigation and clicks already skip disabled items. Checked on the host build:
+greyed out, skipped by up/down, no `Could not switch to page` in the log. 13 re-enables the ones
+that get implemented.
 
 ## 3. Save settings to `config.xml` **[todo]**
 

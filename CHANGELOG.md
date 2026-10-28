@@ -22,6 +22,11 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
 - Release files are named `OpenClaw-Vita-X.Y.Z.vpk`.
 - Repository history: upstream OpenClaw's 573 commits are replaced by a single import commit;
   the upstream history stays available at pjasicek/OpenClaw.
+- Menu items that lead nowhere are shown greyed out and can't be selected: Multiplayer,
+  Load Custom Level, and Options → Edit Players, Difficulty, Controls, Display.
+
+### Fixed
+- The Vita build could fail in `vita-elf-create` ("segment 1 overlaps") depending on code size.
 
 ## [0.3.0] - 2026-10-28
 
@@ -107,7 +112,7 @@ How the port plays differently from Captain Claw (1997):
 - **Music** uses the FreePats instruments instead of a 1997 sound card or Windows' MIDI synth.
   The tracks themselves are the original ones.
 - **Options menu:** Edit Players, Difficulty, Controls and Display (and Multiplayer, Load Custom
-  Level) do nothing. They were never implemented in OpenClaw.
+  Level) are greyed out. They were never implemented in OpenClaw.
 - **Settings** changed in the menus aren't saved between sessions.
 
 [Unreleased]: https://github.com/Mezeskarika/openclaw-vita/compare/v0.3.0...HEAD

@@ -995,6 +995,16 @@ void ScreenElementMenuItem::VOnUpdate(uint32 msDiff)
 void ScreenElementMenuItem::VOnRender(uint32 msDiff)
 {
     shared_ptr<Image> pCurrImage = m_Images[m_State];
+
+    // Most buttons have no greyed-out image in the game data, so a disabled one
+    // is drawn as its inactive image, darkened
+    bool darken = false;
+    if (pCurrImage == nullptr && m_State == MenuItemState_Disabled)
+    {
+        pCurrImage = m_Images[MenuItemState_Inactive];
+        darken = true;
+    }
+
     if (pCurrImage == nullptr)
     {
         LOG_ERROR("Offending button: " + m_Name + " for state: " + ToStr(m_State));
@@ -1007,7 +1017,17 @@ void ScreenElementMenuItem::VOnRender(uint32 msDiff)
     renderRect.w = (int)(pCurrImage->GetWidth() * g_MenuScale.x);
     renderRect.h = (int)(pCurrImage->GetHeight() * g_MenuScale.y);
 
+    if (darken)
+    {
+        SDL_SetTextureColorMod(pCurrImage->GetTexture(), 90, 90, 90);
+    }
+
     SDL_RenderCopy(m_pRenderer, pCurrImage->GetTexture(), NULL, &renderRect);
+
+    if (darken)
+    {
+        SDL_SetTextureColorMod(pCurrImage->GetTexture(), 255, 255, 255);
+    }
 }
 
 bool ScreenElementMenuItem::VOnEvent(SDL_Event& evt)

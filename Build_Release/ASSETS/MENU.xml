@@ -38,7 +38,7 @@
             <Name>MULTIPLAYER_BUTTON</Name>
             <Type>Button</Type>
             <Hotkey>M</Hotkey>
-            <State>Inactive</State>
+            <State>Disabled</State>
             <InactiveImage>/STATES/MENU/IMAGES/MAIN/003_MULTIPLAYER.PCX</InactiveImage>
             <ActiveImage>/STATES/MENU/IMAGES/MAIN/004_MULTIPLAYER.PCX</ActiveImage>
             <Position x="190" y="245" />
@@ -173,7 +173,7 @@
         <MenuItem>
             <Name>LOAD_CUSTOM_LEVEL_BUTTON</Name>
             <Type>Button</Type>
-            <State>Inactive</State>
+            <State>Disabled</State>
             <InactiveImage>/STATES/MENU/IMAGES/MAIN/SINGLEPLAYER/005_LOADCUSTOM.PCX</InactiveImage>
             <ActiveImage>/STATES/MENU/IMAGES/MAIN/SINGLEPLAYER/006_LOADCUSTOM.PCX</ActiveImage>
             <Position x="124" y="280" />
@@ -2247,7 +2247,7 @@
         <MenuItem>
             <Name>EDIT_PLAYERS_BUTTON</Name>
             <Type>Button</Type>
-            <State>Active</State>
+            <State>Disabled</State>
             <InactiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/001_EDITPLAYERS.PCX</InactiveImage>
             <ActiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/002_EDITPLAYERS.PCX</ActiveImage>
             <Position x="188" y="225" />
@@ -2259,7 +2259,7 @@
         <MenuItem>
             <Name>DIFFICULTY_BUTTON</Name>
             <Type>Button</Type>
-            <State>Active</State>
+            <State>Disabled</State>
             <InactiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/003_DIFFICULTY.PCX</InactiveImage>
             <ActiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/004_DIFFICULTY.PCX</ActiveImage>
             <Position x="210" y="260" />
@@ -2271,7 +2271,7 @@
         <MenuItem>
             <Name>CONTROLS_BUTTON</Name>
             <Type>Button</Type>
-            <State>Active</State>
+            <State>Disabled</State>
             <InactiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/005_CONTROLS.PCX</InactiveImage>
             <ActiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/006_CONTROLS.PCX</ActiveImage>
             <Position x="220" y="295" />
@@ -2296,7 +2296,7 @@
         <MenuItem>
             <Name>DISPLAY_BUTTON</Name>
             <Type>Button</Type>
-            <State>Active</State>
+            <State>Disabled</State>
             <InactiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/010_DISPLAY.PCX</InactiveImage>
             <ActiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/011_DISPLAY.PCX</ActiveImage>
             <Position x="240" y="365" />
