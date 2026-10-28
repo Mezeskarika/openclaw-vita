@@ -131,6 +131,10 @@ Build the desktop target in the Ubuntu container (`cmake -S . -B build && make`;
   history isn't in this repo. To compare with upstream, `git fetch origin` and diff against
   `5ee5740`. Don't fetch upstream's tags into this repo (`v0.0`, `v0.2`, `v0.3` would clash with
   ours).
+- **Commit freely, but never push without explicit approval.** That covers every write to GitHub:
+  `git push` (branches, tags, deletions, force-pushes) and `gh release create/edit/delete`.
+  Commit locally, then say what is ready to push and ask; approval for one push doesn't carry
+  over to the next. The maintainer may also push by hand.
 - Commits use the GitHub no-reply address configured in the repo's local git config. Never
   commit or tag with a work email; check `git log --format='%ae %ce'` before pushing.
 - Licence GPL-3.0 (`LICENSE.txt`). FreePats: GPL-2.0-or-later with an exception; its `COPYING`
@@ -155,8 +159,8 @@ Build the desktop target in the Ubuntu container (`cmake -S . -B build && make`;
   1. Changelog and `VITA_VERSION` updated and committed; annotated tag created.
   2. Build from a clean `git archive <tag>` export with that export's `vita/build.sh`, and compare
      the VPK contents with the build that was tested.
-  3. Push `main` and the tag **by name** (never `git push --tags`).
-  4. `gh release create <tag> openclaw.vpk --prerelease --title "OpenClaw for PS Vita X.Y.Z"
+  3. After approval (see above): push `main` and the tag **by name** (never `git push --tags`).
+  4. After approval: `gh release create <tag> openclaw.vpk --prerelease --title "OpenClaw for PS Vita X.Y.Z"
      --notes-file …` (pre-release until tested on hardware). Notes: what's new (from the
      changelog), requirements (own `CLAW.REZ`), install, controls, known limitations, licence.
      The release page orders by creation, so create releases in version order.
