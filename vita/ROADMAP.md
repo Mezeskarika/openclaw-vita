@@ -10,24 +10,30 @@ another item.
 Current state (tag `vita-vita3k-music`): the game boots in Vita3K, runs at 60 fps, plays music,
 saves and quits cleanly. Nothing has run on real hardware yet.
 
+**Scope: the PS Vita only.** Changes don't need to keep the Windows, Linux, macOS, Android or
+WebAssembly builds working; item 9 removes what the Vita doesn't need. The one exception worth
+deciding on deliberately is the Linux host build used for profiling and smoke tests (see 9).
+
 ## Overview
 
 | # | Item | Kind | Depends on |
 |---|---|---|---|
 | 1 | Navigate menus with touch | code | — |
 | 2 | Disable unimplemented menu items | menu data | — |
-| 3 | Remappable buttons | code + menu | 7 (page layout) |
-| 4 | Real LiveArea artwork | art | — |
-| 5 | README: installation and config options | docs | — |
-| 6 | CHANGELOG per tagged version, incl. divergences | docs | — |
-| 7 | Research the original game's Options submenus | research | — |
-| 8 | CI job that builds the VPK | infra | — |
-| 9 | Research FOV / resolution settings for the Display menu | research | 7 |
-| 10 | Plan difficulty settings (easy to hard options) | research | 7 |
-| 11 | Implement the disabled Options submenus | code + menu | 3, 7, 9, 10 |
+| 3 | Save settings to `config.xml` | code | — |
+| 4 | Remappable buttons | code + menu | 3, 8 (page layout) |
+| 5 | Real LiveArea artwork | art | — |
+| 6 | README: installation and config options | docs | — |
+| 7 | CHANGELOG per tagged version, incl. divergences | docs | — |
+| 8 | Research the original game's Options submenus | research | — |
+| 9 | Strip everything the Vita build doesn't need | cleanup | decision on host build |
+| 10 | CI job that builds the VPK | infra | 9 (fewer things to build) |
+| 11 | Research FOV / resolution settings for the Display menu | research | 8 |
+| 12 | Plan difficulty settings (easy to hard options) | research | 8 |
+| 13 | Implement the disabled Options submenus | code + menu | 3, 4, 8, 11, 12 |
 
-Suggested order: 2 and 5 first (small, visible), then 7 (it feeds 3, 9, 10, 11), then 1, 3, 9, 10, 11.
-4, 6 and 8 can happen any time.
+Suggested order: 2, 6 and 9 first (small, visible, and 9 makes everything after it simpler), then
+3 and 8 (they unblock 4, 11, 12, 13), then 1, 4, 11, 12, 13. 5, 7 and 10 can happen any time.
 
 ---
 
@@ -57,24 +63,39 @@ and logs `Could not switch to page: …, Probably not implemented yet`.
   (`StringToMenuItemState` in `UserInterface.cpp`; the Audio button has a disabled image, and 66
   items in `MENU.xml` use one). Check the CLAW.REZ menu images for greyed-out variants
   (e.g. `009_AUDIO.PCX` is Audio's) and use the matching one for each button.
+- `INGAME_MENU.XML` only links the Audio page, so it needs no change.
 - Make sure up/down navigation skips disabled items.
-- Applies to desktop too, since `MENU.xml` is shared.
 - Check: the items look disabled, can't be selected, and the log has no `Could not switch to page`.
 
-## 3. Remappable buttons **[todo]** (UI blocked on 7)
+## 3. Save settings to `config.xml` **[todo]**
+
+Prerequisite for every setting the player can change in a menu (4 and 13). Today nothing is saved:
+`BaseGameApp::SaveGameOptions` (`OpenClaw/Engine/GameApp/BaseGameApp.cpp`) only logs
+"Not implemented yet!", and is called once, from `Terminate()`, which the Vita build skips.
+Even the Audio page's volume and music on/off are lost on restart.
+
+- Write `ux0:data/openclaw/config.xml` when a setting changes (not on exit: the Vita can kill the
+  app from the home screen without the game noticing).
+- Update the loaded document rather than regenerating it, so options the menus don't touch
+  (`TimidityCfg`, `LogFrameStats`, debug options, comments) survive.
+- Write to a temporary file and rename it over `config.xml`, so a crash mid-write can't leave a
+  broken config. `LoadGameOptions` treats an unreadable config like a missing one: it writes the
+  built-in desktop defaults over it, which would silently lose the Vita settings.
+- First user: the Audio page (sound/music volume and on/off).
+- Check: change the volume, restart, it's kept; `config.xml` still has every other option.
+
+## 4. Remappable buttons **[todo]** (needs 3; UI blocked on 8)
 
 - The Vita mapping is one table: `GamepadMapper::GetButtonBinding`
   (`OpenClaw/Engine/UserInterface/GamepadMapper.cpp`). Step 1: read it from `config.xml`
   (e.g. `<ControlOptions><Gamepad><Jump>A</Jump>…`), keeping today's mapping as the default.
   The host unit tests (`tests/GamepadMapperTests.cpp`) cover the table and need extending.
 - Step 2: an in-game remapping page (Options → Controls): list the actions, select one, press the
-  new button, reject conflicts, "reset to defaults". This needs the menu engine to wait for a
-  button press, which it can't do today.
-- The game doesn't write `config.xml` yet (`BaseGameApp::SaveGameOptions` logs "Not implemented
-  yet!"), so saving settings has to be built first. That also serves 11.
+  new button, reject conflicts, "reset to defaults", save through 3. This needs the menu engine
+  to wait for a button press, which it can't do today.
 - Check: remap jump, restart, the new button jumps; defaults restore the original mapping.
 
-## 4. Real LiveArea artwork **[todo]**
+## 5. Real LiveArea artwork **[todo]**
 
 - Replace the placeholders from `vita/make_livearea.py` in `vita/sce_sys/`: `icon0.png` 128×128,
   `livearea/contents/bg.png` 840×500, `livearea/contents/startup.png` 280×158. All must be 8-bit
@@ -85,7 +106,7 @@ and logs `Could not switch to page: …, Probably not implemented yet`.
 - Optional: `pic0.png` (960×544) for the home screen.
 - Check: install on Vita3K and hardware, icon and LiveArea display correctly.
 
-## 5. README: installation and config options **[todo]**
+## 6. README: installation and config options **[todo]**
 
 A user-facing `vita/README.md`:
 
@@ -103,7 +124,7 @@ A user-facing `vita/README.md`:
   GPL-3.0, FreePats GPL-2.0-or-later with exception).
 - Building it yourself: `vita/build.sh`, `tests/run.sh`.
 
-## 6. CHANGELOG **[todo]**
+## 7. CHANGELOG **[todo]**
 
 `vita/CHANGELOG.md`, one section per tag, from the commit history:
 
@@ -113,20 +134,21 @@ A user-facing `vita/README.md`:
 | `vita-vita3k-60fps` | `d805a42` | 60 fps, quit fixed, save crash fixed |
 | `vita-vita3k-music` | `7e353e4` | Music via Timidity + FreePats |
 
-Plus a "Differences from upstream OpenClaw" section (base: upstream `5ee5740`, July 2022), split
-into Vita-only changes and changes that also affect desktop builds, e.g.:
-- desktop too: gamepad support (`SDL_INIT_GAMECONTROLLER`), lenient save loading and no longer
-  saving a dying Claw's health, menu Quit no longer calls `exit()` from inside an event handler,
-  music tracks freed and ordered correctly, `<LogFrameStats>`, `<TimidityCfg>`, `<FrontPlaneMode>`,
-  absolute `RezArchive` paths;
-- Vita only: forced GXM renderer with batching, 22,050 Hz mixer, CPU/GPU clocks, `app0:`/`ux0:`
-  layout, bundled FreePats.
+Plus a "Differences from upstream OpenClaw" section (base: upstream `5ee5740`, July 2022):
+- engine fixes that came from the original code: lenient save loading and no longer saving a dying
+  Claw's health, menu Quit no longer calling `exit()` from inside an event handler, music tracks
+  freed and ordered correctly;
+- additions: gamepad support, `<LogFrameStats>`, `<TimidityCfg>`, `<FrontPlaneMode>`, absolute
+  `RezArchive` paths;
+- Vita specifics: forced GXM renderer with batching, 22,050 Hz mixer, CPU/GPU clocks, `app0:`/`ux0:`
+  layout, bundled FreePats;
+- removals from 9.
 
 And a "Differences from the original game" section for anything that plays differently from
 Captain Claw (1997): today the instrument sound (FreePats instead of a 1997 sound card) and the
-missing menus; later difficulty (10) and anything from 11.
+missing menus; later difficulty (12) and anything from 13.
 
-## 7. Research the original game's Options submenus **[research]**
+## 8. Research the original game's Options submenus **[research]**
 
 What did Captain Claw (1997) put behind Edit Players, Difficulty, Controls and Display (and
 Multiplayer, Load Custom Level)?
@@ -135,22 +157,52 @@ Multiplayer, Load Custom Level)?
   under `/STATES/MENU/IMAGES/MAIN/OPTIONS/` and any submenu images that OpenClaw never used,
   e.g. difficulty or detail-level graphics), community wikis.
 - Deliverable: a section per submenu here, listing its options, what they did in the original, and
-  whether each makes sense on Vita. This feeds 3, 9, 10 and 11.
+  whether each makes sense on Vita. This feeds 4, 11, 12 and 13.
 
-## 8. CI job that builds the VPK **[todo]**
+## 9. Strip everything the Vita build doesn't need **[todo]**
+
+Remove other platforms' code, binaries and tooling, so the repo, the build and the code paths only
+contain what the Vita uses.
+
+**Decide first: keep the Linux host build or not.** It is what made the profiling, the save-crash
+reproduction and the music render tests possible (desktop build in a container, callgrind, gdb).
+Recommendation: keep a minimal Linux target for development only, and drop the rest.
+
+Candidates (sizes from the current tree):
+
+| What | Where | Notes |
+|---|---|---|
+| Windows prebuilt binaries | `Build_Release/*.dll`, `*.lib`, `*.exe`, `msvcr120d.dll`, `Release/` (1.4 MB) | |
+| Windows SDL 2.0.4 headers and libs | `ThirdParty/SDL2/` (7.3 MB) | The Vita build already avoids them; the host unit tests use the headers, so they'd switch to the system SDL headers |
+| Windows MIDI server | `MidiProc/`, the `_WIN32` music code in `OpenClaw/Engine/Audio/Audio.cpp` | Most of `Audio.cpp`'s `#ifdef`s |
+| Launcher | `ClawLauncher/` (6.1 MB, C# WinForms), `Build_Release/clawlauncher`, `ClawLauncher.exe*` | |
+| Visual Studio projects | `OpenClaw.sln`, 37 `*.vcxproj*` files | Every new source file currently has to be added to them too |
+| Old CI and packaging | `appveyor.yml`, `travis.sh`, `Scripts/` (deb/rpm), `build_and_run.sh` | Replaced by 10 |
+| Android | `Android.cmake`, the `ANDROID` branches (`main.cpp`, `MainLoop.cpp`, `BaseGameLogic.cpp`) | Keep the touch code itself if 1 uses it |
+| WebAssembly | `__EMSCRIPTEN__` branches (12 files), `Build_Release/openclaw.html` | |
+| Desktop configs | `Build_Release/config.xml`, `config_linux*.xml`, the duplicate `Build_Release/MENU.xml` (differs from `ASSETS/MENU.xml`) | Check which one the Vita uses before deleting |
+| Unused libraries | `libsigc++3/`, `ThirdParty/sigc++-3.0/` (no `#include` anywhere) | |
+| libwap tests | `libwap_tests/` (VS project, Catch) | Keep `Catch.hpp`, used by `tests/` |
+
+- Keep the Vita path identical: after stripping, `vita/build.sh` and `tests/run.sh` must still pass
+  and the VPK must contain the same files.
+- Do it in small commits by area, so a removal that turns out to matter is easy to revert.
+- Update the top-level `README.md` (it describes Windows, Linux, Android and Emscripten builds) to
+  point at the Vita build.
+
+## 10. CI job that builds the VPK **[todo]**
 
 - `vita/build.sh` already builds in a pinned Docker image (`vitasdk/vitasdk@sha256:8227da1b…`) and
   checks the VPK contents; `tests/run.sh` runs the host unit tests. CI only has to call both and
   keep `build-vita/openclaw.vpk` (plus the unstripped `build-vita/openclaw` ELF for crash dumps) as
   artifacts.
-- Also compile the desktop Linux build (Ubuntu with the `libsdl2-*-dev` packages), since the Vita
-  changes touch shared code.
+- If 9 keeps the Linux host build, compile it too.
 - Open question: where does this repository live from now on? `origin` is still upstream
   `pjasicek/OpenClaw`, so the CI provider (GitHub Actions, GitLab CI, …) depends on where the fork
   gets pushed. Decide before writing the job.
 - Network: the build downloads FreePats from deb.debian.org (SHA-256 pinned). Cache it in CI.
 
-## 9. Research FOV and resolution for the Display menu **[research]**
+## 11. Research FOV and resolution for the Display menu **[research]**
 
 Could a Display page offer settings that actually change anything on a Vita?
 
@@ -167,9 +219,9 @@ Could a Display page offer settings that actually change anything on a Vita?
   - Does a wider view change the game (enemies noticing Claw from off-screen, `VIsVisible`
     culling), or cost frame rate?
 - Deliverable: which Display options are worth having (e.g. "View: Original / Wide / Close"),
-  what each does on Vita, and the implementation sketch for 11.
+  what each does on Vita, and the implementation sketch for 13.
 
-## 10. Plan difficulty settings **[research]**
+## 12. Plan difficulty settings **[research]**
 
 The engine has no notion of difficulty today; "Difficulty" appears only as a menu page name.
 Lay out options from cheapest to most involved, then pick one:
@@ -186,18 +238,18 @@ Lay out options from cheapest to most involved, then pick one:
    components (`Engine/Actor/Components/EnemyAI/`). Most work, most risk to balance.
 
 For each: what changes, which files, how to test it, and whether it affects saves (should a save
-remember its difficulty?). Recommendation and the Difficulty page layout go into 11.
+remember its difficulty?). Recommendation and the Difficulty page layout go into 13.
 
-## 11. Implement the disabled Options submenus **[blocked on 3, 7, 9, 10]**
+## 13. Implement the disabled Options submenus **[blocked on 3, 4, 8, 11, 12]**
 
-Using the findings from 7, 9 and 10, build the pages that make sense on Vita and re-enable their
+Using the findings from 8, 11 and 12, build the pages that make sense on Vita and re-enable their
 buttons (undoing 2 for those):
 
-- **Controls:** the remapping page from 3.
-- **Difficulty:** the option chosen in 10.
-- **Display:** the options chosen in 9.
-- **Edit Players:** only if 7 shows it is worth it (player profiles = separate save files).
+- **Controls:** the remapping page from 4.
+- **Difficulty:** the option chosen in 12.
+- **Display:** the options chosen in 11.
+- **Edit Players:** only if 8 shows it is worth it (player profiles = separate save files).
 
-Shared prerequisites: saving settings to `ux0:data/openclaw/config.xml` (see 3), and menu pages
-that change a value in place (left/right on a setting), as the Audio page already does for volume.
-Each page needs a Vita3K check, and the CHANGELOG (6) entry for it.
+Every setting is saved through 3. The menus also need pages that change a value in place
+(left/right on a setting), as the Audio page already does for volume. Each page needs a Vita3K
+check, and the CHANGELOG (7) entry for it.
