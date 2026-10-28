@@ -45,6 +45,10 @@ The game log is written to `ux0:data/SDL_Log.txt`.
 
 Menus can also be used by tapping the touchscreen.
 
+The buttons can be changed in `ux0:data/openclaw/config.xml`, under `<ControlOptions><Gamepad>`
+(button names: Cross, Circle, Square, Triangle, L, R, Start, Select). An older `config.xml`
+without that section uses the defaults above.
+
 ## Known limitations
 
 - Options → Edit Players, Difficulty, Controls and Display (also Multiplayer and Load Custom

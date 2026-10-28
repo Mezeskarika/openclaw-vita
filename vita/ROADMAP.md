@@ -21,7 +21,7 @@ deciding on deliberately is the Linux host build used for profiling and smoke te
 | 1 | Navigate menus with touch | code, **needs Vita3K check** | — |
 | 2 | Disable unimplemented menu items | menu data, **done** | — |
 | 3 | Save settings to `config.xml` | code, **done** | — |
-| 4 | Remappable buttons | code + menu | 3, 8 (page layout) |
+| 4 | Remappable buttons | code + menu, **step 1 done** | 13 (page) |
 | 5 | Real LiveArea artwork | art | — |
 | 6 | README: installation and config options | docs, **in progress** | — |
 | 7 | CHANGELOG per tagged version, incl. divergences | docs, **done** | — |
@@ -80,16 +80,19 @@ and trims the trailing space in `<CommandPrompt>`). Not yet checked on Vita: tha
 
 New settings pages (4, 13) add their values to `SaveGameOptions`.
 
-## 4. Remappable buttons **[todo]** (needs 3; UI blocked on 8)
+## 4. Remappable buttons **[step 1 done; menu page blocked on 13]**
 
-- The Vita mapping is one table: `GamepadMapper::GetButtonBinding`
-  (`OpenClaw/Engine/UserInterface/GamepadMapper.cpp`). Step 1: read it from `config.xml`
-  (e.g. `<ControlOptions><Gamepad><Jump>A</Jump>…`), keeping today's mapping as the default.
-  The host unit tests (`tests/GamepadMapperTests.cpp`) cover the table and need extending.
-- Step 2: an in-game remapping page (Options → Controls): list the actions, select one, press the
-  new button, reject conflicts, "reset to defaults", save through 3. This needs the menu engine
-  to wait for a button press, which it can't do today.
-- Check: remap jump, restart, the new button jumps; defaults restore the original mapping.
+Step 1, done: `GamepadMapper` keeps a button → action table (actions Jump, Attack, Fire,
+SwitchAmmo, Menu; buttons Cross, Circle, Square, Triangle, L, R, Start, Select; the D-pad and left
+stick always move). `LoadGameOptions` reads `<ControlOptions><Gamepad>` from `config.xml`; missing
+entries keep the defaults, unknown button names are logged and ignored. Covered by the host unit
+tests (rebinding, a button moving between actions, invalid lists, D-pad fixed, reset).
+
+Step 2, open: the Options → Controls page. Per `vita/OPTIONS_RESEARCH.md` the original's list was
+Jump, hand-to-hand attack, use projectile, toggle projectile, throw, pistol, magic, dynamite,
+special, plus "Revert to Defaults". Throw and direct weapon selection have no game action in the
+mapper yet. Needs: a menu item type that waits for a button press, saving the table through
+`SaveGameOptions` (`GetActionButtons` gives the config text), and re-enabling the Controls button.
 
 ## 5. Real LiveArea artwork **[todo]**
 

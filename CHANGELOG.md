@@ -27,6 +27,8 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
 
 - GitHub Actions workflow that builds the VPK and runs the unit tests on every push.
 - Menus can be used by tapping the front touchscreen.
+- Button mapping can be changed in `config.xml` (`<ControlOptions><Gamepad>`), including the
+  L and R buttons.
 - Sound and music volume and on/off, changed on the Audio page, are saved to `config.xml`
   immediately and kept across restarts.
 - On Vita, an unreadable `config.xml` is replaced with the Vita defaults from the VPK instead of

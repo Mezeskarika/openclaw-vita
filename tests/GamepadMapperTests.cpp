@@ -149,3 +149,63 @@ TEST_CASE("----- GAMEPAD MAPPER -----")
         REQUIRE(Translate(mapper, ButtonEvent(SDL_CONTROLLER_BUTTON_BACK, false)).size() == 1);
     }
 }
+
+TEST_CASE("----- GAMEPAD MAPPER BINDINGS -----")
+{
+    GamepadMapper mapper;
+
+    SECTION("Defaults match the original mapping")
+    {
+        REQUIRE(mapper.GetActionButtons(GamepadMapper::Action_Jump) == "Cross");
+        REQUIRE(mapper.GetActionButtons(GamepadMapper::Action_Attack) == "Square");
+        REQUIRE(mapper.GetActionButtons(GamepadMapper::Action_Fire) == "Circle");
+        REQUIRE(mapper.GetActionButtons(GamepadMapper::Action_SwitchAmmo) == "Triangle");
+        REQUIRE(mapper.GetActionButtons(GamepadMapper::Action_Menu) == "Start,Select");
+    }
+
+    SECTION("Rebinding moves the key to the new button")
+    {
+        REQUIRE(mapper.SetActionButtons(GamepadMapper::Action_Jump, "R"));
+
+        REQUIRE(Translate(mapper, ButtonEvent(SDL_CONTROLLER_BUTTON_A, true)).empty());
+        std::vector<SDL_Event> down = Translate(mapper, ButtonEvent(SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, true));
+        REQUIRE(down.size() == 1);
+        RequireKeyEvent(down[0], SDL_KEYDOWN, SDLK_SPACE, SDL_SCANCODE_SPACE);
+    }
+
+    SECTION("A button taken by another action leaves its old action")
+    {
+        REQUIRE(mapper.SetActionButtons(GamepadMapper::Action_Attack, "Cross, L"));
+        REQUIRE(mapper.GetActionButtons(GamepadMapper::Action_Attack) == "Cross,L");
+        REQUIRE(mapper.GetActionButtons(GamepadMapper::Action_Jump) == "");
+
+        std::vector<SDL_Event> down = Translate(mapper, ButtonEvent(SDL_CONTROLLER_BUTTON_A, true));
+        REQUIRE(down.size() == 1);
+        RequireKeyEvent(down[0], SDL_KEYDOWN, SDLK_LCTRL, SDL_SCANCODE_LCTRL);
+    }
+
+    SECTION("Invalid lists change nothing")
+    {
+        REQUIRE_FALSE(mapper.SetActionButtons(GamepadMapper::Action_Jump, ""));
+        REQUIRE_FALSE(mapper.SetActionButtons(GamepadMapper::Action_Jump, "Cross,Nope"));
+        REQUIRE_FALSE(mapper.SetActionButtons(GamepadMapper::Action_Jump, "DPadUp"));
+        REQUIRE(mapper.GetActionButtons(GamepadMapper::Action_Jump) == "Cross");
+    }
+
+    SECTION("The D-pad always moves")
+    {
+        REQUIRE(mapper.SetActionButtons(GamepadMapper::Action_Menu, "Select"));
+        std::vector<SDL_Event> down = Translate(mapper, ButtonEvent(SDL_CONTROLLER_BUTTON_DPAD_LEFT, true));
+        REQUIRE(down.size() == 1);
+        RequireKeyEvent(down[0], SDL_KEYDOWN, SDLK_LEFT, SDL_SCANCODE_LEFT);
+        REQUIRE(Translate(mapper, ButtonEvent(SDL_CONTROLLER_BUTTON_START, true)).empty());
+    }
+
+    SECTION("Reset restores the defaults")
+    {
+        REQUIRE(mapper.SetActionButtons(GamepadMapper::Action_Jump, "R"));
+        mapper.ResetToDefaults();
+        REQUIRE(mapper.GetActionButtons(GamepadMapper::Action_Jump) == "Cross");
+        REQUIRE(mapper.GetActionButtons(GamepadMapper::Action_Menu) == "Start,Select");
+    }
+}

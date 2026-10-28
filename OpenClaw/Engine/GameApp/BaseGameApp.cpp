@@ -742,6 +742,22 @@ bool BaseGameApp::LoadGameOptions(const char* inConfigFile)
             ParseValueFromXmlElem(&m_ControlOptions.touchScreen.timeThreshold,
                                   pTouchScreenOptionsRootElem->FirstChildElement("TimeThreshold"));
         }
+
+        // <Gamepad><Jump>Cross</Jump>...: buttons for each action, default mapping where missing
+        if (TiXmlElement* pGamepadElem = pControlOptionsRootElem->FirstChildElement("Gamepad"))
+        {
+            for (int action = 0; action < GamepadMapper::Action_Count; action++)
+            {
+                const char* actionName = GamepadMapper::GetActionName((GamepadMapper::Action)action);
+                std::string buttons;
+                if (ParseValueFromXmlElem(&buttons, pGamepadElem->FirstChildElement(actionName)) &&
+                    !m_GamepadMapper.SetActionButtons((GamepadMapper::Action)action, buttons))
+                {
+                    LOG_WARNING("Ignoring gamepad binding " + std::string(actionName) + "=" + buttons +
+                        ": button names are Cross, Circle, Square, Triangle, L, R, Start, Select");
+                }
+            }
+        }
     }
 
     //-------------------------------------------------------------------------

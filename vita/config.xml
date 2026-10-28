@@ -76,6 +76,15 @@
   </GlobalOptions>
   <ControlOptions>
     <UseAlternateControls>false</UseAlternateControls>
+    <!-- Buttons for each action, comma-separated: Cross, Circle, Square, Triangle, L, R, Start,
+         Select. A button can only do one thing. The D-pad and left stick always move. -->
+    <Gamepad>
+      <Jump>Cross</Jump>
+      <Attack>Square</Attack>
+      <Fire>Circle</Fire>
+      <SwitchAmmo>Triangle</SwitchAmmo>
+      <Menu>Start,Select</Menu>
+    </Gamepad>
     <TouchScreen>
       <!-- The Android touch controls are not wired up for the Vita yet -->
       <Enable>false</Enable>
