@@ -75,6 +75,7 @@ protected:
     void SetVolumeDelegate(IEventDataPtr pEventData);
     void SoundEnabledChangedDelegate(IEventDataPtr pEventData);
     void SaveAudioOptions();
+    bool IsTouchOutsideMenus(Uint32 mouseId) const;
     void ClawDiedDelegate(IEventDataPtr pEventData);
     void TeleportActorDelegate(IEventDataPtr pEventData);
     void EnterMenuDelegate(IEventDataPtr pEventData);

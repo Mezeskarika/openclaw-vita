@@ -18,7 +18,7 @@ deciding on deliberately is the Linux host build used for profiling and smoke te
 
 | # | Item | Kind | Depends on |
 |---|---|---|---|
-| 1 | Navigate menus with touch | code | — |
+| 1 | Navigate menus with touch | code, **needs Vita3K check** | — |
 | 2 | Disable unimplemented menu items | menu data, **done** | — |
 | 3 | Save settings to `config.xml` | code, **done** | — |
 | 4 | Remappable buttons | code + menu | 3, 8 (page layout) |
@@ -37,20 +37,21 @@ Suggested order: 2, 6 and 9 first (small, visible, and 9 makes everything after 
 
 ---
 
-## 1. Navigate menus with touch **[todo]**
+## 1. Navigate menus with touch **[implemented; needs a Vita3K/hardware check]**
 
-Tap a menu item on the Vita's front touchscreen to select it.
+SDL 2.32 on Vita synthesizes mouse clicks from the touch panels only once
+`SDL_HINT_VITA_TOUCH_MOUSE_DEVICE` is set (unset, its internal device id stays 0 and nothing is
+generated, despite the docs calling the front panel the default). `InitializeDisplay` now sets it to
+the front panel before `SDL_Init`, so taps reach the menus' existing click handling
+(`ScreenElementMenuPage::VOnEvent`, scaled by `g_MenuScale`). In gameplay, touch-generated mouse
+events (`which == SDL_TOUCH_MOUSEID`) are dropped unless the touch controls are enabled
+(`HumanView::IsTouchOutsideMenus`), so a tap can't end firing.
 
-- Menus already handle mouse clicks: `ScreenElementMenu::VOnEvent`
-  (`OpenClaw/Engine/UserInterface/UserInterface.cpp`, the `SDL_MOUSEBUTTONDOWN` branch) hit-tests the
-  click against each item's rectangle, scaled by `g_MenuScale`.
-- On Vita, SDL reports the touchscreen as `SDL_FINGER*` events. SDL can also turn touches into
-  synthetic mouse events (`SDL_HINT_TOUCH_MOUSE_EVENTS`); check whether the Vita backend does, and
-  if not, translate `SDL_FINGERDOWN` (normalised 0–1 coordinates) into a left click in
-  `BaseGameApp::OnEvent`.
-- Keep touch out of gameplay unless the Android touch controls are enabled (`<TouchScreen><Enable>`
-  in `config.xml`, currently false on Vita), so a tap in a level doesn't count as a click.
-- Check: tap every item on the main menu, Options, Audio and the in-game menu; buttons still work.
+Not verified: the host build can't emulate the Vita touch panel, and mouse clicks in the headless
+Xvfb test setup (no window manager) make the window disappear even on an empty spot, so that setup
+can't test clicks either. Check in Vita3K (a mouse click there is a front-panel touch): tap items
+on the main menu, Options, Audio (also the volume knobs) and the in-game menu; tapping during
+gameplay should do nothing.
 
 ## 2. Disable unimplemented menu items **[done]**
 

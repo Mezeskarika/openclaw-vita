@@ -126,6 +126,14 @@ void HumanView::VOnUpdate(uint32 msDiff)
     }
 }
 
+// Touches arrive as mouse events too (see BaseGameApp::InitializeDisplay). The menus have already
+// had their turn when this is asked; in gameplay a tap would otherwise act as a click, e.g. end
+// firing, so taps only reach gameplay when the touch controls are on.
+bool HumanView::IsTouchOutsideMenus(Uint32 mouseId) const
+{
+    return mouseId == SDL_TOUCH_MOUSEID && !g_pApp->GetControlOptions()->touchScreen.enable;
+}
+
 bool HumanView::VOnEvent(SDL_Event& evt)
 {
     // First let console try to eat this event
@@ -188,14 +196,26 @@ bool HumanView::VOnEvent(SDL_Event& evt)
 
         case SDL_MOUSEMOTION:
         {
+            if (IsTouchOutsideMenus(evt.motion.which))
+            {
+                return false;
+            }
             return m_pPointerHandler->VOnPointerMove(evt.motion);
         }
         case SDL_MOUSEBUTTONDOWN:
         {
+            if (IsTouchOutsideMenus(evt.button.which))
+            {
+                return false;
+            }
             return m_pPointerHandler->VOnPointerButtonDown(evt.button);
         }
         case SDL_MOUSEBUTTONUP:
         {
+            if (IsTouchOutsideMenus(evt.button.which))
+            {
+                return false;
+            }
             return m_pPointerHandler->VOnPointerButtonUp(evt.button);
         }
         default:

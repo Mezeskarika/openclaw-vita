@@ -863,6 +863,12 @@ bool BaseGameApp::InitializeDisplay(GameOptions& gameOptions)
 {
     LOG(">>>>> Initializing display...");
 
+#ifdef __vita__
+    // Turn front touchscreen taps into left mouse clicks, which the menus already handle. SDL
+    // documents the front panel as the default, but only synthesizes clicks once this is set.
+    SDL_SetHint(SDL_HINT_VITA_TOUCH_MOUSE_DEVICE, "0");
+#endif
+
     if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0)
     {
         LOG_ERROR("Failed to initialize SDL2 library. Error: %s" + std::string(SDL_GetError()));

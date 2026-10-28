@@ -43,6 +43,8 @@ The game log is written to `ux0:data/SDL_Log.txt`.
 | Triangle | Switch ammo type |
 | Start / Select | In-game menu, back |
 
+Menus can also be used by tapping the touchscreen.
+
 ## Known limitations
 
 - Options → Edit Players, Difficulty, Controls and Display (also Multiplayer and Load Custom
