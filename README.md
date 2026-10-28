@@ -48,7 +48,7 @@ The game log is written to `ux0:data/SDL_Log.txt`.
 - Options → Edit Players, Difficulty, Controls and Display (also Multiplayer and Load Custom
   Level) are greyed out: they were never implemented in OpenClaw. (In 0.3.0 and earlier they're
   selectable but do nothing.)
-- Settings changed in the menus aren't saved between sessions.
+- Only the Audio page's settings exist in the menus so far; they are saved in `config.xml`.
 - Placeholder LiveArea artwork.
 
 ## Development

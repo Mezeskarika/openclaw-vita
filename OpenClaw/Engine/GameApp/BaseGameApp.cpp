@@ -21,6 +21,7 @@
 #include "../Resource/Loaders/PngLoader.h"
 
 #include "BaseGameApp.h"
+#include "MainLoop.h"
 #include "../Util/FrameStats.h"
 
 #include <cctype>
@@ -491,12 +492,35 @@ HumanView* BaseGameApp::GetHumanView() const
 
 bool BaseGameApp::LoadGameOptions(const char* inConfigFile)
 {
-    TiXmlDocument m_XmlConfiguration;
+    m_ConfigFilePath = inConfigFile;
+    std::string tempConfigPath = m_ConfigFilePath + ".tmp";
+
+    // A save interrupted between removing the old file and renaming the new one leaves only the
+    // temporary file (see SaveGameOptions)
+    if (!TryToFindFile(inConfigFile) && TryToFindFile(tempConfigPath.c_str()))
+    {
+        LOG_WARNING("Recovering " + m_ConfigFilePath + " from an interrupted save");
+        rename(tempConfigPath.c_str(), inConfigFile);
+    }
+
+    TiXmlDocument& m_XmlConfiguration = m_ConfigDocument;
     if (!m_XmlConfiguration.LoadFile(inConfigFile))
     {
+#ifdef __vita__
+        // Start over from the Vita defaults in the VPK, not the desktop ones built in below
         LOG_WARNING("Configuration file: " + std::string(inConfigFile)
-            + " not found - creating default configuration");
-        m_XmlConfiguration = CreateAndReturnDefaultConfig(inConfigFile);
+            + " not found or unreadable - using app0:/config.xml");
+        if (m_XmlConfiguration.LoadFile("app0:/config.xml"))
+        {
+            m_XmlConfiguration.SaveFile(inConfigFile);
+        }
+        else
+#endif
+        {
+            LOG_WARNING("Configuration file: " + std::string(inConfigFile)
+                + " not found - creating default configuration");
+            m_XmlConfiguration = CreateAndReturnDefaultConfig(inConfigFile);
+        }
     }
 
     TiXmlElement* configRoot = m_XmlConfiguration.RootElement();
@@ -742,10 +766,61 @@ bool BaseGameApp::LoadGameOptions(const char* inConfigFile)
     return true;
 }
 
-void BaseGameApp::SaveGameOptions(const char* outConfigFile)
+// Sets <parentName><childName>value</childName></parentName> below the config root,
+// creating the elements if they are missing
+static void SetConfigValue(TiXmlElement* pConfigRoot, const char* parentName, const char* childName,
+                           const std::string& value)
 {
-    LOG_ERROR("Not implemented yet!");
-    return;
+    TiXmlElement* pParent = pConfigRoot->FirstChildElement(parentName);
+    if (!pParent)
+    {
+        pParent = new TiXmlElement(parentName);
+        pConfigRoot->LinkEndChild(pParent);
+    }
+
+    TiXmlElement* pChild = pParent->FirstChildElement(childName);
+    if (!pChild)
+    {
+        pChild = new TiXmlElement(childName);
+        pParent->LinkEndChild(pChild);
+    }
+
+    pChild->Clear();
+    pChild->LinkEndChild(new TiXmlText(value.c_str()));
+}
+
+bool BaseGameApp::SaveGameOptions()
+{
+    TiXmlElement* pConfigRoot = m_ConfigDocument.RootElement();
+    if (pConfigRoot == NULL || m_ConfigFilePath.empty())
+    {
+        LOG_ERROR("No loaded configuration to save");
+        return false;
+    }
+
+    // Only what the menus can change is written; everything else in the file stays as it was
+    SetConfigValue(pConfigRoot, "Audio", "SoundVolume", ToStr(m_GameOptions.soundVolume));
+    SetConfigValue(pConfigRoot, "Audio", "MusicVolume", ToStr(m_GameOptions.musicVolume));
+    SetConfigValue(pConfigRoot, "Audio", "SoundOn", m_GameOptions.soundOn ? "true" : "false");
+    SetConfigValue(pConfigRoot, "Audio", "MusicOn", m_GameOptions.musicOn ? "true" : "false");
+
+    // Write a temporary file first, so a crash mid-write can't leave a truncated config.
+    // The Vita can't rename over an existing file, hence remove-then-rename; LoadGameOptions
+    // recovers the temporary file if the game stops in between.
+    std::string tempConfigPath = m_ConfigFilePath + ".tmp";
+    if (!m_ConfigDocument.SaveFile(tempConfigPath.c_str()))
+    {
+        LOG_ERROR("Failed to write " + tempConfigPath);
+        return false;
+    }
+    remove(m_ConfigFilePath.c_str());
+    if (rename(tempConfigPath.c_str(), m_ConfigFilePath.c_str()) != 0)
+    {
+        LOG_ERROR("Failed to replace " + m_ConfigFilePath);
+        return false;
+    }
+
+    return true;
 }
 
 //=====================================================================================================================

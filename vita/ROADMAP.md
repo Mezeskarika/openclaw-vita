@@ -20,7 +20,7 @@ deciding on deliberately is the Linux host build used for profiling and smoke te
 |---|---|---|---|
 | 1 | Navigate menus with touch | code | — |
 | 2 | Disable unimplemented menu items | menu data, **done** | — |
-| 3 | Save settings to `config.xml` | code | — |
+| 3 | Save settings to `config.xml` | code, **done** | — |
 | 4 | Remappable buttons | code + menu | 3, 8 (page layout) |
 | 5 | Real LiveArea artwork | art | — |
 | 6 | README: installation and config options | docs, **in progress** | — |
@@ -62,22 +62,22 @@ image, darkened. Navigation and clicks already skip disabled items. Checked on t
 greyed out, skipped by up/down, no `Could not switch to page` in the log. 13 re-enables the ones
 that get implemented.
 
-## 3. Save settings to `config.xml` **[todo]**
+## 3. Save settings to `config.xml` **[done]**
 
-Prerequisite for every setting the player can change in a menu (4 and 13). Today nothing is saved:
-`BaseGameApp::SaveGameOptions` (`OpenClaw/Engine/GameApp/BaseGameApp.cpp`) only logs
-"Not implemented yet!", and is called once, from `Terminate()`, which the Vita build skips.
-Even the Audio page's volume and music on/off are lost on restart.
+`BaseGameApp` keeps the loaded config document; `SaveGameOptions` writes the options the menus can
+change into it and saves through `config.xml.tmp` plus remove-then-rename (the Vita can't rename
+over an existing file); `LoadGameOptions` recovers the `.tmp` file if a save was interrupted. On
+Vita an unreadable config is replaced with `app0:/config.xml` instead of desktop defaults. The Audio
+page saves on every volume and on/off change (`HumanView::SaveAudioOptions`), which also keeps the
+in-memory `musicVolume` current, so the boss fight no longer resets the music volume to the old
+config value.
 
-- Write `ux0:data/openclaw/config.xml` when a setting changes (not on exit: the Vita can kill the
-  app from the home screen without the game noticing).
-- Update the loaded document rather than regenerating it, so options the menus don't touch
-  (`TimidityCfg`, `LogFrameStats`, debug options, comments) survive.
-- Write to a temporary file and rename it over `config.xml`, so a crash mid-write can't leave a
-  broken config. `LoadGameOptions` treats an unreadable config like a missing one: it writes the
-  built-in desktop defaults over it, which would silently lose the Vita settings.
-- First user: the Audio page (sound/music volume and on/off).
-- Check: change the volume, restart, it's kept; `config.xml` still has every other option.
+Checked on the host build: changing sound volume and turning sound off through the menu updates
+`config.xml` immediately; every other option and all comments are kept (TinyXML re-indents the file
+and trims the trailing space in `<CommandPrompt>`). Not yet checked on Vita: that `remove` +
+`rename` works on `ux0:`.
+
+New settings pages (4, 13) add their values to `SaveGameOptions`.
 
 ## 4. Remappable buttons **[todo]** (needs 3; UI blocked on 8)
 

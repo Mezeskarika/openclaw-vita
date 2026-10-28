@@ -296,7 +296,8 @@ public:
     Audio* GetAudio() const { return m_pAudio; }
 
     bool LoadGameOptions(const char* inConfigFile = "config.xml");
-    void SaveGameOptions(const char* outConfigFile = "config.xml");
+    // Writes the settings the player can change in the menus back into the loaded config file
+    bool SaveGameOptions();
 
     bool LoadLevel(const char* levelResource);
 
@@ -330,6 +331,10 @@ protected:
     FontMap m_FontMap;
 
     GameOptions m_GameOptions;
+
+    // The config as loaded, so saving keeps every option and comment the menus don't touch
+    TiXmlDocument m_ConfigDocument;
+    std::string m_ConfigFilePath;
 
 private:
     bool InitializeDisplay(GameOptions& gameOptions);

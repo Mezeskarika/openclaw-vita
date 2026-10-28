@@ -793,7 +793,21 @@ void HumanView::SetVolumeDelegate(IEventDataPtr pEventData)
                 g_pApp->GetAudio()->SetSoundVolume(pCastEventData->GetVolume());
             }
         }
+
+        SaveAudioOptions();
     }
+}
+
+// Keeps the config in step with the Audio page, so the choices survive a restart. The boss fight
+// also reads musicVolume from the config to restore the music volume afterwards.
+void HumanView::SaveAudioOptions()
+{
+    GameOptions* pOptions = g_pApp->GetGameConfig();
+    pOptions->soundVolume = g_pApp->GetAudio()->GetSoundVolume();
+    pOptions->musicVolume = g_pApp->GetAudio()->GetMusicVolume();
+    pOptions->soundOn = g_pApp->GetAudio()->IsSoundActive();
+    pOptions->musicOn = g_pApp->GetAudio()->IsMusicActive();
+    g_pApp->SaveGameOptions();
 }
 
 void HumanView::SoundEnabledChangedDelegate(IEventDataPtr pEventData)
@@ -811,6 +825,8 @@ void HumanView::SoundEnabledChangedDelegate(IEventDataPtr pEventData)
         {
             g_pApp->GetAudio()->SetSoundActive(pCastEventData->GetIsEnabled());
         }
+
+        SaveAudioOptions();
     }
 }
 

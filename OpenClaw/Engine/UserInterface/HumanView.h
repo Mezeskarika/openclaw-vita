@@ -74,6 +74,7 @@ protected:
     void LoadGameDelegate(IEventDataPtr pEventData);
     void SetVolumeDelegate(IEventDataPtr pEventData);
     void SoundEnabledChangedDelegate(IEventDataPtr pEventData);
+    void SaveAudioOptions();
     void ClawDiedDelegate(IEventDataPtr pEventData);
     void TeleportActorDelegate(IEventDataPtr pEventData);
     void EnterMenuDelegate(IEventDataPtr pEventData);

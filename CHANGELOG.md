@@ -25,6 +25,11 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
 - Menu items that lead nowhere are shown greyed out and can't be selected: Multiplayer,
   Load Custom Level, and Options → Edit Players, Difficulty, Controls, Display.
 
+- Sound and music volume and on/off, changed on the Audio page, are saved to `config.xml`
+  immediately and kept across restarts.
+- On Vita, an unreadable `config.xml` is replaced with the Vita defaults from the VPK instead of
+  desktop defaults.
+
 ### Removed
 - Everything the Vita build doesn't use: Windows, Android and Emscripten builds and code paths,
   Visual Studio and Eclipse projects, old CI and Linux packaging, the Windows launcher and MIDI
@@ -118,7 +123,6 @@ How the port plays differently from Captain Claw (1997):
   The tracks themselves are the original ones.
 - **Options menu:** Edit Players, Difficulty, Controls and Display (and Multiplayer, Load Custom
   Level) are greyed out. They were never implemented in OpenClaw.
-- **Settings** changed in the menus aren't saved between sessions.
 
 [Unreleased]: https://github.com/Mezeskarika/openclaw-vita/compare/v0.3.0...HEAD
 [0.3.0]: https://github.com/Mezeskarika/openclaw-vita/compare/v0.2.0...v0.3.0

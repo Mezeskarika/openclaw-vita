@@ -94,7 +94,11 @@ Every new source file must be added to its directory's `CMakeLists.txt` (`target
 - Options → Edit Players, Difficulty, Controls, Display, plus Multiplayer and Load Custom Level,
   point at menu pages that don't exist (`SwitchPageDelegate` logs "Probably not implemented yet").
   No difficulty logic exists anywhere.
-- `BaseGameApp::SaveGameOptions` is not implemented: menu setting changes are lost on restart.
+- Settings saving: `BaseGameApp::SaveGameOptions` writes only the options the menus change (today:
+  `Audio` volumes and on/off) into the loaded `config.xml` document, through `config.xml.tmp` and
+  remove-then-rename (the Vita can't rename over an existing file). Call it right after a change,
+  not on exit: the Vita build skips `Terminate()`. New menu settings must be added there.
+  TinyXML reformats the file and trims trailing spaces in values when it writes it.
 - Startup log noise that is expected: `[MEMORY_PROFILER] … not supported`, `Unknown ammo type`,
   `OnEnemyLeftAgroRange … no such actor`.
 
