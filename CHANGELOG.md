@@ -25,6 +25,11 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
 - Menu items that lead nowhere are shown greyed out and can't be selected: Multiplayer,
   Load Custom Level, and Options → Edit Players, Difficulty, Controls, Display.
 
+### Removed
+- Everything the Vita build doesn't use: Windows, Android and Emscripten builds and code paths,
+  Visual Studio and Eclipse projects, old CI and Linux packaging, the Windows launcher and MIDI
+  server, prebuilt Windows binaries, unused libraries. A Linux build remains as a development tool.
+
 ### Fixed
 - The Vita build could fail in `vita-elf-create` ("segment 1 overlaps") depending on code size.
 
@@ -102,8 +107,8 @@ Changes in this port compared with pjasicek/OpenClaw@5ee5740, besides the Vita b
 - **Vita specifics:** SDL's native GXM renderer with batching forced on, 22,050 Hz mixer, raised
   CPU/GPU clocks, `app0:`/`ux0:` file layout, bundled FreePats instruments, the engine's teardown
   skipped on exit.
-- **Scope:** only the Vita build is maintained; the Windows, desktop Linux, Android and WebAssembly
-  builds aren't kept working.
+- **Scope:** only the Vita build is maintained. The Windows, Android and WebAssembly builds and
+  their code were removed; a Linux build is kept for development only.
 
 ## Differences from the original game
 

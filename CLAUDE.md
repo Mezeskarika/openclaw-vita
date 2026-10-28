@@ -4,9 +4,9 @@ PS Vita port of OpenClaw (C++11 reimplementation of Captain Claw, 1997), based o
 `pjasicek/OpenClaw` at upstream commit `5ee5740` (July 2022), imported as this repo's first commit.
 Version history: `CHANGELOG.md`.
 
-**Scope is the Vita only.** Other platforms (Windows, desktop Linux, Android, Emscripten) don't need
-to keep working; `vita/ROADMAP.md` item 9 plans removing them. Exception: a Linux host build is
-still useful for profiling and reproducing bugs (see "Debugging on the host").
+**Scope is the Vita only.** The Windows, Android and Emscripten builds and their code were removed
+(roadmap item 9). The one other build kept is the Linux host build, a development tool for
+profiling and reproducing bugs (see "Debugging on the host"); it is not a supported platform.
 
 Read first: `vita/ROADMAP.md` (what's left, numbered items), `vita/PLAN.md` (stage history and
 decisions), `vita/PERFORMANCE.md` (measurements and why the renderer is set up as it is).
@@ -35,13 +35,12 @@ decisions), `vita/PERFORMANCE.md` (measurements and why the renderer is set up a
 | `OpenClaw/` | Game (`Claw*.cpp`, `ActorController.cpp`) and engine (`Engine/`: Actor components, Audio, Events, GameApp, Physics, Resource, Scene, UserInterface, Util) |
 | `libwap/` | Readers for the original formats: REZ archive, WWD levels, PID images, PAL, ANI, XMI→MIDI |
 | `Box2D/` | Bundled Box2D 2.3.2. Use this one; the SDK's box2d is a different version |
-| `ThirdParty/` | TinyXML, FastDelegate, and **Windows SDL 2.0.4 headers in `ThirdParty/SDL2/`** (see gotchas) |
+| `ThirdParty/` | TinyXML, FastDelegate, and **old SDL 2.0.4 headers in `ThirdParty/SDL2/`**: the Vita build must not see them (see gotchas); the host unit tests compile against them |
 | `Build_Release/` | Runtime files. `ASSETS/` (menus `MENU.xml`, actor prototypes, level metadata) is zipped into `ASSETS.ZIP` by the Vita build (`vita/Assets.cmake` → `vita/tools/make_assets_zip.py`), so edit `ASSETS/`, not the zip. The game's zip reader needs sizes in the local headers: don't switch to `cmake -E tar` or other streaming zip writers; `SAVES.XML` template, `clacon.ttf`, `console02.tga` |
 | `vita/` | `Vita.cmake` (VPK packaging), `Freepats.cmake`, `config.xml` (Vita defaults), `timidity.cfg`, `sce_sys/` LiveArea, `tools/`, docs |
 | `tests/` | Host unit tests (`GamepadMapperTests.cpp`) |
 
-Every new source file must be added to its directory's `CMakeLists.txt` (`target_sources`). Until
-item 9 removes them, `OpenClaw/OpenClaw.vcxproj` and `OpenClaw/OpenClaw.filters` list sources too.
+Every new source file must be added to its directory's `CMakeLists.txt` (`target_sources`).
 
 ## Code conventions
 
@@ -51,7 +50,7 @@ item 9 removes them, `OpenClaw/OpenClaw.vcxproj` and `OpenClaw/OpenClaw.filters`
   (`IEventMgr::Get()->VTriggerEvent` / `VQueueEvent`).
 - Platform code goes behind `#ifdef __vita__` (the compiler's macro).
 - **Line endings:** about two thirds of `OpenClaw/` and `libwap/` sources are CRLF, the rest LF;
-  `.vcxproj`/`.filters` are LF with a UTF-8 BOM. Preserve each file's style. After editing, check
+  preserve each file's style. After editing, check
   that a CRLF file has no LF-only lines and that `git diff --stat` shows only the lines you meant;
   a whole-file diff means the endings got converted.
 
@@ -119,8 +118,14 @@ Build the desktop target in the Ubuntu container (`cmake -S . -B build && make`;
 `../Build_Release` relative to the build dir) and run it with:
 - `xvfb-run -a` (SDL's `dummy` video driver has no accelerated renderer, and the game asks for one)
   and `SDL_AUDIODRIVER=dummy`;
+- `ASSETS.ZIP` from `build-vita/ASSETS.ZIP` (or `python3 -I vita/tools/make_assets_zip.py
+  Build_Release/ASSETS <out>`), plus `SAVES.XML`, `clacon.ttf` and `console02.tga` from
+  `Build_Release/`;
 - a `config.xml` derived from `vita/config.xml` with `AssetsFolder` empty, `RezArchive` pointing at
-  `CLAW.REZ`, vsync off, and `<SkipMenu>true</SkipMenu>` to go straight into level 1;
+  `CLAW.REZ`, `TimidityCfg` removed (or pointing at a FreePats folder), vsync off, and
+  `<SkipMenu>true</SkipMenu>` to go straight into level 1;
+- screenshots for checking menus: run under a plain `Xvfb :N -screen 0 960x544x24`, send keys with
+  `xdotool key Down`, capture with ImageMagick `import -window root shot.png`;
 - `startup_commands.txt` in the working directory for console commands at level start, e.g.
   `teleport 689 5400` (the foreground-column area of level 1);
 - callgrind with `--instr-atstart=no` and `callgrind_control -i on` after loading, to profile
