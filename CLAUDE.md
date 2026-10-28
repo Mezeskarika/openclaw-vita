@@ -1,0 +1,137 @@
+# CLAUDE.md
+
+PS Vita port of OpenClaw (C++11 reimplementation of Captain Claw, 1997), forked from
+`pjasicek/OpenClaw` at upstream commit `5ee5740` (July 2022).
+
+**Scope is the Vita only.** Other platforms (Windows, desktop Linux, Android, Emscripten) don't need
+to keep working; `vita/ROADMAP.md` item 9 plans removing them. Exception: a Linux host build is
+still useful for profiling and reproducing bugs (see "Debugging on the host").
+
+Read first: `vita/ROADMAP.md` (what's left, numbered items), `vita/PLAN.md` (stage history and
+decisions), `vita/PERFORMANCE.md` (measurements and why the renderer is set up as it is).
+
+## Build and test
+
+| Command | What it does |
+|---|---|
+| `vita/build.sh` | Builds `build-vita/openclaw.vpk` in the pinned `vitasdk/vitasdk@sha256:…` Docker image, then checks the VPK has every required file. `vita/build.sh clean` starts fresh. No local VitaSDK needed. |
+| `tests/run.sh` | Host unit tests (Catch 1.5, from `libwap_tests/Catch.hpp`) into `build-tests/`. Compiles only against the bundled SDL headers, no SDL library. |
+
+- The host has no SDL dev packages. Anything that needs real SDL (desktop build, profiling) runs in
+  an `ubuntu:22.04` container with `libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev
+  libsdl2-ttf-dev libsdl2-gfx-dev`.
+- The first Vita build downloads FreePats from deb.debian.org (SHA-256 pinned in
+  `vita/Freepats.cmake`) into `build-vita/`.
+- `build-vita/openclaw` (unstripped ELF) is needed to symbolize Vita crash dumps
+  (`.psp2dmp` → `vita-parse-core`). Keep it alongside any VPK that gets tested.
+- Docker containers run as root write root-owned files into mounted dirs; pass `-u 1000:1000` or
+  `chown` at the end, or later cleanup fails.
+
+## Layout
+
+| Path | Contents |
+|---|---|
+| `OpenClaw/` | Game (`Claw*.cpp`, `ActorController.cpp`) and engine (`Engine/`: Actor components, Audio, Events, GameApp, Physics, Resource, Scene, UserInterface, Util) |
+| `libwap/` | Readers for the original formats: REZ archive, WWD levels, PID images, PAL, ANI, XMI→MIDI |
+| `Box2D/` | Bundled Box2D 2.3.2. Use this one; the SDK's box2d is a different version |
+| `ThirdParty/` | TinyXML, FastDelegate, and **Windows SDL 2.0.4 headers in `ThirdParty/SDL2/`** (see gotchas) |
+| `Build_Release/` | Runtime files. `ASSETS/` is zipped into `ASSETS.ZIP` (menus `MENU.xml`, actor prototypes, level metadata); `SAVES.XML` template, `clacon.ttf`, `console02.tga` |
+| `vita/` | `Vita.cmake` (VPK packaging), `Freepats.cmake`, `config.xml` (Vita defaults), `timidity.cfg`, `sce_sys/` LiveArea, `tools/`, docs |
+| `tests/` | Host unit tests (`GamepadMapperTests.cpp`) |
+
+Every new source file must be added to its directory's `CMakeLists.txt` (`target_sources`). Until
+item 9 removes them, `OpenClaw/OpenClaw.vcxproj` and `OpenClaw/OpenClaw.filters` list sources too.
+
+## Code conventions
+
+- Match the surrounding code: 4-space indent, braces on their own line, `m_` members, `m_p`
+  pointers, `m_b` bools, `g_` globals, `V` prefix on virtuals (`VOnUpdate`), `LOG` / `LOG_WARNING` /
+  `LOG_ERROR` macros, `SAFE_DELETE`. Systems talk through events
+  (`IEventMgr::Get()->VTriggerEvent` / `VQueueEvent`).
+- Platform code goes behind `#ifdef __vita__` (the compiler's macro).
+- **Line endings:** about two thirds of `OpenClaw/` and `libwap/` sources are CRLF, the rest LF;
+  `.vcxproj`/`.filters` are LF with a UTF-8 BOM. Preserve each file's style. After editing, check
+  that a CRLF file has no LF-only lines and that `git diff --stat` shows only the lines you meant;
+  a whole-file diff means the endings got converted.
+
+## Vita runtime facts (each cost a debugging round to learn)
+
+- **Files:** `app0:` (the installed VPK) is read-only and is the working directory, so relative
+  paths resolve there. Writable data lives in `ux0:/data/openclaw/`. On first start
+  `MainLoop.cpp` copies `config.xml` and `SAVES.XML` there from `app0:`; later starts use the
+  `ux0:` copies. **Changing `vita/config.xml` only reaches existing installs if the user deletes
+  `ux0:data/openclaw/config.xml`** — say so whenever defaults change.
+- `CLAW.REZ` (original game data, user-supplied) is at `ux0:/data/openclaw/CLAW.REZ`;
+  `<RezArchive>` may be an absolute path, other assets resolve against `<AssetsFolder>app0:/`.
+- **Logging:** `SDL_Log` on Vita appends to `ux0:data/SDL_Log.txt`, opening and closing the file
+  per line. Delete it before a test run. Avoid per-frame logging.
+- **Rendering:** `InitializeDisplay` forces SDL's `VITA gxm` driver (otherwise SDL picks GLES2 on
+  vitaGL, which needs `libshacccg.suprx` on the device). Naming a driver makes SDL turn draw
+  batching **off**, so `SDL_HINT_RENDER_BATCHING=1` is set explicitly. Without it the game ran at
+  7–24 fps instead of 60.
+- **Audio:** mixer at 22,050 Hz mono (the game's sounds are 22 kHz; 44.1 kHz made SDL resample
+  every sound on first use, causing stalls). Music: XMI tracks → MIDI → SDL_mixer's Timidity with
+  FreePats from `app0:/freepats/timidity.cfg` (`<TimidityCfg>`). `vita/timidity.cfg` holds only
+  the instruments Claw's music uses; regenerate with `vita/tools/make_timidity_cfg.py`. Music
+  loads on a thread per track; `Audio.cpp` makes only the latest request play and frees the
+  replaced track.
+- **Shutdown:** on Vita `Terminate()` returns early and `main()` ends the process with
+  `sceKernelExitProcess` (the full teardown hung). Quit goes through `QuitGameDelegate`, which only
+  stops the main loop.
+- **Memory/clocks:** `main.cpp` sets `_newlib_heap_size_user` (128 MB) and
+  `sceUserMainThreadStackSize` (1 MB), and raises CPU to 444 MHz / GPU to 222 MHz.
+- **Input:** `GamepadMapper` turns controller buttons and the left stick into the key events the
+  game already handles (`BaseGameApp::OnEvent`). Gameplay reacts to key *events*; nothing in
+  gameplay polls `SDL_GetKeyboardState`.
+- **Linking** is static with an explicit library list in the root `CMakeLists.txt`: the SDK's CMake
+  configs and pkg-config files leave out zlib, libpng, `SceShaccCgExt` and pthread.
+
+## Known gaps in the engine (not Vita bugs)
+
+- Options → Edit Players, Difficulty, Controls, Display, plus Multiplayer and Load Custom Level,
+  point at menu pages that don't exist (`SwitchPageDelegate` logs "Probably not implemented yet").
+  No difficulty logic exists anywhere.
+- `BaseGameApp::SaveGameOptions` is not implemented: menu setting changes are lost on restart.
+- Startup log noise that is expected: `[MEMORY_PROFILER] … not supported`, `Unknown ammo type`,
+  `OnEnemyLeftAgroRange … no such actor`.
+
+## Debugging and measuring
+
+- **Vita3K** (emulator) is the first test target; real hardware is the final word. Its data folder
+  on Linux is `~/.local/share/Vita3K/Vita3K/` by default (`ux0/app/OCLW00001` = installed game,
+  `ux0/data/openclaw/` = CLAW.REZ, config, saves). Vita3K timing is not hardware timing.
+- **`<LogFrameStats>`** (on in the Vita config) logs every 2 s:
+  `fps | frame (worst) | update | physics | render | present | draws`. `update` = game logic incl.
+  physics; `render` = walking the scene and queueing draws; `present` = SDL submitting draws plus
+  waiting for vsync. High `render` with tiny `present` meant batching was off.
+- `<FrontPlaneMode>` normal/skip/tiny: experiment switch for the foreground tile plane.
+- Level 1 actor and tile counts, sound formats and the instruments the music uses were found by
+  small programs linking `libwap` against `CLAW.REZ`; that's the quickest way to answer
+  "what's in the game data" questions.
+
+### Debugging on the host
+
+Build the desktop target in the Ubuntu container (`cmake -S . -B build && make`; it outputs to
+`../Build_Release` relative to the build dir) and run it with:
+- `xvfb-run -a` (SDL's `dummy` video driver has no accelerated renderer, and the game asks for one)
+  and `SDL_AUDIODRIVER=dummy`;
+- a `config.xml` derived from `vita/config.xml` with `AssetsFolder` empty, `RezArchive` pointing at
+  `CLAW.REZ`, vsync off, and `<SkipMenu>true</SkipMenu>` to go straight into level 1;
+- `startup_commands.txt` in the working directory for console commands at level start, e.g.
+  `teleport 689 5400` (the foreground-column area of level 1);
+- callgrind with `--instr-atstart=no` and `callgrind_control -i on` after loading, to profile
+  gameplay only; gdb for hangs. A SIGTERM reaches the game as `SDL_QUIT`.
+
+## Repo, releases, licence
+
+- Remotes: `github` = `Mezeskarika/openclaw-vita` (branch `main`, where work goes), `origin` =
+  upstream `pjasicek/OpenClaw` (reference only, don't push).
+- Commits use the GitHub no-reply address configured in the repo's local git config. Never
+  commit or tag with a work email; check `git log --format='%ae %ce'` before pushing.
+- Tags `vita-vita3k-*` mark builds that were tested; annotated, with what was verified.
+- Releases: build from a clean `git archive <tag>` export, compare the VPK contents with the tested
+  one, then `gh release create <tag> openclaw.vpk --prerelease` until it has run on hardware.
+- Licence GPL-3.0 (`LICENSE.txt`). FreePats: GPL-2.0-or-later with an exception; its `COPYING`
+  and `README` ship in the VPK.
+- **Never add Captain Claw data** to the repo or VPK: `CLAW.REZ`, anything extracted or rendered
+  from it (music renders, sprites), Monolith logos/art. That includes LiveArea artwork.
