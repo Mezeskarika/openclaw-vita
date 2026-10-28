@@ -36,7 +36,7 @@ decisions), `vita/PERFORMANCE.md` (measurements and why the renderer is set up a
 | `libwap/` | Readers for the original formats: REZ archive, WWD levels, PID images, PAL, ANI, XMI→MIDI |
 | `Box2D/` | Bundled Box2D 2.3.2. Use this one; the SDK's box2d is a different version |
 | `ThirdParty/` | TinyXML, FastDelegate, and **Windows SDL 2.0.4 headers in `ThirdParty/SDL2/`** (see gotchas) |
-| `Build_Release/` | Runtime files. `ASSETS/` is zipped into `ASSETS.ZIP` (menus `MENU.xml`, actor prototypes, level metadata); `SAVES.XML` template, `clacon.ttf`, `console02.tga` |
+| `Build_Release/` | Runtime files. `ASSETS/` (menus `MENU.xml`, actor prototypes, level metadata) is zipped into `ASSETS.ZIP` by the Vita build (`vita/Assets.cmake`), so edit `ASSETS/`, not the zip; `SAVES.XML` template, `clacon.ttf`, `console02.tga` |
 | `vita/` | `Vita.cmake` (VPK packaging), `Freepats.cmake`, `config.xml` (Vita defaults), `timidity.cfg`, `sce_sys/` LiveArea, `tools/`, docs |
 | `tests/` | Host unit tests (`GamepadMapperTests.cpp`) |
 
@@ -86,6 +86,9 @@ item 9 removes them, `OpenClaw/OpenClaw.vcxproj` and `OpenClaw/OpenClaw.filters`
   gameplay polls `SDL_GetKeyboardState`.
 - **Linking** is static with an explicit library list in the root `CMakeLists.txt`: the SDK's CMake
   configs and pkg-config files leave out zlib, libpng, `SceShaccCgExt` and pthread.
+- **`vita-elf-create: … segment 1 overlaps`** means the code ended just short of a 64 KiB boundary,
+  leaving no room for the module data `vita-elf-create` appends. Fixed for good by
+  `-Wl,--defsym=__sce_headroom=0x2000` on the Vita link; don't remove it.
 
 ## Known gaps in the engine (not Vita bugs)
 

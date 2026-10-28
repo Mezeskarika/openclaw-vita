@@ -95,6 +95,11 @@ if (Emscripten)
     endif (Extern_Config)
     set_target_properties(openclaw PROPERTIES LINK_FLAGS "-s FETCH -s WASM=1 -s BINARYEN_METHOD='native-wasm' -s EXPORTED_FUNCTIONS='[_main]' -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='[\"pcx\",\"png\",\"tga\"]' -s USE_SDL_TTF=2 -s USE_SDL_GFX=2 -s ASYNCIFY=1 -s TOTAL_MEMORY=268435456 ${CONFIG_PRELOAD_FILE} --preload-file ../Build_Release/CLAW.REZ@CLAW.REZ --preload-file ../Build_Release/ASSETS.ZIP@ASSETS.ZIP --preload-file ../Build_Release/console02.tga@console02.tga --preload-file ../Build_Release/clacon.ttf@clacon.ttf")
 elseif (Vita)
+    # vita-elf-create appends ~4 KB of module data after the code, and fails ("segment 1 overlaps")
+    # when the code happens to end just short of the next 64 KiB boundary. The SDK's linker
+    # script moves the data segment out by __sce_headroom, so that space always exists.
+    set_target_properties(openclaw PROPERTIES LINK_FLAGS "-Wl,--defsym=__sce_headroom=0x2000")
+
     # Everything is static on the Vita, so the order matters: SDL add-ons, their codecs,
     # SDL2 with its vitaGL backend, then the system stubs. The SDK's CMake configs and
     # pkg-config files both leave some of these out (zlib, libpng, SceShaccCgExt, pthread).
