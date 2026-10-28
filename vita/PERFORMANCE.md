@@ -1,5 +1,10 @@
 # Vita performance: measurements and options
 
+> **Status (2026-10-28):** In Vita3K, level 1 now runs at a locked 60 fps everywhere,
+> including the foreground columns, after turning SDL draw batching back on (commit `d805a42`).
+> Next: one run on real hardware. The rest of this document is the history of how we got here
+> and the options kept in reserve in case hardware turns out slower.
+
 Goal: a consistent frame rate. Starting point (Vita3K v0.2.1, Vulkan, Intel iGPU, level 1):
 
 | Area | Vita3K fps |
@@ -48,11 +53,21 @@ This affects real hardware too, not only the emulator.
 
 The game's own CPU work (`update`, physics included) is only 2–5 ms per frame in Vita3K.
 
-**Expected after the fix:** `render` drops sharply and `present` grows (that is where SDL now
-runs the batched draws). Consecutive draws only merge into one GPU draw when they share a
-texture, which tiles mostly don't, so draws/frame still matters, but the per-call overhead
-is gone. If the columns are still much slower than plain areas after this, run the
-`FrontPlaneMode` experiment.
+**Result after the fix** (Vita3K, same route, `FrontPlaneMode` normal):
+
+| Area | fps | worst frame (ms) | update (ms) | of which physics | render (ms) | present (ms) | draws |
+|---|---|---|---|---|---|---|---|
+| Plain | 60.0 | 16.9–17.0 | 4.3–4.9 | 1.8–2.3 | 0.8–1.0 | 10.6–11.2 | 300–380 |
+| Enemies / platforms | 60.0 | 16.9–17.0 | 4.0–4.6 | 1.6–2.0 | 0.8–1.0 | 11.0–11.6 | 230–350 |
+| Columns | 60.0 | 16.9–17.0 | 4.4–4.6 | 1.8–1.9 | 0.8–0.9 | 11.0–11.3 | 485–492 |
+
+The game is now vsync-bound: the real work (update + render + SDL submitting the draws) is
+roughly 6–8 ms of the 16.7 ms frame, and `present` is mostly waiting for the next vblank.
+The columns cost nothing noticeable any more, so the `FrontPlaneMode` experiment is no longer
+needed. A handful of single frames hit 20–36 ms (likely first-time loads); worth watching,
+not a problem yet.
+
+The 4.3 s worst frame right after loading a level is the level load itself, not gameplay.
 
 ## Earlier host measurements
 
@@ -119,20 +134,23 @@ resamples and this fix does nothing there.
 
 ## Options, in recommended order
 
+Options 5–11 were ranked before batching was fixed. With Vita3K at 60 fps, none of them is
+needed for the emulator; whether any is needed on hardware depends on step 4.
+
 | # | Change | Helps Vita3K | Helps hardware | Effort | Risk | Status |
 |---|---|---|---|---|---|---|
 | 0 | Turn SDL draw batching back on (`SDL_HINT_RENDER_BATCHING`) | **large** | **large** | tiny | none | **done** |
 | 1 | Mixer at 22,050 Hz (removes resampling stalls) | stalls | stalls, mixing CPU | config | none audible | **done** |
 | 2 | CPU 444 MHz / GPU 222 MHz (apps start at 333 MHz) | no | +33% CPU | tiny | none | **done** |
-| 3 | Run `<FrontPlaneMode>` normal/skip/tiny at the columns in Vita3K | decides 5 vs 9 | — | none | none | next |
-| 4 | Measure on hardware with `<LogFrameStats>` | — | decides 6–8 | none | none | next |
-| 5 | Tile atlases: one texture per plane, so SDL merges a plane into ~1 draw | **if** per-draw cost | small–medium | 1–2 days | low | after 3 |
-| 6 | Don't update off-screen decorations and pickups (animation, logic) | small | **medium** | 1–2 days | medium | proposed |
-| 7 | Physics: Box2D iterations 10/8 → 8/3, review continuous collision | small | medium | hours | gameplay feel | proposed |
-| 8 | Frame pacing: lock to 30 fps (or 20) with vsync, and clamp the update step | consistency | consistency | hours | low | proposed |
-| 9 | Less blending/fill: opaque tiles (whole background) without blending; skip tiles with no visible pixels | **if** fill cost | fill rate | hours | low | after 3 |
-| 10 | Decode each WAV once; preload a level's sounds at load time | stalls | stalls | hours | low | proposed |
-| 11 | `-O3` / LTO | small | small | config | low | proposed |
+| 3 | `<FrontPlaneMode>` experiment | — | — | none | none | not needed any more |
+| 4 | Measure on hardware with `<LogFrameStats>` | — | decides 5–11 | none | none | **next** |
+| 5 | Tile atlases: one texture per plane, so SDL merges a plane into ~1 draw | no longer needed | if `present` is high on hardware | 1–2 days | low | reserve |
+| 6 | Don't update off-screen decorations and pickups (animation, logic) | — | if `update` is high on hardware | 1–2 days | medium | reserve |
+| 7 | Physics: Box2D iterations 10/8 → 8/3, review continuous collision | — | if `physics` is high on hardware | hours | gameplay feel | reserve |
+| 8 | Frame pacing: fall back to a locked 30 fps when 60 can't be held; clamp the update step | — | consistency | hours | low | reserve |
+| 9 | Less blending/fill: opaque tiles without blending | — | if GPU-bound on hardware | hours | low | reserve |
+| 10 | Decode each WAV once; preload a level's sounds at load time | occasional spikes | spikes | hours | low | proposed |
+| 11 | `-O3` / LTO | — | small | config | low | reserve |
 
 Notes:
 
