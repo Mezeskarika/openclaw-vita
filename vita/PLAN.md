@@ -96,7 +96,9 @@ Verification: play level 1 to the end; pause/resume; check that `ux0:data/opencl
 Stages 1 and 2 are confirmed in Vita3K (tag `vita-vita3k-level1-runs`): the game boots and level 1 is playable, at 7–24 fps.
 
 Done:
-- Quitting no longer freezes: the quit event stops the main loop instead of tearing down and calling `exit()` from inside an event callback; SDL audio is stopped before sounds are freed, SDL is shut down, and the Vita process ends with `sceKernelExitProcess`.
+- Quit freeze (not yet re-tested on Vita): the quit event now only stops the main loop, instead of tearing everything down and calling `exit()` from inside an event callback. On Vita the teardown is skipped and the process ends with `sceKernelExitProcess`. On desktop the teardown stops audio before freeing sounds and shuts SDL down; checked to exit cleanly on the host.
+- `<FrontPlaneMode>` debug switch (normal / skip / tiny) to find out why the foreground columns are so slow in Vita3K.
+- The log shows the rate the audio device actually opened at.
 - `<LogFrameStats>`: fps plus update/physics/render/present times and draw count, logged every 2 s.
 - Mixer at 22,050 Hz (the game's sounds are 22 kHz; resampling them stalled the game).
 - CPU 444 MHz / GPU 222 MHz on hardware.

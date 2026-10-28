@@ -198,6 +198,7 @@ struct DebugOptions
         bSkipMenu = false;
         lastImplementedLevel = 7;
         skipMenuToLevel = 9;
+        frontPlaneMode = "normal";
     }
 
     int cpuDelayMs;
@@ -205,6 +206,9 @@ struct DebugOptions
     int lastImplementedLevel;
     int skipMenuToLevel;
     bool bSkipBossFightIntro;
+    // "normal", "skip" (don't draw the Front plane) or "tiny" (same draws, 1x1 pixel each).
+    // Tells per-draw cost apart from fill/blend cost.
+    std::string frontPlaneMode;
 };
 
 struct LevelMetadata

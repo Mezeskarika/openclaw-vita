@@ -101,6 +101,13 @@ void BaseGameApp::Terminate()
 {
     LOG("Terminating...");
 
+#ifdef __vita__
+    // main() ends the process right after this and the system frees everything. The first
+    // Vita build hung somewhere in the teardown below, so skip it.
+    LOG("Terminated.");
+    return;
+#endif
+
     // The audio thread keeps mixing until the device is closed, so stop it touching
     // sounds before they get freed below
     if (m_pAudio)
@@ -784,6 +791,8 @@ bool BaseGameApp::LoadGameOptions(const char* inConfigFile)
             pDebugOptionsRootElem->FirstChildElement("LastImplementedLevel"));
         ParseValueFromXmlElem(&m_DebugOptions.skipMenuToLevel,
             pDebugOptionsRootElem->FirstChildElement("SkipMenuToLevel"));
+        ParseValueFromXmlElem(&m_DebugOptions.frontPlaneMode,
+            pDebugOptionsRootElem->FirstChildElement("FrontPlaneMode"));
     }
 
     return true;

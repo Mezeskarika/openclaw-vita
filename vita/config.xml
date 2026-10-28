@@ -87,5 +87,8 @@
     <LastImplementedLevel>13</LastImplementedLevel>
     <SkipBossFightIntro>false</SkipBossFightIntro>
     <CpuDelay>0</CpuDelay>
+    <!-- Performance experiment for the foreground plane (the columns in level 1):
+         normal = draw it, skip = don't draw it, tiny = same number of draws but 1x1 pixel each -->
+    <FrontPlaneMode>normal</FrontPlaneMode>
   </DebugOptions>
 </Configuration>

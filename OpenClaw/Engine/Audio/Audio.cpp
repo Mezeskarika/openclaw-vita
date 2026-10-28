@@ -60,6 +60,15 @@ bool Audio::Initialize(const GameOptions& config)
         return false;
     }
 
+    // The device may not open at the requested rate; SDL_mixer then resamples every sound to it
+    int frequency = 0;
+    Uint16 format = 0;
+    int channels = 0;
+    if (Mix_QuerySpec(&frequency, &format, &channels) != 0)
+    {
+        LOG("Audio device: " + ToStr(frequency) + " Hz, " + ToStr(channels) + " channel(s)");
+    }
+
     Mix_AllocateChannels(config.mixingChannels);
 
     int reservedChannels = Mix_ReserveChannels(16);

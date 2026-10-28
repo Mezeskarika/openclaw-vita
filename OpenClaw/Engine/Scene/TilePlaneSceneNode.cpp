@@ -30,6 +30,15 @@ void SDL2TilePlaneSceneNode::VRender(Scene* pScene)
     shared_ptr<CameraNode> camera = pScene->GetCamera();
     SDL_Renderer* renderer = pScene->GetRenderer();
 
+    // Debug experiment, see DebugOptions::frontPlaneMode
+    const std::string& frontPlaneMode = g_pApp->GetDebugOptions()->frontPlaneMode;
+    bool isFrontPlane = pProperties->name == "Front";
+    if (isFrontPlane && frontPlaneMode == "skip")
+    {
+        return;
+    }
+    bool drawTinyTiles = isFrontPlane && frontPlaneMode == "tiny";
+
     // Multiple times user variables
     int32 tilePixelWidth = pProperties->tilePixelWidth;
     int32 tilePixelHeight = pProperties->tilePixelHeight;
@@ -95,8 +104,8 @@ void SDL2TilePlaneSceneNode::VRender(Scene* pScene)
                 int32_t y = row * tilePixelHeight - parallaxCameraPosY;
                 SDL_Rect tileRect = { x,
                     y,
-                    tilePixelWidth,
-                    tilePixelHeight };
+                    drawTinyTiles ? 1 : tilePixelWidth,
+                    drawTinyTiles ? 1 : tilePixelHeight };
 
                 SDL_RenderCopy(renderer, image->GetTexture(), NULL, &tileRect);
                 FrameStats::AddDrawCall();
