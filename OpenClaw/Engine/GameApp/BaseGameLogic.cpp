@@ -751,9 +751,6 @@ void BaseGameLogic::VOnUpdate(uint32 msDiff)
     {
         case GameState_Initializing:
         {
-#ifdef ANDROID
-            VChangeState(GameState_LoadingLevel);
-#else
             if (g_pApp->GetDebugOptions()->bSkipMenu)
             {
                 VChangeState(GameState_LoadingLevel);
@@ -762,7 +759,6 @@ void BaseGameLogic::VOnUpdate(uint32 msDiff)
             {
                 VChangeState(GameState_Menu);
             }
-#endif
             break;
         }
 

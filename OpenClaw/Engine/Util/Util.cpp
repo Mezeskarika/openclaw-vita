@@ -17,9 +17,6 @@
 
 //#include "../Level/Level.h"
 
-#ifdef __EMSCRIPTEN__
-#include <emscripten.h>
-#endif
 
 namespace Util
 {
@@ -430,7 +427,6 @@ namespace Util
         return GetSoundDurationMs(pSound.get());
     }
 
-#ifndef __EMSCRIPTEN__
     int GetSoundDurationMs(Mix_Chunk* pSound)
     {
         uint32 points = 0;
@@ -448,55 +444,6 @@ namespace Util
         frames = points / channels;
         return ((frames * 1000) / frequency);
     }
-#else
-    int GetSoundDurationMs(Mix_Chunk* pSound)
-    {
-        int duration = -1;
-        while (duration < 0) {
-            duration = EM_ASM_INT(
-                    {
-                        var sdlAudio = SDL.audios[$0];
-                        if (sdlAudio) {
-                            var webAudio = sdlAudio.webAudio;
-                            if (webAudio) {
-                                var callbacks = webAudio.onDecodeComplete;
-                                if (callbacks) {
-                                    // The audio data is not decoded. We have to wait.
-                                    return -1;
-                                }
-                                var buffer = webAudio.decodedBuffer;
-                                if (buffer) {
-                                    return (buffer.duration * 1000)|0;
-                                }
-                            } else {
-                                // HTML5 AudioContext does not support this audio file format.
-                                var html5Audio = sdlAudio.audio;
-                                if (html5Audio) {
-                                    var duration = html5Audio.duration;
-                                    if (!duration) {
-                                        // TODO: find the way to separate errors. It could be a livelock
-                                        // The audio data is not loaded. We have to wait.
-                                        return -1;
-                                    } else {
-                                        return (duration * 1000)|0;
-                                    }
-                                }
-                            }
-                        }
-                        // Unknown error
-                        return -2;
-                    },
-                    pSound);
-            if (duration == -1) {
-                emscripten_sleep(20);
-            } else if (duration == -2) {
-                LOG_WARNING("Could not get sound duration for audio #" + ToStr((int) pSound));
-                duration = 0;
-            }
-        }
-        return duration;
-    }
-#endif
 
     SDL_Surface* CreateRGBSurface(Uint32 flags, int width, int height, int depth) {
         Uint32 rmask, gmask, bmask, amask;
@@ -548,19 +495,11 @@ namespace Util
 
     void RenderForcePresent(SDL_Renderer* pRenderer) {
         SDL_RenderPresent(pRenderer);
-#ifdef __EMSCRIPTEN__
-        // Update screen manually. SDL_RenderPresent does nothing.
-        emscripten_sleep(0);
-#endif
     }
 
     void Sleep(Uint32 ms) {
         if (ms > 0) {
-#ifndef __EMSCRIPTEN__
             SDL_Delay(ms);
-#else
-            emscripten_sleep(ms);
-#endif
         }
     }
 
@@ -583,20 +522,4 @@ namespace Util
         return ~crcu32;
     }
 
-#ifdef __EMSCRIPTEN__
-    bool GetCanvasSize(SDL_Point &canvasSize) {
-        int width = EM_ASM_INT(
-                {return (Module && Module.canvas) ? Module.canvas.scrollWidth : -1;}
-        );
-        int height = EM_ASM_INT(
-                {return (Module && Module.canvas) ? Module.canvas.scrollHeight : -1;}
-        );
-        if (width >= 640 && height >= 480) {
-            canvasSize.x = width;
-            canvasSize.y = height;
-            return true;
-        }
-        return false;
-    }
-#endif
 };

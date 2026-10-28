@@ -25,9 +25,6 @@
 
 #include <cctype>
 
-#ifdef __EMSCRIPTEN__
-#include <emscripten.h>
-#endif
 
 TiXmlElement* CreateDefaultDisplayConfig();
 TiXmlElement* CreateDefaultAudioConfig();
@@ -277,11 +274,6 @@ void BaseGameApp::StepLoop() {
 void Loop(void *instance) {
     auto self = static_cast<BaseGameApp*>(instance);
     self->StepLoop();
-#ifdef __EMSCRIPTEN__
-    if (!self->m_IsRunning) {
-        emscripten_cancel_main_loop();
-    }
-#endif
 }
 
 //=====================================================================================================================
@@ -294,14 +286,9 @@ int32 BaseGameApp::Run()
 {
     // Some systems (like web browsers) does not support infinite loops.
     // We need to return control after each loop steps.
-#ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop_arg(Loop, this, 0, 1);
-    // Loop must call emscripten_cancel_main_loop() to exit
-#else
     while (m_IsRunning) {
         Loop(this);
     }
-#endif
     Terminate();
     return 0;
 }
@@ -542,49 +529,6 @@ bool BaseGameApp::LoadGameOptions(const char* inConfigFile)
             displayElem->FirstChildElement("IsFullscreenDesktop"));
     }
 
-#ifdef __EMSCRIPTEN__
-    SDL_Point canvasSize;
-    if (Util::GetCanvasSize(canvasSize)) {
-        LOG(ToStr("Config window size is replaced by canvas size: ") + ToStr(canvasSize.x) + ToStr("x") + ToStr(canvasSize.y));
-        m_GameOptions.windowWidth = canvasSize.x;
-        m_GameOptions.windowHeight = canvasSize.y;
-    }
-
-
-    int savedWidth = EM_ASM_INT(if (window && window.localStorage && window.localStorage.width) {
-        return parseInt(window.localStorage.width);
-    } else {
-        return -1;
-    });
-    int savedHeight = EM_ASM_INT(if (window && window.localStorage && window.localStorage.height) {
-        return parseInt(window.localStorage.height);
-    } else {
-        return -1;
-    });
-    float savedScale = EM_ASM_INT(if (window && window.localStorage && window.localStorage.scale) {
-        return parseFloat(window.localStorage.scale);
-    } else {
-        return -1.0;
-    });
-
-    if (savedWidth > 0 && savedHeight > 0)
-    {
-        m_GameOptions.windowWidth = savedWidth;
-        m_GameOptions.windowHeight = savedHeight;
-
-        if (savedScale > 0)
-        {
-            m_GameOptions.scale = savedScale;
-        }
-        else
-        {
-            m_GameOptions.scale = (double)savedWidth / 640.0;
-        }
-    }
-
-    printf("Saved resolution: %d x %d @ %f\n", savedWidth, savedHeight, savedScale);
-
-#endif
 
     //-------------------------------------------------------------------------
     // Audio
@@ -602,8 +546,6 @@ bool BaseGameApp::LoadGameOptions(const char* inConfigFile)
             audioElem->FirstChildElement("ChunkSize"));
         ParseValueFromXmlElem(&m_GameOptions.timidityCfg,
             audioElem->FirstChildElement("TimidityCfg"));
-        ParseValueFromXmlElem(&m_GameOptions.midiRpcServerPath,
-            audioElem->FirstChildElement("MusiscRpcServerPath"));
         ParseValueFromXmlElem(&m_GameOptions.soundVolume,
             audioElem->FirstChildElement("SoundVolume"));
         ParseValueFromXmlElem(&m_GameOptions.musicVolume,
@@ -1555,7 +1497,6 @@ TiXmlElement* CreateDefaultAudioConfig()
     XML_ADD_TEXT_ELEMENT("ChunkSize", "2048", audio);
     XML_ADD_TEXT_ELEMENT("SoundVolume", "50", audio);
     XML_ADD_TEXT_ELEMENT("MusicVolume", "50", audio);
-    XML_ADD_TEXT_ELEMENT("MusicRpcServerPath", "MidiProc.exe", audio);
 
     return audio;
 }

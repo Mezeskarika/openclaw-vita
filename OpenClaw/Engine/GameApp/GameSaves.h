@@ -7,11 +7,7 @@
 #include <cerrno>
 #include <cstdlib>
 
-#ifdef __EMSCRIPTEN__
-#define IS_SAVE_SUPPORTED false
-#else
 #define IS_SAVE_SUPPORTED true
-#endif
 
 // This can be refactored into classes, but this is not a pressing concern for me right now
 // as it works as intended

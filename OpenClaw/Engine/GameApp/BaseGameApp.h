@@ -37,7 +37,6 @@ struct GameOptions
         musicVolume = 50; // In percents
         soundOn = true;
         musicOn = true;
-        midiRpcServerPath = "MidiProc.exe";
         timidityCfg = "";
 
         fontNames.push_back("clacon.ttf");
@@ -78,7 +77,6 @@ struct GameOptions
     int musicVolume;
     bool soundOn;
     bool musicOn;
-    std::string midiRpcServerPath;
     // Timidity config for MIDI music through SDL_mixer. Empty: SDL_mixer's default search
     std::string timidityCfg;
 

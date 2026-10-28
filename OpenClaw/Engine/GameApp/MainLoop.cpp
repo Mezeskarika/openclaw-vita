@@ -2,13 +2,9 @@
 #include "MainLoop.h"
 #include <fstream>
 
-#if !(defined(__ANDROID__) || defined(__WINDOWS__) || defined(__vita__))
+#ifndef __vita__
 #include <pwd.h>
 #include <unistd.h>
-#endif
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten.h>
 #endif
 
 #ifdef __vita__
@@ -56,11 +52,7 @@ int RunGameEngine(int argc, char** argv)
 
     std::string userDirectory = "";
 
-#if defined(__ANDROID__)
-    userDirectory = "/sdcard/claw/";
-#elif defined(__WINDOWS__)
-    userDirectory = "";
-#elif defined(__vita__)
+#ifdef __vita__
     userDirectory = "ux0:/data/openclaw/";
 
     mkdir(userDirectory.c_str(), 0777);
@@ -123,16 +115,5 @@ bool TryToFindFile(const char *path) {
             return true;
         }
     }
-#ifdef __EMSCRIPTEN__
-    // File does not exist. Try to download
-    emscripten_wget(path, path);
-    {
-        // Check is file downloaded
-        std::ifstream f(path);
-        if (f.good()) {
-            return true;
-        }
-    }
-#endif
     return false;
 }

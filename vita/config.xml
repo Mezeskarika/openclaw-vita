@@ -22,7 +22,6 @@
     <!-- Music is the game's MIDI tracks, played by SDL_mixer's Timidity with the FreePats
          instruments bundled in the VPK -->
     <MusicOn>true</MusicOn>
-    <MusicRpcServerPath></MusicRpcServerPath>
     <TimidityCfg>app0:/freepats/timidity.cfg</TimidityCfg>
   </Audio>
   <Font>

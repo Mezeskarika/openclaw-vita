@@ -53,9 +53,6 @@ namespace Util
         return container[randIdx];
     }
 
-#ifdef __EMSCRIPTEN__
-    bool GetCanvasSize(SDL_Point &canvasSize);
-#endif
 }
 
 #endif

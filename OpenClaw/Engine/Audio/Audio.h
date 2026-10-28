@@ -40,20 +40,7 @@ public:
     int GetMusicVolume();
 
 private:
-    //##### Methods #####//
-    bool InitializeMidiRPC(const std::string& midiRpcServerPath);
-    bool InitializeMidiRPCServer(const std::string& midiRpcServerPath);
-    bool InitializeMidiRPCClient();
-    bool IsRPCServerListening();
-
-    void TerminateMidiRPC();
-
-    //##### Members #####//
-    bool m_bIsServerInitialized;
-    bool m_bIsClientInitialized;
-    bool m_bIsMidiRpcInitialized;
     bool m_bIsAudioInitialized;
-    unsigned char* m_RpcBindingString;
     int m_SoundVolume;
     int m_MusicVolume;
     bool m_bSoundOn;
