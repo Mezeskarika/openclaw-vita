@@ -23,7 +23,7 @@ deciding on deliberately is the Linux host build used for profiling and smoke te
 | 3 | Save settings to `config.xml` | code, **done** | — |
 | 4 | Remappable buttons | code + menu, **step 1 done** | 13 (page) |
 | 5 | Real LiveArea artwork | art | — |
-| 6 | README: installation and config options | docs, **in progress** | — |
+| 6 | README: installation and config options | docs, **mostly done** | — |
 | 7 | CHANGELOG per tagged version, incl. divergences | docs, **done** | — |
 | 8 | Research the original game's Options submenus | research, **done** | — |
 | 9 | Strip everything the Vita build doesn't need | cleanup, **done** | — |
@@ -105,19 +105,15 @@ mapper yet. Needs: a menu item type that waits for a button press, saving the ta
 - Optional: `pic0.png` (960×544) for the home screen.
 - Check: install on Vita3K and hardware, icon and LiveArea display correctly.
 
-## 6. README: installation and config options **[in progress]**
+## 6. README: installation and config options **[mostly done]**
 
-Done: `README.md` covers requirements, install (VitaShell and Vita3K), updating (delete
-`config.xml`, keep `SAVES.XML`), the log file, controls, known limitations, development links and
-licences (OpenClaw GPL-3.0, FreePats GPL-2.0-or-later with exception). Release notes link to it
-instead of repeating those sections.
+`README.md` covers requirements, install (VitaShell and Vita3K), updating, the log file, controls
+and remapping, a settings reference for the `config.xml` options that matter on Vita, known
+limitations, development links and licences. Release notes link to it instead of repeating it.
 
-Still to do:
-- Config options that matter on Vita: `Size`/`Scale`, `UseVerticalSync`, `Frequency`,
-  `SoundVolume`, `MusicVolume`, `MusicOn`, `TimidityCfg`, `ResourceCacheSize`, `ShowFps`,
-  `LogFrameStats`, `FrontPlaneMode`, `SkipMenu`: what each does and sensible values.
-- Where `CLAW.REZ` comes from (which editions of the game include it).
-- Keep the controls table in sync with `GamepadMapper` (and with 4 once buttons are remappable).
+Still open:
+- Where `CLAW.REZ` comes from (which editions of the game have it and where it sits after install).
+- Keep the controls table and settings reference in sync as options change (4, 13).
 
 ## 7. CHANGELOG **[done]**
 

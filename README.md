@@ -57,6 +57,31 @@ without that section uses the defaults above.
 - Only the Audio page's settings exist in the menus so far; they are saved in `config.xml`.
 - Placeholder LiveArea artwork.
 
+## Settings (`config.xml`)
+
+`ux0:data/openclaw/config.xml` is created from the defaults on first start. The Audio page writes
+its settings there; everything else is edited by hand (copy it to a PC with VitaShell's FTP or
+USB mode, edit, copy back). Delete the file to get the defaults back. Options worth knowing:
+
+| Option | Default | What it does |
+|---|---|---|
+| `Display/Size`, `Display/Scale` | 960×544, 1 | Render size and zoom. At scale 1 you see 960×544 world pixels; 2 shows half as much, zoomed in. Keep the size at 960×544. |
+| `Display/UseVerticalSync` | true | Lock to the screen's 60 Hz. Turning it off gives no benefit on the Vita. |
+| `Audio/Frequency` | 22050 | Mixer rate. The game's sounds are 22,050 Hz; 44100 makes each sound get resampled the first time it plays (stutter). |
+| `Audio/SoundVolume`, `Audio/MusicVolume` | 10, 15 | Volumes, sound 0–100 in steps of 10, music 0–20. Set by the Audio page. |
+| `Audio/SoundOn`, `Audio/MusicOn` | true, true | Set by the Audio page. |
+| `Audio/TimidityCfg` | `app0:/freepats/timidity.cfg` | Instrument set for the music. Point it at another Timidity config on `ux0:` to use other instruments. |
+| `Assets/RezArchive` | `ux0:/data/openclaw/CLAW.REZ` | Where the original game data is. |
+| `Assets/ResourceCacheSize` | 50 | Memory (MB) for loaded game data. |
+| `ControlOptions/Gamepad` | see Controls | Button mapping. |
+| `GlobalOptions/ShowFps` | true | FPS counter in the corner. |
+| `GlobalOptions/LogFrameStats` | true | Frame-time breakdown in `ux0:data/SDL_Log.txt` every 2 seconds. |
+| `DebugOptions/SkipMenu`, `SkipMenuToLevel` | false, 1 | Start straight in the given level. |
+| `DebugOptions/FrontPlaneMode` | normal | `skip` hides the foreground layer (e.g. the columns in level 1). |
+
+The `GlobalOptions` gameplay values (jump height, speeds) are OpenClaw's tuning; changing them
+changes how the game plays.
+
 ## Development
 
 - **What's next:** [`vita/ROADMAP.md`](vita/ROADMAP.md)
