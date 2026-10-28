@@ -166,9 +166,11 @@ Build the desktop target in the Ubuntu container (`cmake -S . -B build && make`;
      Notes start with a bold download link to the VPK
      (`…/releases/download/<tag>/OpenClaw-Vita-X.Y.Z.vpk`) and a sentence saying the *Source code*
      archives are added by GitHub automatically and aren't needed to play (GitHub always adds them;
-     they can't be removed). Then: what's new (from the changelog), requirements (own `CLAW.REZ`),
-     install, controls, known limitations, licence. The release page orders by creation, so create
-     releases in version order.
+     they can't be removed). Then only what is specific to this version: a pre-release note, what's
+     new (from the changelog), and issues that a later version fixes. End with one line linking to
+     the README for requirements, installation, controls, known limitations and licence. Don't
+     repeat those in release notes; they live in `README.md`. The release page orders by creation,
+     so create releases in version order.
   5. The installed `gh` (2.4) has no `release edit`/`delete-asset`: use
      `gh api -X PATCH repos/<owner>/<repo>/releases/<id> -F body=@notes.md` and
      `gh api -X DELETE repos/<owner>/<repo>/releases/assets/<id>`.

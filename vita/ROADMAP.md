@@ -23,7 +23,7 @@ deciding on deliberately is the Linux host build used for profiling and smoke te
 | 3 | Save settings to `config.xml` | code | — |
 | 4 | Remappable buttons | code + menu | 3, 8 (page layout) |
 | 5 | Real LiveArea artwork | art | — |
-| 6 | README: installation and config options | docs | — |
+| 6 | README: installation and config options | docs, **in progress** | — |
 | 7 | CHANGELOG per tagged version, incl. divergences | docs, **done** | — |
 | 8 | Research the original game's Options submenus | research | — |
 | 9 | Strip everything the Vita build doesn't need | cleanup | decision on host build |
@@ -106,25 +106,19 @@ Even the Audio page's volume and music on/off are lost on restart.
 - Optional: `pic0.png` (960×544) for the home screen.
 - Check: install on Vita3K and hardware, icon and LiveArea display correctly.
 
-## 6. README: installation and config options **[todo]**
+## 6. README: installation and config options **[in progress]**
 
-The top-level `README.md` is a short Vita placeholder (links to releases, roadmap, build, and the
-original OpenClaw project). Expand it, or add a user-facing `vita/README.md` linked
-from it, with:
+Done: `README.md` covers requirements, install (VitaShell and Vita3K), updating (delete
+`config.xml`, keep `SAVES.XML`), the log file, controls, known limitations, development links and
+licences (OpenClaw GPL-3.0, FreePats GPL-2.0-or-later with exception). Release notes link to it
+instead of repeating those sections.
 
-- Requirements: a Vita on HENkaku/Ensō with VitaShell, or Vita3K; your own copy of `CLAW.REZ`
-  (where it comes from, that it isn't included).
-- Install: VPK via VitaShell, copy `CLAW.REZ` to `ux0:data/openclaw/`. Vita3K: the equivalent
-  folder under its pref path.
-- Controls (the `GamepadMapper` table).
-- Files in `ux0:data/openclaw/`: `config.xml` (copied from the VPK on first start; delete it to get
-  the defaults of a newer version back), `SAVES.XML`, and the log `ux0:data/SDL_Log.txt`.
+Still to do:
 - Config options that matter on Vita: `Size`/`Scale`, `UseVerticalSync`, `Frequency`,
   `SoundVolume`, `MusicVolume`, `MusicOn`, `TimidityCfg`, `ResourceCacheSize`, `ShowFps`,
-  `LogFrameStats`, `FrontPlaneMode`, `SkipMenu`.
-- Known limitations (unimplemented menus, no hardware testing yet), credits and licences (OpenClaw
-  GPL-3.0, FreePats GPL-2.0-or-later with exception).
-- Building it yourself: `vita/build.sh`, `tests/run.sh`.
+  `LogFrameStats`, `FrontPlaneMode`, `SkipMenu`: what each does and sensible values.
+- Where `CLAW.REZ` comes from (which editions of the game include it).
+- Keep the controls table in sync with `GamepadMapper` (and with 4 once buttons are remappable).
 
 ## 7. CHANGELOG **[done]**
 

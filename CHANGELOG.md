@@ -17,7 +17,9 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
 
 ### Changed
 - The README describes the Vita port and links to the original OpenClaw project instead of
-  carrying its README.
+  carrying its README. It now holds the requirements, installation, updating, controls and known
+  limitations, which the release notes link to instead of repeating.
+- Release files are named `OpenClaw-Vita-X.Y.Z.vpk`.
 - Repository history: upstream OpenClaw's 573 commits are replaced by a single import commit;
   the upstream history stays available at pjasicek/OpenClaw.
 
