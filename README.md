@@ -15,8 +15,8 @@ You need your own copy of `CLAW.REZ`, the original game's data file. It is not i
   [`vita/PERFORMANCE.md`](vita/PERFORMANCE.md)
 - **Building:** `vita/build.sh` builds `build-vita/openclaw.vpk` in Docker; `tests/run.sh` runs
   the unit tests
-- **Original OpenClaw README** (desktop builds, project background):
-  [`OPENCLAW_README.md`](OPENCLAW_README.md)
+- **Original project:** [pjasicek/OpenClaw](https://github.com/pjasicek/OpenClaw) (desktop builds,
+  project background)
 
 ## Licence
 

@@ -109,7 +109,7 @@ Even the Audio page's volume and music on/off are lost on restart.
 ## 6. README: installation and config options **[todo]**
 
 The top-level `README.md` is a short Vita placeholder (links to releases, roadmap, build, and the
-upstream README in `OPENCLAW_README.md`). Expand it, or add a user-facing `vita/README.md` linked
+original OpenClaw project). Expand it, or add a user-facing `vita/README.md` linked
 from it, with:
 
 - Requirements: a Vita on HENkaku/Ensō with VitaShell, or Vita3K; your own copy of `CLAW.REZ`
@@ -189,8 +189,8 @@ Candidates (sizes from the current tree):
 - Keep the Vita path identical: after stripping, `vita/build.sh` and `tests/run.sh` must still pass
   and the VPK must contain the same files.
 - Do it in small commits by area, so a removal that turns out to matter is easy to revert.
-- The upstream README now lives in `OPENCLAW_README.md` (it describes Windows, Linux, Android and
-  Emscripten builds). Trim it to project background and credits, or fold that into the README (6).
+- The upstream README was replaced by the Vita one; the README links to the original project
+  instead of keeping a copy.
 
 ## 10. CI job that builds the VPK **[todo]**
 
