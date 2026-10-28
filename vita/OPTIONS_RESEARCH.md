@@ -132,9 +132,27 @@ The original only ever made the view *smaller* (black bars top and bottom), for 
 the interesting direction is the other one: how much of the level is visible at 960×544.
 OpenClaw renders at window size × `<Scale>`; at scale 1 the Vita shows 960×544 world pixels, about
 1.5× the original's 640×480 width. Candidate options: "Wide (960×544)", "Original-like (scale
-≈1.13, shows 480 world pixels of height)", "Close (scale 1.5)". Roadmap 11 still needs to check
-how non-integer scales look and whether the HUD/menus cope; the original's letterbox shrink is not
-worth reproducing.
+≈1.13, shows 480 world pixels of height)", "Close (scale 1.5)". The original's letterbox shrink is
+not worth reproducing.
+
+**Experiment (roadmap 11), host build, level 1 start, scales 1 / 1.13 / 1.5:**
+- Changing `<Scale>` works without code changes: the camera, the in-game menu (stays centred and
+  usable) and the level all follow. The HUD scales with the view, so it gets bigger when zoomed in.
+- **Non-integer scales look uneven**: with SDL's default nearest-neighbour scaling some pixel rows
+  and columns are doubled and others not, which shows as irregular brick rows and occasional
+  one-pixel lines at tile edges. Integer scales (1, 2) are clean, but 2 shows only 480×272 of the
+  level, which is very close.
+- Ways to get clean in-between zoom levels: draw the frame at scale 1 into an off-screen render
+  target sized `960/scale × 544/scale`, then draw that texture to the screen with linear
+  filtering (smooth, slightly soft; one extra full-screen draw per frame); or set
+  `SDL_HINT_RENDER_SCALE_QUALITY` to linear for all tiles (cheaper, but tiles may show seams
+  where their edges get blended with transparent texels).
+- Caveat: host OpenGL filtering isn't Vita GXM filtering; look and cost need checking on Vita3K
+  and hardware.
+
+**Suggestion for the Display page:** View = Wide (scale 1, default) / Original (≈1.13) / Close
+(1.5), implemented with the render-target approach, plus Front layer on/off. Without the render
+target, offer only Wide and Close (2).
 
 ## Audio (already in OpenClaw)
 

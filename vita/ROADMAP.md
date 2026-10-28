@@ -28,7 +28,7 @@ deciding on deliberately is the Linux host build used for profiling and smoke te
 | 8 | Research the original game's Options submenus | research, **done** | — |
 | 9 | Strip everything the Vita build doesn't need | cleanup, **done** | — |
 | 10 | CI job that builds the VPK | infra, **written, not yet run** | — |
-| 11 | Research FOV / resolution settings for the Display menu | research | 8 |
+| 11 | Research FOV / resolution settings for the Display menu | research, **done** | — |
 | 12 | Plan difficulty settings (easy to hard options) | research, **planned** | 8 |
 | 13 | Implement the disabled Options submenus | code + menu | 3, 4, 8, 11, 12 |
 
@@ -171,7 +171,14 @@ with actionlint; it hasn't run on GitHub yet, because nothing has been pushed.
 Left out on purpose: building the Linux host build in CI (a development tool, not a product), and
 release automation (releases stay manual, see `CLAUDE.md`). Either can be added later.
 
-## 11. Research FOV and resolution for the Display menu **[research]**
+## 11. Research FOV and resolution for the Display menu **[done; implementation is part of 13]**
+
+Result in `vita/OPTIONS_RESEARCH.md` ("Game play area on Vita"): `<Scale>` already changes the
+view size cleanly at integer scales; in-between scales need a render-target pass to avoid uneven
+pixel rows. Suggested Display page: View (Wide / Original / Close) and Front layer on/off.
+
+Original notes:
+
 
 Could a Display page offer settings that actually change anything on a Vita?
 
