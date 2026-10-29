@@ -283,6 +283,9 @@ public:
     bool CanBeFocused();
     bool Press();
     SDL_Rect GetMenuItemRect();
+    // The image for the current state; a disabled item without its own uses the inactive one
+    // (outDarken: draw it darkened). NULL if there is none
+    shared_ptr<Image> GetCurrentImage(bool* outDarken = NULL) const;
 
     void OnStateChanged(MenuItemState newState, MenuItemState oldState);
 

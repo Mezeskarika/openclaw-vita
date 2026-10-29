@@ -1115,21 +1115,12 @@ void ScreenElementMenuItem::VOnUpdate(uint32 msDiff)
 
 void ScreenElementMenuItem::VOnRender(uint32 msDiff)
 {
-    shared_ptr<Image> pCurrImage = m_Images[m_State];
-
-    // Most buttons have no greyed-out image in the game data, so a disabled one
-    // is drawn as its inactive image, darkened
     bool darken = false;
-    if (pCurrImage == nullptr && m_State == MenuItemState_Disabled)
-    {
-        pCurrImage = m_Images[MenuItemState_Inactive];
-        darken = true;
-    }
-
+    shared_ptr<Image> pCurrImage = GetCurrentImage(&darken);
     if (pCurrImage == nullptr)
     {
         LOG_ERROR("Offending button: " + m_Name + " for state: " + ToStr(m_State));
-        assert(false && "Image is in invalid state - no image for given state was found");
+        return;
     }
 
     SDL_Rect renderRect;
@@ -1559,16 +1550,46 @@ void ScreenElementMenuItem::OnStateChanged(MenuItemState newState, MenuItemState
     }
 }
 
+shared_ptr<Image> ScreenElementMenuItem::GetCurrentImage(bool* outDarken) const
+{
+    if (outDarken)
+    {
+        *outDarken = false;
+    }
+
+    auto findIt = m_Images.find(m_State);
+    if (findIt != m_Images.end() && findIt->second)
+    {
+        return findIt->second;
+    }
+
+    // Most buttons have no greyed-out image in the game data, so a disabled one is drawn as its
+    // inactive image, darkened
+    if (m_State == MenuItemState_Disabled)
+    {
+        findIt = m_Images.find(MenuItemState_Inactive);
+        if (findIt != m_Images.end() && findIt->second)
+        {
+            if (outDarken)
+            {
+                *outDarken = true;
+            }
+            return findIt->second;
+        }
+    }
+    return nullptr;
+}
+
 SDL_Rect ScreenElementMenuItem::GetMenuItemRect()
 {
-    int itemWidth, itemHeight;
-    SDL_QueryTexture(m_Images[m_State]->GetTexture(), NULL, NULL, &itemWidth, &itemHeight);
+    // An empty rect never matches a tap
+    SDL_Rect itemRect = { (int)m_Position.x, (int)m_Position.y, 0, 0 };
 
-    SDL_Rect itemRect;
-    itemRect.x = (int)m_Position.x;
-    itemRect.y = (int)m_Position.y;
-    itemRect.w = itemWidth;
-    itemRect.h = itemHeight;
-
+    // Taps on a page with a greyed-out item crashed here before (0.4.0, 0.5.0): its state had no image
+    shared_ptr<Image> pImage = GetCurrentImage();
+    if (pImage)
+    {
+        SDL_QueryTexture(pImage->GetTexture(), NULL, NULL, &itemRect.w, &itemRect.h);
+    }
     return itemRect;
 }

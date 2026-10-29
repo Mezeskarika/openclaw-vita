@@ -10,6 +10,11 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
 
 ## [Unreleased]
 
+### Fixed
+- Tapping a menu page below a greyed-out item (e.g. Options or Quit on the main menu, Audio or
+  Back on the Options page) crashed the game (0.4.0 and 0.5.0). Found in a crash dump from a PS
+  Vita.
+
 ## [0.5.0] - 2026-10-29
 
 Difficulty, Display and cutscenes. Cutscenes were tried in Vita3K and on a PS Vita; the fix that
