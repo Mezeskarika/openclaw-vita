@@ -90,7 +90,10 @@ void ScreenElementHUD::VOnLostDevice()
 
 void ScreenElementHUD::VOnRender(uint32 msDiff)
 {
-    Point scale = g_pApp->GetScale();
+    // The HUD is drawn unzoomed: the Display page's play area slider zooms only the world
+    Point gameScale = g_pApp->GetScale();
+    g_pApp->SetScale(Point(1.0, 1.0));
+    Point scale(1.0, 1.0);
     int cameraWidth = m_pCamera->GetWidth();
 
     if (IsElementVisible("score"))
@@ -189,6 +192,8 @@ void ScreenElementHUD::VOnRender(uint32 msDiff)
         renderRect.y = pos.y;
         SDL_RenderCopy(m_pRenderer, m_pBossBarTexture, NULL, &renderRect);
     }
+
+    g_pApp->SetScale(gameScale);
 }
 
 void ScreenElementHUD::VOnUpdate(uint32 msDiff)

@@ -27,7 +27,6 @@ void SDL2HUDSceneNode::VRender(Scene* pScene)
     }
 
     HUDRenderComponent* hrc = static_cast<HUDRenderComponent*>(m_pRenderComponent);
-    Point scale = g_pApp->GetScale();
 
     shared_ptr<Image> actorImage = MakeStrongPtr(hrc->GetCurrentImage());
     if (!actorImage)
@@ -35,6 +34,11 @@ void SDL2HUDSceneNode::VRender(Scene* pScene)
         LOG_WARNING("Trying to render actor without active image. ActorId: " + ToStr(m_Properties.GetActorId()));
         return;
     }
+
+    // The HUD is drawn unzoomed: the Display page's play area slider zooms only the world
+    Point gameScale = g_pApp->GetScale();
+    g_pApp->SetScale(Point(1.0, 1.0));
+    Point scale(1.0, 1.0);
 
     int offsetX = hrc->IsMirrored() ? -actorImage->GetOffsetX() : actorImage->GetOffsetX();
     int offsetY = hrc->IsInverted() ? -actorImage->GetOffsetY() : actorImage->GetOffsetY();
@@ -71,4 +75,6 @@ void SDL2HUDSceneNode::VRender(Scene* pScene)
     SDL_Renderer* renderer = pScene->GetRenderer();
     SDL_RenderCopyEx(renderer, actorImage->GetTexture(), NULL, &renderRect, 0, NULL,
         hrc->IsMirrored() ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+
+    g_pApp->SetScale(gameScale);
 }

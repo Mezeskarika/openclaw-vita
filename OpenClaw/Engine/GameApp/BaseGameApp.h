@@ -26,6 +26,7 @@ struct GameOptions
         windowWidth = 1280;
         windowHeight = 780;
         scale = 1.0f;
+        showFrontLayer = true;
         useVerticalSync = true;
         isFullscreen = false;
         isFullscreenDesktop = false;
@@ -67,6 +68,8 @@ struct GameOptions
     int windowWidth;
     int windowHeight;
     double scale;
+    // The foreground tile plane (e.g. the columns in level 1), Options -> Display -> Front Layer
+    bool showFrontLayer;
     bool useVerticalSync;
     bool isFullscreen;
     bool isFullscreenDesktop;
@@ -306,7 +309,8 @@ public:
     bool SaveGameOptions();
 
     // Options the menus set by name (menu event "SetOption", visibility condition "Option"):
-    // "Difficulty" = Normal/Easy. Setting one applies it at once and saves the config
+    // "Difficulty" = Normal/Easy, "FrontLayer" = On/Off, "ViewZoom" = 1/2 (Display/Scale; "Toggle"
+    // switches). Setting one applies it at once and saves the config
     std::string GetMenuOption(const std::string& option) const;
     bool SetMenuOption(const std::string& option, const std::string& value);
 

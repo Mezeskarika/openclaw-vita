@@ -17,6 +17,10 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
   powerups are unchanged.
 - Menu labels that the game data has no image for are drawn with the Cinzel font (SIL Open Font
   Licence, bundled with its licence in `fonts/`).
+- Options → Display, with the original page's labels: Front layer on/off (hides the foreground
+  layer, e.g. the columns in level 1) and Game play area, which zooms the view: full view (1×) or
+  close up (2×, 480×272 world pixels). The HUD keeps its size. Saved in `config.xml`
+  (`<Display><FrontLayer>`, `<Display><Scale>`).
 
 ## [0.4.0] - 2026-10-29
 
@@ -140,8 +144,11 @@ How the port plays differently from Captain Claw (1997):
   The tracks themselves are the original ones.
 - **Difficulty** is a setting of its own (Options → Difficulty) that can be changed at any time.
   In the original it was chosen once per player, when the player was created.
-- **Options menu:** Edit Players, Controls and Display (and Multiplayer, Load Custom Level) are
-  greyed out. They were never implemented in OpenClaw.
+- **Display page:** Color depth and Detail are left out (no equivalent on the Vita, see
+  `vita/ROADMAP.md` item 13). The Game play area slider zooms the view instead of letterboxing it,
+  and has two stops.
+- **Options menu:** Edit Players and Controls (and Multiplayer, Load Custom Level) are greyed out.
+  They were never implemented in OpenClaw.
 
 [Unreleased]: https://github.com/Mezeskarika/openclaw-vita/compare/v0.4.0...HEAD
 [0.4.0]: https://github.com/Mezeskarika/openclaw-vita/compare/v0.3.0...v0.4.0

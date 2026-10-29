@@ -3,7 +3,11 @@
        edit the ux0: copy to change settings on the device. -->
   <Display>
     <Size width="960" height="544" />
+    <!-- View zoom: 1 shows 960x544 world pixels, 2 shows half of that, twice as big (Options ->
+         Display -> Game play area). Other values work but draw uneven pixel rows -->
     <Scale>1</Scale>
+    <!-- Foreground tile layer, e.g. the columns in level 1 (Options -> Display -> Front layer) -->
+    <FrontLayer>true</FrontLayer>
     <UseVerticalSync>true</UseVerticalSync>
     <IsFullscreen>false</IsFullscreen>
     <IsFullscreenDesktop>false</IsFullscreenDesktop>

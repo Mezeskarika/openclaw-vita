@@ -30,10 +30,10 @@ void SDL2TilePlaneSceneNode::VRender(Scene* pScene)
     shared_ptr<CameraNode> camera = pScene->GetCamera();
     SDL_Renderer* renderer = pScene->GetRenderer();
 
-    // Debug experiment, see DebugOptions::frontPlaneMode
+    // Options -> Display -> Front Layer, and the debug experiment (DebugOptions::frontPlaneMode)
     const std::string& frontPlaneMode = g_pApp->GetDebugOptions()->frontPlaneMode;
     bool isFrontPlane = pProperties->name == "Front";
-    if (isFrontPlane && frontPlaneMode == "skip")
+    if (isFrontPlane && (frontPlaneMode == "skip" || !g_pApp->GetGameConfig()->showFrontLayer))
     {
         return;
     }

@@ -545,6 +545,8 @@ bool BaseGameApp::LoadGameOptions(const char* inConfigFile)
 
         ParseValueFromXmlElem(&m_GameOptions.scale,
             displayElem->FirstChildElement("Scale"));
+        ParseValueFromXmlElem(&m_GameOptions.showFrontLayer,
+            displayElem->FirstChildElement("FrontLayer"));
         ParseValueFromXmlElem(&m_GameOptions.useVerticalSync,
             displayElem->FirstChildElement("UseVerticalSync"));
         ParseValueFromXmlElem(&m_GameOptions.isFullscreen,
@@ -828,6 +830,10 @@ bool BaseGameApp::SaveGameOptions()
     }
 
     // Only what the menus can change is written; everything else in the file stays as it was
+    std::ostringstream scaleStr;
+    scaleStr << m_GameOptions.scale;
+    SetConfigValue(pConfigRoot, "Display", "Scale", scaleStr.str());
+    SetConfigValue(pConfigRoot, "Display", "FrontLayer", m_GameOptions.showFrontLayer ? "true" : "false");
     SetConfigValue(pConfigRoot, "Audio", "SoundVolume", ToStr(m_GameOptions.soundVolume));
     SetConfigValue(pConfigRoot, "Audio", "MusicVolume", ToStr(m_GameOptions.musicVolume));
     SetConfigValue(pConfigRoot, "Audio", "SoundOn", m_GameOptions.soundOn ? "true" : "false");
@@ -859,6 +865,14 @@ std::string BaseGameApp::GetMenuOption(const std::string& option) const
     {
         return DifficultyToString(m_GameOptions.difficulty);
     }
+    else if (option == "FrontLayer")
+    {
+        return m_GameOptions.showFrontLayer ? "On" : "Off";
+    }
+    else if (option == "ViewZoom")
+    {
+        return m_GameOptions.scale >= 2.0 ? "2" : "1";
+    }
 
     LOG_WARNING("Unknown menu option: " + option);
     return "";
@@ -873,6 +887,22 @@ bool BaseGameApp::SetMenuOption(const std::string& option, const std::string& va
             LOG_WARNING("Unknown difficulty: " + value);
             return false;
         }
+    }
+    else if (option == "FrontLayer")
+    {
+        m_GameOptions.showFrontLayer = (value == "On");
+    }
+    else if (option == "ViewZoom")
+    {
+        // Whole numbers only: in between, nearest-neighbour scaling draws uneven pixel rows
+        // (roadmap 11). The menus draw unscaled and restore this scale after themselves
+        double zoom = (value == "Toggle") ? (m_GameOptions.scale >= 2.0 ? 1.0 : 2.0) : (value == "2" ? 2.0 : 1.0);
+        if (zoom == m_GameOptions.scale)
+        {
+            return true;
+        }
+        m_GameOptions.scale = zoom;
+        SetScale(Point(zoom, zoom));
     }
     else
     {

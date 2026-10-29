@@ -51,21 +51,22 @@ without that section uses the defaults above.
 
 ## Known limitations
 
-- Options → Edit Players, Controls and Display (also Multiplayer and Load Custom Level) are
-  greyed out: they were never implemented in OpenClaw. (In 0.3.0 and earlier they're selectable
-  but do nothing.)
-- Settings changed in the menus (Audio, Difficulty) are saved in `config.xml`.
+- Options → Edit Players and Controls (also Multiplayer and Load Custom Level) are greyed out:
+  they were never implemented in OpenClaw. (In 0.3.0 and earlier they're selectable but do
+  nothing.)
+- Settings changed in the menus (Audio, Difficulty, Display) are saved in `config.xml`.
 - Placeholder LiveArea artwork.
 
 ## Settings (`config.xml`)
 
-`ux0:data/openclaw/config.xml` is created from the defaults on first start. The Audio and
-Difficulty pages write their settings there; everything else is edited by hand (copy it to a PC with VitaShell's FTP or
+`ux0:data/openclaw/config.xml` is created from the defaults on first start. The Audio,
+Difficulty and Display pages write their settings there; everything else is edited by hand (copy it to a PC with VitaShell's FTP or
 USB mode, edit, copy back). Delete the file to get the defaults back. Options worth knowing:
 
 | Option | Default | What it does |
 |---|---|---|
-| `Display/Size`, `Display/Scale` | 960×544, 1 | Render size and zoom. At scale 1 you see 960×544 world pixels; 2 shows half as much, zoomed in. Keep the size at 960×544. |
+| `Display/Size`, `Display/Scale` | 960×544, 1 | Render size and zoom. At scale 1 you see 960×544 world pixels; 2 shows half as much, zoomed in (the Display page's Game play area slider). Other values work but draw uneven pixel rows. Keep the size at 960×544. |
+| `Display/FrontLayer` | true | The foreground layer (e.g. the columns in level 1). Set by the Display page. |
 | `Display/UseVerticalSync` | true | Lock to the screen's 60 Hz. Turning it off gives no benefit on the Vita. |
 | `Audio/Frequency` | 22050 | Mixer rate. The game's sounds are 22,050 Hz; 44100 makes each sound get resampled the first time it plays (stutter). |
 | `Audio/SoundVolume`, `Audio/MusicVolume` | 10, 15 | Volumes, sound 0–100 in steps of 10, music 0–20. Set by the Audio page. |
