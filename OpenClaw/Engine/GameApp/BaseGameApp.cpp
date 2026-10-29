@@ -360,7 +360,7 @@ void BaseGameApp::StepMovies(uint32 elapsedTime)
         m_pMoviePlayer = new MoviePlayer();
     }
 
-    bool skip = false;
+    std::string skipReason;
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
@@ -373,7 +373,10 @@ void BaseGameApp::StepMovies(uint32 elapsedTime)
                 OnEvent(event);
                 break;
             case SDL_KEYDOWN:
-                skip = skip || !event.key.repeat;
+                if (!event.key.repeat)
+                {
+                    skipReason = "key " + std::string(SDL_GetKeyName(event.key.keysym.sym));
+                }
                 break;
             case SDL_KEYUP:
                 // A key let go during the movie must not stay held in the game
@@ -393,12 +396,27 @@ void BaseGameApp::StepMovies(uint32 elapsedTime)
                         OnEvent(keyEvent);
                     }
                 }
-                skip = skip || event.type == SDL_CONTROLLERBUTTONDOWN;
+                if (event.type == SDL_CONTROLLERBUTTONDOWN)
+                {
+                    const char* pButton =
+                        SDL_GameControllerGetStringForButton((SDL_GameControllerButton)event.cbutton.button);
+                    skipReason = "button " + std::string(pButton ? pButton : "?");
+                }
                 break;
             }
             case SDL_MOUSEBUTTONDOWN:
+                skipReason = "tap";
+                break;
             case SDL_FINGERDOWN:
-                skip = true;
+                // Only the touchscreen: the Vita's rear touchpad sends finger events too, and the
+                // hands holding the console rest on it
+#if SDL_VERSION_ATLEAST(2, 0, 10)
+                if (SDL_GetTouchDeviceType(event.tfinger.touchId) != SDL_TOUCH_DEVICE_DIRECT)
+                {
+                    break;
+                }
+#endif
+                skipReason = "touch";
                 break;
             case SDL_CONTROLLERDEVICEADDED:
             case SDL_CONTROLLERDEVICEREMOVED:
@@ -409,10 +427,9 @@ void BaseGameApp::StepMovies(uint32 elapsedTime)
         }
     }
 
-    if (skip && m_pMoviePlayer->IsPlaying())
+    if (!skipReason.empty() && m_pMoviePlayer->IsPlaying())
     {
-        LOG("Movie skipped");
-        m_pMoviePlayer->Close();
+        m_pMoviePlayer->Stop("skipped by " + skipReason);
     }
 
     while (!m_pMoviePlayer->IsPlaying() && !m_MovieQueue.empty())

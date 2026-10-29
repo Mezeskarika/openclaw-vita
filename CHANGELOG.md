@@ -10,6 +10,11 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
 
 ## [Unreleased]
 
+### Fixed
+- Cutscenes stopped after a few seconds on a real Vita: a touch on the rear touchpad (where the
+  hands holding the console rest) counted as a skip. Only the touchscreen skips now. The log
+  (`ux0:data/SDL_Log.txt`) says for each movie why it ended and how smoothly it played.
+
 ## [0.5.0] - 2026-10-29
 
 ### Added

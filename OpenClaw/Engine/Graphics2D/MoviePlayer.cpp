@@ -38,10 +38,17 @@ MoviePlayer::MoviePlayer()
     m_ResampleStep(1.0),
     m_ResamplePos(0.0),
     m_MixerChannels(1),
-    m_Gain(1.0f)
+    m_Gain(1.0f),
+    m_MovieIndex(-1),
+    m_OpenMs(0),
+    m_FramesShown(0),
+    m_Updates(0),
+    m_WorkTicks(0),
+    m_WorstWorkTicks(0)
 {
     SDL_AtomicSet(&m_AudioWritten, 0);
     SDL_AtomicSet(&m_AudioRead, 0);
+    SDL_AtomicSet(&m_AudioUnderruns, 0);
 }
 
 MoviePlayer::~MoviePlayer()
@@ -111,6 +118,7 @@ bool MoviePlayer::Open(const std::string& fecPath, int movieIndex, SDL_Renderer*
                        float volume)
 {
     Close();
+    const uint32 openStart = SDL_GetTicks();
 
     FILE* pFile = fopen(fecPath.c_str(), "rb");
     if (!pFile)
@@ -202,6 +210,12 @@ bool MoviePlayer::Open(const std::string& fecPath, int movieIndex, SDL_Renderer*
 
     m_CurrentFrame = 0;
     m_ElapsedUs = 0.0;
+    m_MovieIndex = movieIndex;
+    m_FramesShown = 1;
+    m_Updates = 0;
+    m_WorkTicks = 0;
+    m_WorstWorkTicks = 0;
+    SDL_AtomicSet(&m_AudioUnderruns, 0);
     smk_first(m_pSmk);
     ConvertFrame();
     QueueFrameAudio();
@@ -212,10 +226,32 @@ bool MoviePlayer::Open(const std::string& fecPath, int movieIndex, SDL_Renderer*
         Mix_HookMusic(&MoviePlayerMixAudio, this);
     }
 
+    m_OpenMs = SDL_GetTicks() - openStart;
     LOG("Playing movie " + ToStr(movieIndex) + ": " + ToStr((int)m_Width) + "x" + ToStr((int)m_Height) +
         (m_bHalfHeight ? " (half height)" : "") + ", " + ToStr((int)m_FrameCount) + " frames at " +
-        ToStr((int)(1000000.0 / m_FrameDurationUs)) + " fps, " + soundInfo);
+        ToStr((int)(1000000.0 / m_FrameDurationUs)) + " fps, " + soundInfo + ", opened in " + ToStr((int)m_OpenMs) + " ms");
     return true;
+}
+
+void MoviePlayer::Stop(const std::string& reason)
+{
+    if (!m_pSmk)
+    {
+        return;
+    }
+
+    // Shown frames below the decoded ones mean the decoder fell behind; underruns mean the sound did
+    const double playedSeconds = m_ElapsedUs / 1000000.0;
+    const double msPerTick = 1000.0 / (double)SDL_GetPerformanceFrequency();
+    char stats[256];
+    snprintf(stats, sizeof(stats), "at frame %lu of %lu after %.1f s: %lu frames shown, loop %.1f fps, "
+        "decode %.2f ms per loop (worst %.1f), %d sound underruns",
+        m_CurrentFrame + 1, m_FrameCount, playedSeconds, m_FramesShown,
+        playedSeconds > 0.0 ? m_Updates / playedSeconds : 0.0,
+        m_Updates > 0 ? m_WorkTicks * msPerTick / m_Updates : 0.0, m_WorstWorkTicks * msPerTick,
+        SDL_AtomicGet(&m_AudioUnderruns));
+    LOG("Movie " + ToStr(m_MovieIndex) + " " + reason + " " + stats);
+    Close();
 }
 
 void MoviePlayer::Close()
@@ -250,12 +286,18 @@ void MoviePlayer::Update(uint32 msDiff)
     // After a long hitch (e.g. the system menu) carry on from where it was instead of racing to catch up
     m_ElapsedUs += msDiff < 500 ? msDiff * 1000.0 : m_FrameDurationUs;
 
+    const Uint64 workStart = SDL_GetPerformanceCounter();
     bool newFrame = false;
     while (m_ElapsedUs >= (m_CurrentFrame + 1) * m_FrameDurationUs)
     {
+        if (m_CurrentFrame + 1 >= m_FrameCount)
+        {
+            Stop("finished");
+            return;
+        }
         if (!DecodeNextFrame())
         {
-            Close();
+            Stop("stopped");
             return;
         }
         newFrame = true;
@@ -263,15 +305,17 @@ void MoviePlayer::Update(uint32 msDiff)
     if (newFrame)
     {
         ConvertFrame();
+        m_FramesShown++;
     }
+
+    const Uint64 work = SDL_GetPerformanceCounter() - workStart;
+    m_WorkTicks += work;
+    m_WorstWorkTicks = work > m_WorstWorkTicks ? work : m_WorstWorkTicks;
+    m_Updates++;
 }
 
 bool MoviePlayer::DecodeNextFrame()
 {
-    if (m_CurrentFrame + 1 >= m_FrameCount)
-    {
-        return false;
-    }
     if (smk_next(m_pSmk) == SMK_ERROR)
     {
         LOG_ERROR("Movie frame " + ToStr((int)m_CurrentFrame + 1) + " could not be decoded");
@@ -382,6 +426,10 @@ void MoviePlayer::MixAudio(Uint8* pStream, int len)
     const int read = SDL_AtomicGet(&m_AudioRead);
     int available = SDL_AtomicGet(&m_AudioWritten) - read;
     int count = available < samples ? available : samples;
+    if (count < samples)
+    {
+        SDL_AtomicIncRef(&m_AudioUnderruns);
+    }
 
     const size_t mask = m_AudioRing.size() - 1;
     for (int i = 0; i < count; i++)

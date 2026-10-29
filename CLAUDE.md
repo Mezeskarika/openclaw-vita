@@ -81,6 +81,10 @@ Every new source file must be added to its directory's `CMakeLists.txt` (`target
   stops the main loop.
 - **Memory/clocks:** `main.cpp` sets `_newlib_heap_size_user` (128 MB) and
   `sceUserMainThreadStackSize` (1 MB), and raises CPU to 444 MHz / GPU to 222 MHz.
+- **Touch:** SDL sends `SDL_FINGER*` events for the rear touchpad too (touch type
+  `SDL_TOUCH_DEVICE_INDIRECT_ABSOLUTE`, the touchscreen is `DIRECT`), and the hands holding the
+  console rest on it: check the type before reacting to a finger. Taps become mouse clicks only
+  from the touchscreen (`SDL_HINT_VITA_TOUCH_MOUSE_DEVICE`).
 - **Input:** `GamepadMapper` turns controller buttons and the left stick into the key events the
   game already handles (`BaseGameApp::OnEvent`). Gameplay reacts to key *events*; nothing in
   gameplay polls `SDL_GetKeyboardState`.
@@ -114,7 +118,9 @@ Every new source file must be added to its directory's `CMakeLists.txt` (`target
   named on the Replay Movies page, 10 and 11 unidentified (a 48 s montage, a 3.5 s ship at night).
   All but the logo are 320x240 at 15 fps; sound 22,050 Hz 16-bit stereo, mixed down to the mono
   mixer through `Mix_HookMusic`. `BaseGameApp::StepMovies` runs instead of the game while movies
-  are queued and pauses the game's sound. After-level mapping: `EndLevelScoreScreen.cpp`.
+  are queued and pauses the game's sound. After-level mapping: `EndLevelScoreScreen.cpp`. Each movie
+  logs one line when it ends: why (finished, skipped by what), frames shown, loop fps, decode time
+  and sound underruns.
 - Startup log noise that is expected: `[MEMORY_PROFILER] … not supported`, `Unknown ammo type`,
   `OnEnemyLeftAgroRange … no such actor`.
 

@@ -21,6 +21,8 @@ public:
     // one, at the original's 640x480) instead of stretched to fill the screen. volume: 0..1
     bool Open(const std::string& fecPath, int movieIndex, SDL_Renderer* pRenderer, bool isInterlaced, float volume);
     void Close();
+    // Logs how playback went (reason: why it ended), then closes the movie
+    void Stop(const std::string& reason);
 
     bool IsPlaying() const { return m_pSmk != NULL; }
 
@@ -67,6 +69,15 @@ private:
     std::vector<int16_t> m_AudioRing;
     SDL_atomic_t m_AudioWritten;
     SDL_atomic_t m_AudioRead;
+
+    // Playback stats, logged by Stop
+    int m_MovieIndex;
+    uint32 m_OpenMs;
+    unsigned long m_FramesShown;
+    unsigned long m_Updates;
+    Uint64 m_WorkTicks;
+    Uint64 m_WorstWorkTicks;
+    SDL_atomic_t m_AudioUnderruns;
 };
 
 #endif
