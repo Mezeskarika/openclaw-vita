@@ -175,6 +175,7 @@ struct GlobalOptions
         showFps = true;
         showPosition = true;
         logFrameStats = false;
+        logInput = false;
     }
 
     double maxJumpSpeed;
@@ -198,6 +199,8 @@ struct GlobalOptions
     bool showFps;
     bool showPosition;
     bool logFrameStats;
+    // Logs every gamepad button and stick direction pressed or released, and the key it became
+    bool logInput;
 };
 
 struct ControlOptions
@@ -283,6 +286,7 @@ public:
 
     // HW Events
     void OnEvent(SDL_Event& event);
+    void LogGamepadInput(const SDL_Event& event, const std::vector<SDL_Event>& keyEvents);
     void OnDisplayChange(int newWidth, int newHeight);
     void VOnRestore();
     void VOnMinimized();

@@ -43,6 +43,17 @@ endif (Vita)
 
 add_executable(openclaw "")
 
+# Which build wrote a log: vita/build.sh passes `git describe`; otherwise the version a `git archive`
+# export wrote into vita/version.txt
+if (NOT OPENCLAW_BUILD_ID)
+    file(STRINGS ${CMAKE_SOURCE_DIR}/vita/version.txt OPENCLAW_BUILD_ID LIMIT_COUNT 1)
+    if (NOT OPENCLAW_BUILD_ID OR OPENCLAW_BUILD_ID MATCHES "Format:")
+        set(OPENCLAW_BUILD_ID "unknown")
+    endif ()
+endif ()
+configure_file(${CMAKE_SOURCE_DIR}/OpenClaw/BuildId.h.in ${CMAKE_BINARY_DIR}/generated/BuildId.h)
+target_include_directories(openclaw PRIVATE ${CMAKE_BINARY_DIR}/generated)
+
 add_subdirectory(OpenClaw)
 
 # Linker settings

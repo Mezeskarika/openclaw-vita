@@ -1,1 +1,2 @@
 Build_Release/CLAW.REZ filter=lfs -text
+vita/version.txt export-subst

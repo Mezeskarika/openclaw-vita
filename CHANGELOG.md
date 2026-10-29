@@ -10,6 +10,12 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
 
 ## [Unreleased]
 
+### Added
+- The log (`ux0:data/SDL_Log.txt`) starts with the build it came from (`git describe`), each line
+  starts with the seconds since start-up, and with `<LogInput>` (on in the Vita config) every
+  button and stick direction is logged with the key it becomes. The file is kept open instead of
+  reopened for every line.
+
 ### Fixed
 - Tapping a menu page below a greyed-out item (e.g. Options or Quit on the main menu, Audio or
   Back on the Options page) crashed the game (0.4.0 and 0.5.0). Found in a crash dump from a PS

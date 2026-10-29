@@ -8,6 +8,11 @@
 namespace Logger
 {
     void GetOutputString(std::string& outOutputBuffer, const std::string& tag, const std::string& message, const char* funcName, const char* sourceFile, unsigned int lineNum);
+
+    // Sends every SDL_Log line to filePath (appended, kept open, flushed per line so the last lines
+    // before a crash survive), or to stderr if filePath is NULL. Each line starts with the seconds
+    // since start-up. Call before anything logs
+    void InstallLogSink(const char* filePath);
 }
 
 

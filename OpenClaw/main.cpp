@@ -1,5 +1,7 @@
 #include "Engine/GameApp/MainLoop.h"
 #include "ClawGameApp.h"
+#include "Engine/Logger/Logger.h"
+#include "BuildId.h"
 
 ClawGameApp testApp;
 
@@ -18,6 +20,13 @@ extern "C"
 
 int main(int argc, char* argv[])
 {
+#ifdef __vita__
+    Logger::InstallLogSink("ux0:data/SDL_Log.txt");
+#else
+    Logger::InstallLogSink(NULL);
+#endif
+    LOG("OpenClaw build " + std::string(OPENCLAW_BUILD_ID));
+
 #ifdef __vita__
     // Apps start at 333 MHz; run the CPU at its full 444 MHz and raise the GPU clocks to match.
     // Real hardware only - Vita3K ignores these.

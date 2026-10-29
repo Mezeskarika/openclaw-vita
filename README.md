@@ -86,6 +86,7 @@ USB mode, edit, copy back). Delete the file to get the defaults back. Options wo
 | `ControlOptions/Gamepad` | see Controls | Button mapping. |
 | `GlobalOptions/ShowFps` | true | FPS counter in the corner. |
 | `GlobalOptions/LogFrameStats` | true | Frame-time breakdown in `ux0:data/SDL_Log.txt` every 2 seconds. |
+| `GlobalOptions/LogInput` | true | Every button press and release in the log, for reporting control problems. |
 | `DebugOptions/SkipMenu`, `SkipMenuToLevel` | false, 1 | Start straight in the given level. |
 | `DebugOptions/FrontPlaneMode` | normal | `skip` hides the foreground layer (e.g. the columns in level 1). |
 

@@ -25,7 +25,13 @@ decisions), `vita/PERFORMANCE.md` (measurements and why the renderer is set up a
 - The first Vita build downloads FreePats from deb.debian.org (SHA-256 pinned in
   `vita/Freepats.cmake`) into `build-vita/`.
 - `build-vita/openclaw` (unstripped ELF) is needed to symbolize Vita crash dumps
-  (`.psp2dmp` → `vita-parse-core`). Keep it alongside any VPK that gets tested.
+  (`ux0:data/*.psp2dmp`; `.tmp` ones are incomplete). Keep it alongside any VPK that gets tested;
+  the log's first line says which build it was. To find a lost ELF, rebuild the tag from a clean
+  `git archive` export and compare `eboot.bin` (builds are reproducible). Symbolize with
+  xyzz/vita-parse-core inside the VitaSDK image (it calls `arm-vita-eabi-addr2line`): it is
+  Python 2 code, so it needs pyelftools 0.29 and a few `str`/`bytes` fixes in `util.py`, and the
+  crash PC plus the stack's code addresses go through `addr2line -f -i -C` (ELF address =
+  0x81000000 + the `openclaw@1` offset).
 - Docker containers run as root write root-owned files into mounted dirs; pass `-u 1000:1000` or
   `chown` at the end, or later cleanup fails.
 
@@ -64,8 +70,12 @@ Every new source file must be added to its directory's `CMakeLists.txt` (`target
   `ux0:data/openclaw/config.xml`** — say so whenever defaults change.
 - `CLAW.REZ` (original game data, user-supplied) is at `ux0:/data/openclaw/CLAW.REZ`;
   `<RezArchive>` may be an absolute path, other assets resolve against `<AssetsFolder>app0:/`.
-- **Logging:** `SDL_Log` on Vita appends to `ux0:data/SDL_Log.txt`, opening and closing the file
-  per line. Delete it before a test run. Avoid per-frame logging.
+- **Logging:** `Logger::InstallLogSink` (first thing in `main`) takes over `SDL_Log`: on Vita it
+  appends to `ux0:data/SDL_Log.txt`, keeps the file open and flushes every line (SDL's own output
+  reopened the file per line), and prefixes the seconds since start. The first line is the build
+  (`OpenClaw build v0.5.0-5-g…`, from `vita/build.sh`'s `git describe`; a `git archive` export
+  fills `vita/version.txt` instead). Delete the log before a test run. Avoid per-frame logging;
+  `<LogInput>` logs gamepad presses.
 - **Rendering:** `InitializeDisplay` forces SDL's `VITA gxm` driver (otherwise SDL picks GLES2 on
   vitaGL, which needs `libshacccg.suprx` on the device). Naming a driver makes SDL turn draw
   batching **off**, so `SDL_HINT_RENDER_BATCHING=1` is set explicitly. Without it the game ran at

@@ -15,12 +15,17 @@ if [ "$1" = "clean" ]; then
 fi
 mkdir -p "$BUILD_DIR"
 
+# Written into every log, so a test log says which commit it came from. A `git archive` export has
+# no repository; CMake then reads vita/version.txt, which the export filled in
+BUILD_ID="$(git -C "$ROOT" describe --tags --always --dirty 2>/dev/null || true)"
+
 docker run --rm \
     -u "$(id -u):$(id -g)" \
     -v "$ROOT":/src \
     -w /src/build-vita \
+    -e BUILD_ID="$BUILD_ID" \
     "$IMAGE" \
-    sh -c 'cmake -S /src -B . -DVita=ON && make -j"$(nproc)"'
+    sh -c 'cmake -S /src -B . -DVita=ON -DOPENCLAW_BUILD_ID="$BUILD_ID" && make -j"$(nproc)"'
 
 VPK="$BUILD_DIR/openclaw.vpk"
 echo "Contents of $VPK:"

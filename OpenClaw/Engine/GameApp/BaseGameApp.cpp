@@ -548,6 +548,10 @@ void BaseGameApp::OnEvent(SDL_Event& event)
             // Views only understand keys, so the gamepad is fed to them as keyboard events
             std::vector<SDL_Event> keyEvents;
             m_GamepadMapper.TranslateEvent(event, keyEvents);
+            if (m_GlobalOptions.logInput)
+            {
+                LogGamepadInput(event, keyEvents);
+            }
             for (SDL_Event& keyEvent : keyEvents)
             {
                 OnEvent(keyEvent);
@@ -602,6 +606,34 @@ void BaseGameApp::OnEvent(SDL_Event& event)
             break;
         }
     }
+}
+
+// One line per button press or release, or stick direction, with the keys it turned into
+void BaseGameApp::LogGamepadInput(const SDL_Event& event, const std::vector<SDL_Event>& keyEvents)
+{
+    std::string source;
+    if (event.type == SDL_CONTROLLERAXISMOTION)
+    {
+        if (keyEvents.empty())
+        {
+            return;
+        }
+        const char* pAxis = SDL_GameControllerGetStringForAxis((SDL_GameControllerAxis)event.caxis.axis);
+        source = "stick " + std::string(pAxis ? pAxis : "?");
+    }
+    else
+    {
+        const char* pButton = SDL_GameControllerGetStringForButton((SDL_GameControllerButton)event.cbutton.button);
+        source = std::string(pButton ? pButton : "?") + (event.type == SDL_CONTROLLERBUTTONDOWN ? " down" : " up");
+    }
+
+    std::string keys;
+    for (const SDL_Event& keyEvent : keyEvents)
+    {
+        keys += std::string(keys.empty() ? "" : ", ") + SDL_GetKeyName(keyEvent.key.keysym.sym) +
+            (keyEvent.type == SDL_KEYDOWN ? " down" : " up");
+    }
+    LOG("Input: " + source + " -> " + (keys.empty() ? std::string("no key") : keys));
 }
 
 void BaseGameApp::OnDisplayChange(int newWidth, int newHeight)
@@ -928,6 +960,8 @@ bool BaseGameApp::LoadGameOptions(const char* inConfigFile)
         ParseValueFromXmlElem(&m_GlobalOptions.logFrameStats,
             pGlobalOptionsRootElem->FirstChildElement("LogFrameStats"));
         FrameStats::SetEnabled(m_GlobalOptions.logFrameStats);
+        ParseValueFromXmlElem(&m_GlobalOptions.logInput,
+            pGlobalOptionsRootElem->FirstChildElement("LogInput"));
     }
 
     //-------------------------------------------------------------------------

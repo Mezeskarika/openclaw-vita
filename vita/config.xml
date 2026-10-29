@@ -88,6 +88,8 @@
     <ShowPosition>false</ShowPosition>
     <!-- Logs fps and a per-frame time breakdown to ux0:data/SDL_Log.txt every 2 seconds -->
     <LogFrameStats>true</LogFrameStats>
+    <!-- Logs every button press and release and the key it becomes, for reporting control bugs -->
+    <LogInput>true</LogInput>
   </GlobalOptions>
   <ControlOptions>
     <UseAlternateControls>false</UseAlternateControls>
