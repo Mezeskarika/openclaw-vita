@@ -7,8 +7,9 @@ starts.
 Status: **[todo]** not started, **[research]** needs findings before any code, **[blocked]** waits on
 another item.
 
-Current state (v0.4.0): the game boots in Vita3K, runs at 60 fps, plays music, saves and quits
-cleanly; menus work by touch and save their settings. A first run on real hardware has happened;
+Current state (v0.5.0): the game boots in Vita3K, runs at 60 fps, plays music, saves and quits
+cleanly; menus work by touch and save their settings. Difficulty and Display pages and the
+cutscenes are in, not yet checked in Vita3K. A first run on real hardware has happened;
 its logs are still to be looked at.
 
 **Scope: the PS Vita only.** Changes don't need to keep the Windows, Linux, macOS, Android or

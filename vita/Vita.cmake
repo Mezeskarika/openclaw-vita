@@ -4,7 +4,7 @@ include("${VITASDK}/share/vita.cmake" REQUIRED)
 
 set(VITA_APP_NAME "OpenClaw")
 set(VITA_TITLEID  "OCLW00001")
-set(VITA_VERSION  "00.40")
+set(VITA_VERSION  "00.50")
 
 vita_create_self(eboot.bin openclaw)
 

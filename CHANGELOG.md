@@ -10,6 +10,8 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-29
+
 ### Added
 - Main menu Options → Difficulty: Normal or Easy, changeable between games and saved in `config.xml`
   (`<Gameplay><Difficulty>`). Easy is the original game's Easy mode: Claw's sword, punches and
@@ -159,7 +161,8 @@ How the port plays differently from Captain Claw (1997):
   The last two clips in `CLAW.FEC` (48 s and 3.5 s, after The Ceremony) aren't played; where the
   original used them is not known yet.
 
-[Unreleased]: https://github.com/Mezeskarika/openclaw-vita/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/Mezeskarika/openclaw-vita/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/Mezeskarika/openclaw-vita/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/Mezeskarika/openclaw-vita/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Mezeskarika/openclaw-vita/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Mezeskarika/openclaw-vita/compare/v0.1.0...v0.2.0
