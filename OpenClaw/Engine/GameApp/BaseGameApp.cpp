@@ -86,6 +86,7 @@ bool BaseGameApp::Initialize(int argc, char** argv)
         LOG("No movies: " + m_GameOptions.moviesArchive + " not found (copy MOVIES/CLAW.FEC from the game CD there)");
     }
 
+    LOG(">>>>> Creating game logic and views...");
     m_pGame = VCreateGameAndView();
     if (!m_pGame)
     {
@@ -93,11 +94,17 @@ bool BaseGameApp::Initialize(int argc, char** argv)
         return false;
     }
 
+    // The log's timestamps show what each of these costs on the Vita's memory card
+    LOG(">>>>> Preloading /CLAW...");
     m_pResourceMgr->VPreload("/CLAW/*", NULL, ORIGINAL_RESOURCE);
+    LOG(">>>>> Preloading /GAME...");
     m_pResourceMgr->VPreload("/GAME/*", NULL, ORIGINAL_RESOURCE);
+    LOG(">>>>> Preloading /STATES...");
     m_pResourceMgr->VPreload("/STATES/*", NULL, ORIGINAL_RESOURCE);
 
+    LOG(">>>>> Preloading ASSETS.ZIP...");
     m_pResourceMgr->VPreload("*", NULL, CUSTOM_RESOURCE);
+    LOG("Start-up done");
 
     if (!VPerformStartupTests())
     {

@@ -450,21 +450,54 @@ uint32_t WAP_GetRezFilesCount(RezArchive* rezArchive)
     return g_rezArchiveFilesMap[rezArchive]->size();
 }
 
+// Reads a little-endian uint32 from a directory block; false past its end
+static bool BlockReadU32(const std::vector<char>& block, uint32_t offset, uint32_t& out)
+{
+    if (offset + 4 > block.size())
+    {
+        return false;
+    }
+    const unsigned char* p = (const unsigned char*)&block[offset];
+    out = p[0] | (p[1] << 8) | (p[2] << 16) | ((uint32_t)p[3] << 24);
+    return true;
+}
+
+// Reads a null-terminated name from a directory block; false if it runs past the end
+static bool BlockReadName(const std::vector<char>& block, uint32_t offset, std::string& out)
+{
+    out.clear();
+    while (offset < block.size())
+    {
+        char c = block[offset++];
+        if (c == 0)
+        {
+            return true;
+        }
+        out += c;
+    }
+    return false;
+}
+
+// Each directory's entries are one block of the file: read it whole and parse it in memory. Read field
+// by field (a seek and a small read each, tens of thousands for CLAW.REZ), opening the archive took
+// most of a minute on the PS Vita's memory card
 static void ReadRezDirectory(RezArchive*& rezArchive, RezDirectory* rezDirectory, std::ifstream* fileStream)
 {
     uint32_t i;
-    uint32_t currentOffset = rezDirectory->offset;
-    // Keeps track of how many more bytes need to be read in this directory - it
-    // specifies how much more of files/directories are remaining to be read
-    int32_t remainingBytes = (int32_t)rezDirectory->size;
+    std::vector<char> block(rezDirectory->size);
+    if (!block.empty())
+    {
+        fileStream->seekg(rezDirectory->offset, std::ios::beg);
+        fileStream->read(&block[0], block.size());
+    }
+    uint32_t currentOffset = 0;
 
     // Vectors which temporarily store loaded rez directories and files
     std::vector<RezDirectory*> loadedRezDirectories;
     std::vector<RezFile*> loadedRezFiles;
 
-    while (remainingBytes > 0)
+    while (currentOffset < block.size())
     {
-        uint32_t bytesRead = 0;
         uint32_t isDirectoryFlag;
         // This directory contains something, make sure directory contents are allocated
         if (rezDirectory->directoryContents == NULL)
@@ -474,79 +507,70 @@ static void ReadRezDirectory(RezArchive*& rezArchive, RezDirectory* rezDirectory
             (*rezDirectory->directoryContents) = { 0 };
         }
         // Determine whether next element is file or another directory
-        FileRead(&isDirectoryFlag, fileStream, currentOffset);
+        if (!BlockReadU32(block, currentOffset, isDirectoryFlag))
+        {
+            break;
+        }
         if (isDirectoryFlag)
         {
+            std::string directoryName;
+            uint32_t offset, size, dateAndTime;
+            if (!BlockReadU32(block, currentOffset + 4, offset) ||
+                !BlockReadU32(block, currentOffset + 8, size) ||
+                !BlockReadU32(block, currentOffset + 12, dateAndTime) ||
+                !BlockReadName(block, currentOffset + 16, directoryName))
+            {
+                break;
+            }
+
             // Create new rez directory
             RezDirectory* newRezDirectory = new RezDirectory;
             (*newRezDirectory) = { 0 };
             newRezDirectory->parent = rezDirectory;
-
+            newRezDirectory->offset = offset;
+            newRezDirectory->size = size;
+            newRezDirectory->dateAndTime = dateAndTime;
             loadedRezDirectories.emplace_back(newRezDirectory);
 
-            FileRead(&(newRezDirectory->offset),      fileStream, currentOffset + 4);
-            FileRead(&(newRezDirectory->size),        fileStream, currentOffset + 8);
-            FileRead(&(newRezDirectory->dateAndTime), fileStream, currentOffset + 12);
-
-            // Move cursor to directory name's offset
-            fileStream->seekg(currentOffset + 16, std::ios::beg);
-            std::string directoryName("");
-            // Read directory name. Directory name is terminated by null character
-            while (true)
-            {
-                char c = fileStream->get();
-                if (c == 0)
-                {
-                    break;
-                }
-                directoryName += c;
-            }
             // Convert C++ string to char*
             newRezDirectory->name = StdStringToCharArray(directoryName);
             // Convert to lowercase to maintain consistency
             ToLower(newRezDirectory->name);
 
-            bytesRead = 16 + directoryName.length() + 1;
-            remainingBytes -= bytesRead;
-            currentOffset += bytesRead;
+            currentOffset += 16 + directoryName.length() + 1;
 
             // Recursively read all directories
             ReadRezDirectory(rezArchive, newRezDirectory, fileStream);
         }
         else
         {
-            uint32_t unk;
+            std::string fileName;
+            uint32_t offset, size, dateAndTime, fileId;
+            if (!BlockReadU32(block, currentOffset + 4, offset) ||
+                !BlockReadU32(block, currentOffset + 8, size) ||
+                !BlockReadU32(block, currentOffset + 12, dateAndTime) ||
+                !BlockReadU32(block, currentOffset + 16, fileId) ||
+                currentOffset + 24 > block.size() ||
+                !BlockReadName(block, currentOffset + 28, fileName))
+            {
+                break;
+            }
 
             // Create new rez file
             RezFile* newRezFile = new RezFile;
             (*newRezFile) = { 0 };
             newRezFile->parent = rezDirectory;
             newRezFile->owner = rezArchive;
-
+            newRezFile->offset = offset;
+            newRezFile->size = size;
+            newRezFile->dateAndTime = dateAndTime;
+            newRezFile->fileId = fileId;
             loadedRezFiles.emplace_back(newRezFile);
 
-            FileRead(&(newRezFile->offset), fileStream, currentOffset + 4);
-            FileRead(&(newRezFile->size), fileStream, currentOffset + 8);
-            FileRead(&(newRezFile->dateAndTime), fileStream, currentOffset + 12);
-            FileRead(&(newRezFile->fileId), fileStream, currentOffset + 16);
-            // Extension in reverse order
-            fileStream->read(newRezFile->extension, 4);
+            // Extension in reverse order (at 20; an unknown value follows at 24)
+            memcpy(newRezFile->extension, &block[currentOffset + 20], 4);
             std::reverse(newRezFile->extension, newRezFile->extension + strlen(newRezFile->extension));
-            // Unknown dummy value
-            FileRead(&unk, fileStream, currentOffset + 24);
 
-            fileStream->seekg(currentOffset + 28, std::ios::beg);
-            std::string fileName("");
-            // Read file name. File name is terminated by null character
-            while (true)
-            {
-                char c = fileStream->get();
-                if (c == 0)
-                {
-                    break;
-                }
-                fileName += c;
-            }
             // Bare file name
             newRezFile->name = StdStringToCharArray(fileName);
 
@@ -554,12 +578,8 @@ static void ReadRezDirectory(RezArchive*& rezArchive, RezDirectory* rezDirectory
             std::string fileFullPath = GetRezFileFullPath(newRezFile);
             newRezFile->fullPathAndName = StdStringToCharArray(fileFullPath);
 
-            // Random NULL char
-            char c = fileStream->get();
-            
-            bytesRead = 28 + fileName.length() + 1 + 1;
-            remainingBytes -= bytesRead;
-            currentOffset += bytesRead;
+            // The name's terminator, then a random NULL char
+            currentOffset += 28 + fileName.length() + 1 + 1;
 
             // Convert everything to lower case to maintain consistency
             ToLower(newRezFile->name);

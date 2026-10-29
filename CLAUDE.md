@@ -68,6 +68,9 @@ Every new source file must be added to its directory's `CMakeLists.txt` (`target
   `MainLoop.cpp` copies `config.xml` and `SAVES.XML` there from `app0:`; later starts use the
   `ux0:` copies. **Changing `vita/config.xml` only reaches existing installs if the user deletes
   `ux0:data/openclaw/config.xml`** — say so whenever defaults change.
+- **File access is slow per call** on `ux0:` (each read or seek goes to the card): read in big
+  blocks. Opening `CLAW.REZ` field by field (197,000 calls) took about a minute; libwap now reads
+  each directory block whole (`ReadRezDirectory`).
 - `CLAW.REZ` (original game data, user-supplied) is at `ux0:/data/openclaw/CLAW.REZ`;
   `<RezArchive>` may be an absolute path, other assets resolve against `<AssetsFolder>app0:/`.
 - **Logging:** `Logger::InstallLogSink` (first thing in `main`) takes over `SDL_Log`: on Vita it

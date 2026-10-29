@@ -22,6 +22,9 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
   reopened for every line.
 
 ### Fixed
+- Starting the game took about a minute on a PS Vita: opening `CLAW.REZ` read its directory one
+  field at a time, about 197,000 small reads and seeks on the memory card. It now reads each
+  directory block at once (about 2,700 calls; the result is identical for all 13,077 files).
 - The analog stick is four directions: Up and Down only within 30° of straight up or down, Left and
   Right everywhere else. Pushing right and slightly up pressed Up as well, so at a ladder Claw kept
   climbing, couldn't walk off its top (Battlements, level 2) and ignored Jump with a direction;
