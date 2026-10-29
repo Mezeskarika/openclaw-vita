@@ -1,14 +1,15 @@
 # OpenClaw Vita port: roadmap
 
-What is still to do, as of 2026-10-28. `PLAN.md` is the stage-by-stage history of the port so far;
+What is still to do, as of 2026-10-29. `PLAN.md` is the stage-by-stage history of the port so far;
 this file is the work list from here on. Each item says what "done" means and where in the code it
 starts.
 
 Status: **[todo]** not started, **[research]** needs findings before any code, **[blocked]** waits on
 another item.
 
-Current state (v0.3.0): the game boots in Vita3K, runs at 60 fps, plays music,
-saves and quits cleanly. Nothing has run on real hardware yet.
+Current state (v0.4.0): the game boots in Vita3K, runs at 60 fps, plays music, saves and quits
+cleanly; menus work by touch and save their settings. A first run on real hardware has happened;
+its logs are still to be looked at.
 
 **Scope: the PS Vita only.** Changes don't need to keep the Windows, Linux, macOS, Android or
 WebAssembly builds working; item 9 removes what the Vita doesn't need. The one exception worth
@@ -22,15 +23,16 @@ deciding on deliberately is the Linux host build used for profiling and smoke te
 | 2 | Disable unimplemented menu items | menu data, **done** | — |
 | 3 | Save settings to `config.xml` | code, **done** | — |
 | 4 | Remappable buttons | code + menu, **step 1 done** | 13 (page) |
-| 5 | Real LiveArea artwork | art | — |
+| 5 | Real LiveArea artwork | art, **deferred: the maintainer provides the art** | — |
 | 6 | README: installation and config options | docs, **mostly done** | — |
 | 7 | CHANGELOG per tagged version, incl. divergences | docs, **done** | — |
 | 8 | Research the original game's Options submenus | research, **done** | — |
 | 9 | Strip everything the Vita build doesn't need | cleanup, **done** | — |
 | 10 | CI job that builds the VPK | infra, **written, not yet run** | — |
 | 11 | Research FOV / resolution settings for the Display menu | research, **done** | — |
-| 12 | Plan difficulty settings (easy to hard options) | research, **planned** | 8 |
-| 13 | Implement the disabled Options submenus | code + menu | 3, 4, 8, 11, 12 |
+| 12 | Plan difficulty settings (easy to hard options) | research, **decided** | 8 |
+| 13 | Implement the disabled Options submenus | code + menu, **Difficulty and Display in progress** | 3, 4, 8, 11, 12 |
+| 14 | Cutscenes from `CLAW.FEC` | code + menu, **in progress** | — |
 
 Suggested order: 2, 6 and 9 first (small, visible, and 9 makes everything after it simpler), then
 3 and 8 (they unblock 4, 11, 12, 13), then 1, 4, 11, 12, 13. 5 and 10 can happen any time.
@@ -94,7 +96,9 @@ special, plus "Revert to Defaults". Throw and direct weapon selection have no ga
 mapper yet. Needs: a menu item type that waits for a button press, saving the table through
 `SaveGameOptions` (`GetActionButtons` gives the config text), and re-enabling the Controls button.
 
-## 5. Real LiveArea artwork **[todo]**
+## 5. Real LiveArea artwork **[deferred]**
+
+The maintainer will provide the artwork; until then the placeholders stay.
 
 - Replace the placeholders from `vita/make_livearea.py` in `vita/sce_sys/`: `icon0.png` 128×128,
   `livearea/contents/bg.png` 840×500, `livearea/contents/startup.png` 280×158. All must be 8-bit
@@ -197,7 +201,13 @@ Could a Display page offer settings that actually change anything on a Vita?
 - Deliverable: which Display options are worth having (e.g. "View: Original / Wide / Close"),
   what each does on Vita, and the implementation sketch for 13.
 
-## 12. Plan difficulty settings **[planned; needs a decision]**
+## 12. Plan difficulty settings **[decided]**
+
+Decision (2026-10-29): **Normal and Easy**, as in the original. Easy multiplies Claw's melee damage
+by the Design Bible's Easy/Normal ratios (section 7.1) applied to OpenClaw's own values: sword,
+punch, kick and jump swipe ×4, ducking swipe ×5, catnip swipe ×2; ranged attacks, magic, dynamite
+and sword powerups unchanged. Unlike the original (difficulty fixed per player), it's a global
+setting on its own Options → Difficulty page, changeable at any time. Implemented in 13.
 
 Plan and recommendation in `vita/OPTIONS_RESEARCH.md` ("Difficulty"): the original's Easy mode
 raised Claw's melee damage (5 → 20); OpenClaw hard-codes it in `ClawControllableComponent`.
@@ -222,7 +232,23 @@ Lay out options from cheapest to most involved, then pick one:
 For each: what changes, which files, how to test it, and whether it affects saves (should a save
 remember its difficulty?). Recommendation and the Difficulty page layout go into 13.
 
-## 13. Implement the disabled Options submenus **[blocked on 3, 4, 8, 11, 12]**
+## 13. Implement the disabled Options submenus **[Difficulty and Display in progress]**
+
+Decisions (2026-10-29):
+
+- **Difficulty:** Normal / Easy page, see 12. Labels the game data doesn't have are drawn with a
+  font.
+- **Display:** the original page's labels from `CLAW.REZ`, where they make sense on the Vita:
+  - Front layer on/off (`FrontPlaneMode`).
+  - Game play area slider, used for the view size: integer zoom steps only (see 11).
+  - Color depth (8/16 bit): no equivalent on the Vita (SDL's GXM renderer has no shader hook, so
+    e.g. a saturation setting isn't possible); left out.
+  - Detail low/high: the original hid designer-flagged eye-candy and the sparkles around treasure.
+    No object in the 14 levels carries the designer flag, so only the sparkles would remain; left
+    out unless wanted later.
+  - Movies interlaced/stretched: comes with 14.
+- **Edit Players:** skipped for now.
+- **Controls:** later (4, step 2).
 
 Using the findings from 8, 11 and 12, build the pages that make sense on Vita and re-enable their
 buttons (undoing 2 for those):
@@ -235,3 +261,20 @@ buttons (undoing 2 for those):
 Every setting is saved through 3. The menus also need pages that change a value in place
 (left/right on a setting), as the Audio page already does for volume. Each page needs a Vita3K
 check, and the CHANGELOG (7) entry for it.
+
+## 14. Cutscenes from `CLAW.FEC` **[in progress]**
+
+The original's ten Smacker movies (Monolith logo, introduction, eight story scenes, plus credits)
+are in `MOVIES/CLAW.FEC` on the game CD (≈355 MB), not in `CLAW.REZ`. OpenClaw never played them.
+Like `CLAW.REZ`, the player copies the file from their own CD to `ux0:data/openclaw/`; without it
+the game runs as before.
+
+- Based on captain-claw-s60 (GPL-3.0, an OpenClaw port to Symbian that plays them): its
+  `MoviePlayer` finds each movie by walking the Smacker headers (the FEC directory is encrypted),
+  decodes with libsmacker (LGPL-2.1) and plays the intro at start-up and story scenes after
+  levels 2, 4, 6, 8, 10, 12, 13 and 14.
+- Vita changes: mono mixer, skip with any button (through `GamepadMapper`), music and sounds
+  stopped while a movie plays.
+- Menu: "Replay Movies" page; Display → Movies interlaced/stretched.
+- Check: needs `CLAW.FEC` next to `CLAW.REZ` in Vita3K's data folder; sound in sync, skipping,
+  no stuck keys afterwards, memory stays flat (streamed from the card, not loaded).
