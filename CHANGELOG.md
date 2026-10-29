@@ -11,6 +11,8 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
 ## [Unreleased]
 
 ### Added
+- While the game starts and while the menus are built after the start-up movies, the original's
+  title screen is shown instead of a black screen.
 - The selected menu item has a spinning gold coin on each side, as in the original (its own coin
   images from `CLAW.REZ`).
 - Options → Display → Game play area has four stops: 2× (zoomed in), 1× (the full view), and,

@@ -409,6 +409,9 @@ private:
     // One frame of movie playback instead of the game
     void StepMovies(uint32 elapsedTime);
     void PauseAudioForMovies(bool pause);
+    // The original's title screen, drawn and presented once: it stays up while start-up or building
+    // the menus blocks the main loop
+    void RenderTitleScreen();
 
     TiXmlDocument CreateAndReturnDefaultConfig(const char* inConfigFile);
 
@@ -419,6 +422,8 @@ private:
     std::vector<int> m_MovieQueue;
     bool m_bMoviesAvailable;
     bool m_bAudioPausedForMovies;
+    // The start-up movies are queued: show the title screen once they end, while the menus are built
+    bool m_bTitleAfterMovies;
     WapPal* m_pPalette;
 
     bool m_IsRunning;

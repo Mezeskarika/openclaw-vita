@@ -781,6 +781,7 @@ bool ScreenElementMenu::Initialize(TiXmlElement* pElem)
 
     m_pActiveMenuPage = m_MenuPageMap[m_DefaultMenuPage];
     assert(m_pActiveMenuPage != nullptr);
+    LOG("Menu built: " + ToStr((int)m_MenuPageMap.size()) + " pages");
 
     // Lets just assume that the background will take the whole screen
     // From that we can calculate current scale (can't use predefined scale here)

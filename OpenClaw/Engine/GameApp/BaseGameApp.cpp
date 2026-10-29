@@ -52,6 +52,7 @@ BaseGameApp::BaseGameApp()
     m_IsRunning = false;
     m_pMoviePlayer = nullptr;
     m_bMoviesAvailable = false;
+    m_bTitleAfterMovies = false;
     m_bAudioPausedForMovies = false;
     m_QuitRequested = false;
     m_IsQuitting = false;
@@ -70,6 +71,7 @@ bool BaseGameApp::Initialize(int argc, char** argv)
     if (!InitializeResources(m_GameOptions)) return false;
     if (!InitializeLocalization(m_GameOptions)) return false;
     if (!InitializeTouchManager(m_GameOptions)) return false;
+    RenderTitleScreen();
     if (!ReadActorXmlPrototypes(m_GameOptions)) return false;
     if (!ReadLevelMetadata(m_GameOptions)) return false;
 
@@ -118,9 +120,34 @@ bool BaseGameApp::Initialize(int argc, char** argv)
     if (m_GameOptions.playIntroMovies && !m_DebugOptions.bSkipMenu)
     {
         PlayMovies(std::vector<int>{ 0, 1 });
+        m_bTitleAfterMovies = m_bMoviesAvailable;
     }
 
     return true;
+}
+
+void BaseGameApp::RenderTitleScreen()
+{
+    shared_ptr<Image> pTitle = PcxResourceLoader::LoadAndReturnImage("/STATES/ATTRACT/SCREENS/TITLE.PCX");
+    if (!pTitle)
+    {
+        return;
+    }
+
+    // 640x480, as large as fits with its aspect kept
+    Point gameScale = GetScale();
+    SetScale(Point(1.0, 1.0));
+    SDL_SetRenderDrawColor(m_pRenderer, 0, 0, 0, 255);
+    SDL_RenderClear(m_pRenderer);
+    double fit = std::min(m_WindowSize.x / pTitle->GetWidth(), m_WindowSize.y / pTitle->GetHeight());
+    SDL_Rect dst;
+    dst.w = (int)(pTitle->GetWidth() * fit);
+    dst.h = (int)(pTitle->GetHeight() * fit);
+    dst.x = ((int)m_WindowSize.x - dst.w) / 2;
+    dst.y = ((int)m_WindowSize.y - dst.h) / 2;
+    SDL_RenderCopy(m_pRenderer, pTitle->GetTexture(), NULL, &dst);
+    SDL_RenderPresent(m_pRenderer);
+    SetScale(gameScale);
 }
 
 void BaseGameApp::Terminate()
@@ -453,8 +480,14 @@ void BaseGameApp::StepMovies(uint32 elapsedTime)
 
     if (!m_pMoviePlayer->IsPlaying())
     {
-        // Done: the game takes over from the next frame
+        // Done: the game takes over from the next frame. After the start-up movies that means
+        // building the menus, which takes a while on the Vita
         PauseAudioForMovies(false);
+        if (m_bTitleAfterMovies)
+        {
+            m_bTitleAfterMovies = false;
+            RenderTitleScreen();
+        }
         return;
     }
 
