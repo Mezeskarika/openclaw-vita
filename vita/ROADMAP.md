@@ -39,11 +39,11 @@ deciding on deliberately is the Linux host build used for profiling and smoke te
 | 17 | Start-up takes about a minute; loading screen | bug + code, **fixed (v0.6.0-alpha.2), needs hardware check** | — |
 | 18 | Cutscenes stutter on hardware | bug, **fixed (v0.6.0-alpha.1), needs hardware check** | — |
 | 19 | Death on spikes next to a portal | bug, **noticed, not solved (seen once)** | — |
-| 20 | Claw stands up on spikes at game over | bug, **research** | — |
-| 21 | Loading a save keeps the stats from when it was saved | research, then code | — |
+| 20 | Claw stands up on spikes at game over | bug, **fixed (v0.6.0-alpha.3), needs hardware check** | — |
+| 21 | Loading a save keeps the stats from when it was saved | **done (v0.6.0-alpha.3): original behaviour, now a setting** | — |
 | 22 | Moving platforms push Claw; he slides off edges (hardware only) | bug, **likely fixed (v0.6.0-alpha.2), needs hardware check** | — |
 | 23 | Ladders: no jump with a direction; stuck at a ladder top (level 2) | bug, **likely fixed (v0.6.0-alpha.2), needs hardware check** | — |
-| 24 | Options page for changes that differ from the original | code + menu, **blocked** | 20, 21, 22, 23 |
+| 24 | Options page for changes that differ from the original | code + menu, **done (v0.6.0-alpha.3): Options → Gameplay** | — |
 | 25 | Spinning coins next to the selected menu item | code, **done (v0.6.0-alpha.2)** | — |
 | 26 | Zoom out: Game play area 0.5× and 0.75× | code + menu, **done (v0.6.0-alpha.2), needs hardware check** | — |
 
@@ -409,12 +409,27 @@ Claw fell on spikes next to a portal and died; the dying sprite shook, he respaw
 other end in the air while still dying, and the portal was gone in the next life. Reproduce on the
 desktop build (`startup_commands.txt` teleport) once the level and place are known.
 
-## 20. Claw stands up on spikes at game over **[research]**
+## 20. Claw stands up on spikes at game over **[fixed in v0.6.0-alpha.3; needs a hardware check]**
+
+A bug, not the original's behaviour (the original has its own death-on-spikes animation; no source
+has him standing up). On the last life `VOnAnimationLooped` put him back on his feet after sending
+Claw_Died; he now stays on the death animation's last frame. Not reproduced on the desktop.
+
+Original analysis:
 
 When the last life is lost, Claw stands up on the deadly spikes while the game-over screen runs.
 Find out what the original showed; fix (stay in the death pose).
 
-## 21. Loading a save keeps the stats from when it was saved **[research, then code]**
+## 21. Loading a save keeps the stats from when it was saved **[done in v0.6.0-alpha.3]**
+
+The original did the same: super checkpoints (golden flags) stored score, health, lives and ammo,
+and Load Game restored them (Captain Claw wiki, "Checkpoint"; Design Bible 6.1.1.2.1.4). So it's a
+setting on the Gameplay page (24): New game (default) keeps the score and takes lives, health and
+ammo from level 1's start in `SAVES.XML`; As saved is the original's behaviour. Checked on the
+desktop with a crafted save point. The `AddCheckpointSave ... unitialized` line in the 10-28 log is
+still to be looked at.
+
+Original analysis:
 
 Load Game starts with the lives, health and ammo Claw had when he reached the save point, not a new
 game's. The original saved automatically at the end of each level and at super checkpoints (Design
@@ -456,7 +471,12 @@ which keys reached the game. Find out what the original allowed (the Design Bibl
 lists "Climb top of ladder" as unfinished in 1997), fix in `ClawControllableComponent` (`VOnClimb`, `VOnStopClimbing`) and the
 top-of-ladder ground (`FixtureType_TopLadderGround`).
 
-## 24. Options page for changes that differ from the original **[blocked on 20-23]**
+## 24. Options page for changes that differ from the original **[done in v0.6.0-alpha.3]**
+
+Options → Gameplay. Of 20-23 only 21 turned out to be the original's behaviour, so the page has one
+setting so far: Loaded games. 20 was a bug; 22 and 23 came from the analog stick, which the
+original didn't have.
+
 
 One new page under Options (Cinzel labels, like Difficulty) with an on/off setting for each change in
 20-23 that turns out to differ from the original, saved through `SetMenuOption`/`SaveGameOptions`.
