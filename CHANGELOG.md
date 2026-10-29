@@ -17,6 +17,10 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
   reopened for every line.
 
 ### Fixed
+- Cutscenes stuttered on a PS Vita in busy scenes (e.g. the cannons in the introduction), picture
+  and sound. The decoder was built without optimisation, and decoded each frame only when it was
+  due; it is now optimised and runs on its own thread, up to half a second ahead. Each movie's log
+  line now has the wall-clock time, dropped frames and decode times.
 - Tapping a menu page below a greyed-out item (e.g. Options or Quit on the main menu, Audio or
   Back on the Options page) crashed the game (0.4.0 and 0.5.0). Found in a crash dump from a PS
   Vita.

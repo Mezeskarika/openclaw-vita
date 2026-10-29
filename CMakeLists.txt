@@ -11,6 +11,8 @@ project(OpenClaw)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# For C too: libsmacker (the cutscene decoder) is C, and was built unoptimised before 0.6.0
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -g")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -g")
 
 # CMake compiled directories with dependencies
