@@ -52,6 +52,13 @@
             <Type>Button</Type>
             <Hotkey>R</Hotkey>
             <State>Disabled</State>
+            <!-- Needs the movies, CLAW.FEC from the game CD -->
+            <StateCondition>
+                <ConditionForState>Inactive</ConditionForState>
+                <ConditionType>Option</ConditionType>
+                <Option>MoviesAvailable</Option>
+                <Value>Yes</Value>
+            </StateCondition>
             <InactiveImage>/STATES/MENU/IMAGES/MAIN/005_REPLAYMOVIES.PCX</InactiveImage>
             <ActiveImage>/STATES/MENU/IMAGES/MAIN/006_REPLAYMOVIES.PCX</ActiveImage>
             <DisabledImage>/STATES/MENU/IMAGES/MAIN/007_REPLAYMOVIES.PCX</DisabledImage>
@@ -2670,6 +2677,96 @@
             <Position x="376" y="282" />
         </MenuItem>
         <MenuItem>
+            <Name>MOVIES_INTERLACED_BUTTON</Name>
+            <Type>Button</Type>
+            <State>Active</State>
+            <VisibilityCondition>
+                <ConditionType>Option</ConditionType>
+                <Option>Movies</Option>
+                <Value>Interlaced</Value>
+            </VisibilityCondition>
+            <InactiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/DISPLAY/015_MOVIES.PCX</InactiveImage>
+            <ActiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/DISPLAY/017_MOVIES.PCX</ActiveImage>
+            <Position x="122" y="325" />
+            <GeneratedEvent>
+                <Type>SetOption</Type>
+                <Option>Movies</Option>
+                <Value>Stretched</Value>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemVisibility</Type>
+                <MenuItemName>MOVIES_INTERLACED_BUTTON</MenuItemName>
+                <IsVisible>false</IsVisible>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemState</Type>
+                <MenuItemName>MOVIES_INTERLACED_BUTTON</MenuItemName>
+                <State>Inactive</State>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemVisibility</Type>
+                <MenuItemName>MOVIES_STRETCHED_BUTTON</MenuItemName>
+                <IsVisible>true</IsVisible>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemState</Type>
+                <MenuItemName>MOVIES_STRETCHED_BUTTON</MenuItemName>
+                <State>Active</State>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>PlaySound</Type>
+                <SoundName>/STATES/MENU/SOUNDS/SELECT.WAV</SoundName>
+                <Volume>100</Volume>
+                <IsMusic>false</IsMusic>
+                <Loops>-0</Loops>
+            </GeneratedEvent>
+        </MenuItem>
+        <MenuItem>
+            <Name>MOVIES_STRETCHED_BUTTON</Name>
+            <Type>Button</Type>
+            <State>Active</State>
+            <VisibilityCondition>
+                <ConditionType>Option</ConditionType>
+                <Option>Movies</Option>
+                <Value>Stretched</Value>
+            </VisibilityCondition>
+            <InactiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/DISPLAY/016_MOVIES.PCX</InactiveImage>
+            <ActiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/DISPLAY/018_MOVIES.PCX</ActiveImage>
+            <Position x="122" y="325" />
+            <GeneratedEvent>
+                <Type>SetOption</Type>
+                <Option>Movies</Option>
+                <Value>Interlaced</Value>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemVisibility</Type>
+                <MenuItemName>MOVIES_STRETCHED_BUTTON</MenuItemName>
+                <IsVisible>false</IsVisible>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemState</Type>
+                <MenuItemName>MOVIES_STRETCHED_BUTTON</MenuItemName>
+                <State>Inactive</State>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemVisibility</Type>
+                <MenuItemName>MOVIES_INTERLACED_BUTTON</MenuItemName>
+                <IsVisible>true</IsVisible>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemState</Type>
+                <MenuItemName>MOVIES_INTERLACED_BUTTON</MenuItemName>
+                <State>Active</State>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>PlaySound</Type>
+                <SoundName>/STATES/MENU/SOUNDS/SELECT.WAV</SoundName>
+                <Volume>100</Volume>
+                <IsMusic>false</IsMusic>
+                <Loops>-0</Loops>
+            </GeneratedEvent>
+        </MenuItem>
+        <MenuItem>
             <Name>BACK_BUTTON</Name>
             <Type>Button</Type>
             <State>Active</State>
@@ -2679,6 +2776,168 @@
             <GeneratedEvent>
                 <Type>SwitchPage</Type>
                 <PageName>MenuPage_Options</PageName>
+            </GeneratedEvent>
+        </MenuItem>
+    </MenuPage>
+
+    <!-- REPLAY MOVIES PAGE: the movies of CLAW.FEC (indices in <Movies>, see MoviePlayer.h) -->
+    <MenuPage>
+        <PageName>MenuPage_ReplayMovies</PageName>
+        <KeyboardEvent>
+            <KeyType>Escape</KeyType>
+            <GeneratedEvent>
+                <Type>SwitchPage</Type>
+                <PageName>MenuPage_Main</PageName>
+            </GeneratedEvent>
+        </KeyboardEvent>
+
+        <MenuItem>
+            <Name>REPLAY_MOVIES_TITLE_TEXT</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <InactiveImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/033_TITLE.PCX</InactiveImage>
+            <Position x="center" y="146" />
+        </MenuItem>
+        <MenuItem>
+            <Name>COMBINED_CUTSCENES_BUTTON</Name>
+            <Type>Button</Type>
+            <State>Active</State>
+            <InactiveImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/001_MOVIEONE.PCX</InactiveImage>
+            <ActiveImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/002_MOVIEONE.PCX</ActiveImage>
+            <DisabledImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/003_MOVIEONE.PCX</DisabledImage>
+            <Position x="center" y="190" />
+            <GeneratedEvent>
+                <Type>PlayMovies</Type>
+                <Movies>1,2,3,4,5,6,7,8,9</Movies>
+            </GeneratedEvent>
+        </MenuItem>
+        <MenuItem>
+            <Name>INTRODUCTION_BUTTON</Name>
+            <Type>Button</Type>
+            <State>Active</State>
+            <InactiveImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/004_MOVIETWO.PCX</InactiveImage>
+            <ActiveImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/005_MOVIETWO.PCX</ActiveImage>
+            <DisabledImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/006_MOVIETWO.PCX</DisabledImage>
+            <Position x="center" y="216" />
+            <GeneratedEvent>
+                <Type>PlayMovies</Type>
+                <Movies>1</Movies>
+            </GeneratedEvent>
+        </MenuItem>
+        <MenuItem>
+            <Name>ESCAPE_BUTTON</Name>
+            <Type>Button</Type>
+            <State>Active</State>
+            <InactiveImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/007_MOVIETHREE.PCX</InactiveImage>
+            <ActiveImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/008_MOVIETHREE.PCX</ActiveImage>
+            <DisabledImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/009_MOVIETHREE.PCX</DisabledImage>
+            <Position x="center" y="242" />
+            <GeneratedEvent>
+                <Type>PlayMovies</Type>
+                <Movies>2</Movies>
+            </GeneratedEvent>
+        </MenuItem>
+        <MenuItem>
+            <Name>OUT_OF_THE_WOODS_BUTTON</Name>
+            <Type>Button</Type>
+            <State>Active</State>
+            <InactiveImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/010_MOVIEFOUR.PCX</InactiveImage>
+            <ActiveImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/011_MOVIEFOUR.PCX</ActiveImage>
+            <DisabledImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/012_MOVIEFOUR.PCX</DisabledImage>
+            <Position x="center" y="268" />
+            <GeneratedEvent>
+                <Type>PlayMovies</Type>
+                <Movies>3</Movies>
+            </GeneratedEvent>
+        </MenuItem>
+        <MenuItem>
+            <Name>THE_TAVERN_BUTTON</Name>
+            <Type>Button</Type>
+            <State>Active</State>
+            <InactiveImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/013_MOVIEFIVE.PCX</InactiveImage>
+            <ActiveImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/014_MOVIEFIVE.PCX</ActiveImage>
+            <DisabledImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/015_MOVIEFIVE.PCX</DisabledImage>
+            <Position x="center" y="294" />
+            <GeneratedEvent>
+                <Type>PlayMovies</Type>
+                <Movies>4</Movies>
+            </GeneratedEvent>
+        </MenuItem>
+        <MenuItem>
+            <Name>THE_CHASE_BUTTON</Name>
+            <Type>Button</Type>
+            <State>Active</State>
+            <InactiveImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/016_MOVIESIX.PCX</InactiveImage>
+            <ActiveImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/017_MOVIESIX.PCX</ActiveImage>
+            <DisabledImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/018_MOVIESIX.PCX</DisabledImage>
+            <Position x="center" y="320" />
+            <GeneratedEvent>
+                <Type>PlayMovies</Type>
+                <Movies>5</Movies>
+            </GeneratedEvent>
+        </MenuItem>
+        <MenuItem>
+            <Name>REUNION_BUTTON</Name>
+            <Type>Button</Type>
+            <State>Active</State>
+            <InactiveImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/019_MOVIESEVEN.PCX</InactiveImage>
+            <ActiveImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/020_MOVIESEVEN.PCX</ActiveImage>
+            <DisabledImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/021_MOVIESEVEN.PCX</DisabledImage>
+            <Position x="center" y="346" />
+            <GeneratedEvent>
+                <Type>PlayMovies</Type>
+                <Movies>6</Movies>
+            </GeneratedEvent>
+        </MenuItem>
+        <MenuItem>
+            <Name>TIGER_ISLAND_BUTTON</Name>
+            <Type>Button</Type>
+            <State>Active</State>
+            <InactiveImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/022_MOVIEEIGHT.PCX</InactiveImage>
+            <ActiveImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/023_MOVIEEIGHT.PCX</ActiveImage>
+            <DisabledImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/024_MOVIEEIGHT.PCX</DisabledImage>
+            <Position x="center" y="372" />
+            <GeneratedEvent>
+                <Type>PlayMovies</Type>
+                <Movies>7</Movies>
+            </GeneratedEvent>
+        </MenuItem>
+        <MenuItem>
+            <Name>WE_MEET_AGAIN_BUTTON</Name>
+            <Type>Button</Type>
+            <State>Active</State>
+            <InactiveImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/025_MOVIENINE.PCX</InactiveImage>
+            <ActiveImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/026_MOVIENINE.PCX</ActiveImage>
+            <DisabledImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/027_MOVIENINE.PCX</DisabledImage>
+            <Position x="center" y="398" />
+            <GeneratedEvent>
+                <Type>PlayMovies</Type>
+                <Movies>8</Movies>
+            </GeneratedEvent>
+        </MenuItem>
+        <MenuItem>
+            <Name>THE_CEREMONY_BUTTON</Name>
+            <Type>Button</Type>
+            <State>Active</State>
+            <InactiveImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/028_MOVIETEN.PCX</InactiveImage>
+            <ActiveImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/029_MOVIETEN.PCX</ActiveImage>
+            <DisabledImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/030_MOVIETEN.PCX</DisabledImage>
+            <Position x="center" y="424" />
+            <GeneratedEvent>
+                <Type>PlayMovies</Type>
+                <Movies>9</Movies>
+            </GeneratedEvent>
+        </MenuItem>
+        <MenuItem>
+            <Name>BACK_BUTTON</Name>
+            <Type>Button</Type>
+            <State>Active</State>
+            <InactiveImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/031_BACK.PCX</InactiveImage>
+            <ActiveImage>/STATES/MENU/IMAGES/MAIN/REPLAYMOVIES/032_BACK.PCX</ActiveImage>
+            <Position x="center" y="450" />
+            <GeneratedEvent>
+                <Type>SwitchPage</Type>
+                <PageName>MenuPage_Main</PageName>
             </GeneratedEvent>
         </MenuItem>
     </MenuPage>

@@ -7,6 +7,7 @@
 #include "../UserInterface/HumanView.h"
 #include "../Resource/ResourceMgr.h"
 #include "../Graphics2D/Image.h"
+#include "../Graphics2D/MoviePlayer.h"
 
 // Resource loaders
 #include "../Resource/Loaders/DefaultLoader.h"
@@ -49,6 +50,9 @@ BaseGameApp::BaseGameApp()
     m_pTouchManager = nullptr;
     m_pGameController = nullptr;
     m_IsRunning = false;
+    m_pMoviePlayer = nullptr;
+    m_bMoviesAvailable = false;
+    m_bAudioPausedForMovies = false;
     m_QuitRequested = false;
     m_IsQuitting = false;
 }
@@ -71,6 +75,17 @@ bool BaseGameApp::Initialize(int argc, char** argv)
 
     RegisterAllDelegates();
 
+    // Checked once, before the menus are built: the Replay Movies button depends on it
+    if (FILE* pMoviesFile = fopen(m_GameOptions.moviesArchive.c_str(), "rb"))
+    {
+        fclose(pMoviesFile);
+        m_bMoviesAvailable = true;
+    }
+    else
+    {
+        LOG("No movies: " + m_GameOptions.moviesArchive + " not found (copy MOVIES/CLAW.FEC from the game CD there)");
+    }
+
     m_pGame = VCreateGameAndView();
     if (!m_pGame)
     {
@@ -91,6 +106,12 @@ bool BaseGameApp::Initialize(int argc, char** argv)
     }
 
     m_IsRunning = true;
+
+    // Monolith logo and the introduction, unless a debug option goes straight into a level
+    if (m_GameOptions.playIntroMovies && !m_DebugOptions.bSkipMenu)
+    {
+        PlayMovies(std::vector<int>{ 0, 1 });
+    }
 
     return true;
 }
@@ -115,6 +136,7 @@ void BaseGameApp::Terminate()
 
     RemoveAllDelegates();
 
+    SAFE_DELETE(m_pMoviePlayer);
     SAFE_DELETE(m_pGame);
     SDL_DestroyRenderer(m_pRenderer);
     SDL_DestroyWindow(m_pWindow);
@@ -231,6 +253,12 @@ void BaseGameApp::StepLoop() {
         }
         consecutiveLagSpikes = 0;
 
+        if (IsPlayingMovies())
+        {
+            StepMovies(elapsedTime);
+            return;
+        }
+
         // Handle all input events
         while (SDL_PollEvent(&event))
         {
@@ -282,6 +310,141 @@ void Loop(void *instance) {
 //
 //    Handle events -> update game -> render views
 //=====================================================================================================================
+
+void BaseGameApp::PlayMovies(const std::vector<int>& movies)
+{
+    if (!m_bMoviesAvailable)
+    {
+        return;
+    }
+    m_MovieQueue.insert(m_MovieQueue.end(), movies.begin(), movies.end());
+}
+
+bool BaseGameApp::IsPlayingMovies() const
+{
+    return !m_MovieQueue.empty() || (m_pMoviePlayer && m_pMoviePlayer->IsPlaying());
+}
+
+// The game's sounds and music stop while movies play and carry on afterwards
+void BaseGameApp::PauseAudioForMovies(bool pause)
+{
+    if (pause == m_bAudioPausedForMovies)
+    {
+        return;
+    }
+    m_bAudioPausedForMovies = pause;
+
+    if (pause)
+    {
+        Mix_Pause(-1);
+        Mix_PauseMusic();
+    }
+    else
+    {
+        // Only what the settings had on
+        if (m_pAudio->IsSoundActive())
+        {
+            Mix_Resume(-1);
+        }
+        if (m_pAudio->IsMusicActive())
+        {
+            Mix_ResumeMusic();
+        }
+    }
+}
+
+void BaseGameApp::StepMovies(uint32 elapsedTime)
+{
+    if (!m_pMoviePlayer)
+    {
+        m_pMoviePlayer = new MoviePlayer();
+    }
+
+    bool skip = false;
+    SDL_Event event;
+    while (SDL_PollEvent(&event))
+    {
+        switch (event.type)
+        {
+            case SDL_QUIT:
+            case SDL_APP_TERMINATING:
+                m_MovieQueue.clear();
+                m_pMoviePlayer->Close();
+                OnEvent(event);
+                break;
+            case SDL_KEYDOWN:
+                skip = skip || !event.key.repeat;
+                break;
+            case SDL_KEYUP:
+                // A key let go during the movie must not stay held in the game
+                OnEvent(event);
+                break;
+            case SDL_CONTROLLERBUTTONDOWN:
+            case SDL_CONTROLLERBUTTONUP:
+            case SDL_CONTROLLERAXISMOTION:
+            {
+                // Through the mapper, so it keeps track of what is held. Any button skips the movie
+                std::vector<SDL_Event> keyEvents;
+                m_GamepadMapper.TranslateEvent(event, keyEvents);
+                for (SDL_Event& keyEvent : keyEvents)
+                {
+                    if (keyEvent.type == SDL_KEYUP)
+                    {
+                        OnEvent(keyEvent);
+                    }
+                }
+                skip = skip || event.type == SDL_CONTROLLERBUTTONDOWN;
+                break;
+            }
+            case SDL_MOUSEBUTTONDOWN:
+            case SDL_FINGERDOWN:
+                skip = true;
+                break;
+            case SDL_CONTROLLERDEVICEADDED:
+            case SDL_CONTROLLERDEVICEREMOVED:
+                OnEvent(event);
+                break;
+            default:
+                break;
+        }
+    }
+
+    if (skip && m_pMoviePlayer->IsPlaying())
+    {
+        LOG("Movie skipped");
+        m_pMoviePlayer->Close();
+    }
+
+    while (!m_pMoviePlayer->IsPlaying() && !m_MovieQueue.empty())
+    {
+        int movieIndex = m_MovieQueue.front();
+        m_MovieQueue.erase(m_MovieQueue.begin());
+
+        PauseAudioForMovies(true);
+        float volume = m_pAudio->IsSoundActive() ? m_pAudio->GetSoundVolume() / 100.0f : 0.0f;
+        m_pMoviePlayer->Open(m_GameOptions.moviesArchive, movieIndex, m_pRenderer,
+            m_GameOptions.interlacedMovies, volume);
+        elapsedTime = 0;
+    }
+
+    if (!m_pMoviePlayer->IsPlaying())
+    {
+        // Done: the game takes over from the next frame
+        PauseAudioForMovies(false);
+        return;
+    }
+
+    m_pMoviePlayer->Update(elapsedTime);
+
+    // Movies are drawn on the whole window, unzoomed
+    Point gameScale = GetScale();
+    SetScale(Point(1.0, 1.0));
+    SDL_SetRenderDrawColor(m_pRenderer, 0, 0, 0, 255);
+    SDL_RenderClear(m_pRenderer);
+    m_pMoviePlayer->Render(m_pRenderer, (int)m_WindowSize.x, (int)m_WindowSize.y);
+    SDL_RenderPresent(m_pRenderer);
+    SetScale(gameScale);
+}
 
 int32 BaseGameApp::Run()
 {
@@ -547,6 +710,11 @@ bool BaseGameApp::LoadGameOptions(const char* inConfigFile)
             displayElem->FirstChildElement("Scale"));
         ParseValueFromXmlElem(&m_GameOptions.showFrontLayer,
             displayElem->FirstChildElement("FrontLayer"));
+        std::string moviesStr;
+        if (ParseValueFromXmlElem(&moviesStr, displayElem->FirstChildElement("Movies")))
+        {
+            m_GameOptions.interlacedMovies = (moviesStr != "Stretched");
+        }
         ParseValueFromXmlElem(&m_GameOptions.useVerticalSync,
             displayElem->FirstChildElement("UseVerticalSync"));
         ParseValueFromXmlElem(&m_GameOptions.isFullscreen,
@@ -593,6 +761,8 @@ bool BaseGameApp::LoadGameOptions(const char* inConfigFile)
         {
             LOG_WARNING("Unknown difficulty " + difficultyStr + ", using Normal (options: Normal, Easy)");
         }
+        ParseValueFromXmlElem(&m_GameOptions.playIntroMovies,
+            pGameplayElem->FirstChildElement("PlayIntroMovies"));
     }
 
     //-------------------------------------------------------------------------
@@ -607,6 +777,8 @@ bool BaseGameApp::LoadGameOptions(const char* inConfigFile)
             assetsElem->FirstChildElement("RezArchive")));
         DO_AND_CHECK(ParseValueFromXmlElem(&m_GameOptions.customArchive,
             assetsElem->FirstChildElement("CustomArchive")));
+        ParseValueFromXmlElem(&m_GameOptions.moviesArchive,
+            assetsElem->FirstChildElement("MoviesArchive"));
         DO_AND_CHECK(ParseValueFromXmlElem(&m_GameOptions.resourceCacheSize,
             assetsElem->FirstChildElement("ResourceCacheSize")));
         ParseValueFromXmlElem(&m_GameOptions.tempDir,
@@ -834,6 +1006,7 @@ bool BaseGameApp::SaveGameOptions()
     scaleStr << m_GameOptions.scale;
     SetConfigValue(pConfigRoot, "Display", "Scale", scaleStr.str());
     SetConfigValue(pConfigRoot, "Display", "FrontLayer", m_GameOptions.showFrontLayer ? "true" : "false");
+    SetConfigValue(pConfigRoot, "Display", "Movies", m_GameOptions.interlacedMovies ? "Interlaced" : "Stretched");
     SetConfigValue(pConfigRoot, "Audio", "SoundVolume", ToStr(m_GameOptions.soundVolume));
     SetConfigValue(pConfigRoot, "Audio", "MusicVolume", ToStr(m_GameOptions.musicVolume));
     SetConfigValue(pConfigRoot, "Audio", "SoundOn", m_GameOptions.soundOn ? "true" : "false");
@@ -873,6 +1046,14 @@ std::string BaseGameApp::GetMenuOption(const std::string& option) const
     {
         return m_GameOptions.scale >= 2.0 ? "2" : "1";
     }
+    else if (option == "Movies")
+    {
+        return m_GameOptions.interlacedMovies ? "Interlaced" : "Stretched";
+    }
+    else if (option == "MoviesAvailable")
+    {
+        return m_bMoviesAvailable ? "Yes" : "No";
+    }
 
     LOG_WARNING("Unknown menu option: " + option);
     return "";
@@ -903,6 +1084,10 @@ bool BaseGameApp::SetMenuOption(const std::string& option, const std::string& va
         }
         m_GameOptions.scale = zoom;
         SetScale(Point(zoom, zoom));
+    }
+    else if (option == "Movies")
+    {
+        m_GameOptions.interlacedMovies = (value == "Interlaced");
     }
     else
     {
@@ -1629,6 +1814,8 @@ void BaseGameApp::RegisterAllDelegates()
         this, &BaseGameApp::QuitGameDelegate), EventData_Quit_Game::sk_EventType);
     IEventMgr::Get()->VAddListener(MakeDelegate(
         this, &BaseGameApp::SetMenuOptionDelegate), EventData_Menu_Set_Option::sk_EventType);
+    IEventMgr::Get()->VAddListener(MakeDelegate(
+        this, &BaseGameApp::PlayMoviesDelegate), EventData_Play_Movies::sk_EventType);
 }
 
 void BaseGameApp::RemoveAllDelegates()
@@ -1637,6 +1824,8 @@ void BaseGameApp::RemoveAllDelegates()
         this, &BaseGameApp::QuitGameDelegate), EventData_Quit_Game::sk_EventType);
     IEventMgr::Get()->VRemoveListener(MakeDelegate(
         this, &BaseGameApp::SetMenuOptionDelegate), EventData_Menu_Set_Option::sk_EventType);
+    IEventMgr::Get()->VRemoveListener(MakeDelegate(
+        this, &BaseGameApp::PlayMoviesDelegate), EventData_Play_Movies::sk_EventType);
 }
 
 void BaseGameApp::QuitGameDelegate(IEventDataPtr pEventData)
@@ -1651,6 +1840,12 @@ void BaseGameApp::SetMenuOptionDelegate(IEventDataPtr pEventData)
     shared_ptr<EventData_Menu_Set_Option> pCastEventData =
         static_pointer_cast<EventData_Menu_Set_Option>(pEventData);
     SetMenuOption(pCastEventData->GetOption(), pCastEventData->GetValue());
+}
+
+void BaseGameApp::PlayMoviesDelegate(IEventDataPtr pEventData)
+{
+    shared_ptr<EventData_Play_Movies> pCastEventData = static_pointer_cast<EventData_Play_Movies>(pEventData);
+    PlayMovies(pCastEventData->GetMovies());
 }
 
 //=====================================================================================================================

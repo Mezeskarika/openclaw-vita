@@ -36,7 +36,7 @@ decisions), `vita/PERFORMANCE.md` (measurements and why the renderer is set up a
 | `OpenClaw/` | Game (`Claw*.cpp`, `ActorController.cpp`) and engine (`Engine/`: Actor components, Audio, Events, GameApp, Physics, Resource, Scene, UserInterface, Util) |
 | `libwap/` | Readers for the original formats: REZ archive, WWD levels, PID images, PAL, ANI, XMI→MIDI |
 | `Box2D/` | Bundled Box2D 2.3.2. Use this one; the SDK's box2d is a different version |
-| `ThirdParty/` | TinyXML, FastDelegate, and **old SDL 2.0.4 headers in `ThirdParty/SDL2/`**: the Vita build must not see them (see gotchas); the host unit tests compile against them |
+| `ThirdParty/` | TinyXML, FastDelegate, libsmacker (Smacker decoder, unmodified 1.2.0), and **old SDL 2.0.4 headers in `ThirdParty/SDL2/`**: the Vita build must not see them (see gotchas); the host unit tests compile against them |
 | `Build_Release/` | Runtime files. `ASSETS/` (menus `MENU.xml`, actor prototypes, level metadata) is zipped into `ASSETS.ZIP` by the Vita build (`vita/Assets.cmake` → `vita/tools/make_assets_zip.py`), so edit `ASSETS/`, not the zip. The game's zip reader needs sizes in the local headers: don't switch to `cmake -E tar` or other streaming zip writers; `SAVES.XML` template, `clacon.ttf`, `console02.tga` |
 | `vita/` | `Vita.cmake` (VPK packaging), `Freepats.cmake`, `config.xml` (Vita defaults), `timidity.cfg`, `sce_sys/` LiveArea, `tools/`, docs |
 | `tests/` | Host unit tests (`GamepadMapperTests.cpp`) |
@@ -108,6 +108,13 @@ Every new source file must be added to its directory's `CMakeLists.txt` (`target
   without an image in `CLAW.REZ` use `<Label size="…">Text</Label>` (drawn with Cinzel from
   `Build_Release/fonts/`), and `<Position x="center">` centres an item on the 640-wide menu.
   TinyXML reformats the file and trims trailing spaces in values when it writes it.
+- **Cutscenes:** `CLAW.FEC` (from the CD, `<MoviesArchive>`) is 12 Smacker files back to back; its
+  own directory is encrypted, so `MoviePlayer::FindMovieOffset` walks from header to header. Order:
+  0 Monolith logo (640x240, half height, 30 fps), 1 introduction (7 min), 2–9 the story scenes as
+  named on the Replay Movies page, 10 and 11 unidentified (a 48 s montage, a 3.5 s ship at night).
+  All but the logo are 320x240 at 15 fps; sound 22,050 Hz 16-bit stereo, mixed down to the mono
+  mixer through `Mix_HookMusic`. `BaseGameApp::StepMovies` runs instead of the game while movies
+  are queued and pauses the game's sound. After-level mapping: `EndLevelScoreScreen.cpp`.
 - Startup log noise that is expected: `[MEMORY_PROFILER] … not supported`, `Unknown ammo type`,
   `OnEnemyLeftAgroRange … no such actor`.
 

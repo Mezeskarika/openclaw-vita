@@ -8,6 +8,9 @@
     <Scale>1</Scale>
     <!-- Foreground tile layer, e.g. the columns in level 1 (Options -> Display -> Front layer) -->
     <FrontLayer>true</FrontLayer>
+    <!-- Cutscenes: Interlaced (original size, every other line, the original's default) or
+         Stretched (fills the screen). Options -> Display -> Movies -->
+    <Movies>Interlaced</Movies>
     <UseVerticalSync>true</UseVerticalSync>
     <IsFullscreen>false</IsFullscreen>
     <IsFullscreenDesktop>false</IsFullscreenDesktop>
@@ -31,6 +34,8 @@
   <Gameplay>
     <!-- Normal or Easy (Claw's sword, punches and kicks hit harder). Set in Options -> Difficulty -->
     <Difficulty>Normal</Difficulty>
+    <!-- Monolith logo and the introduction at start-up (needs CLAW.FEC, see Assets) -->
+    <PlayIntroMovies>true</PlayIntroMovies>
   </Gameplay>
   <Font>
     <Fontt>clacon.ttf</Fontt>
@@ -40,6 +45,8 @@
     <!-- Bundled read-only assets live in the VPK; the original game archive is supplied by the user -->
     <AssetsFolder>app0:/</AssetsFolder>
     <RezArchive>ux0:/data/openclaw/CLAW.REZ</RezArchive>
+    <!-- The cutscenes: MOVIES/CLAW.FEC from the game CD. Optional; without it there are no movies -->
+    <MoviesArchive>ux0:/data/openclaw/CLAW.FEC</MoviesArchive>
     <CustomArchive>ASSETS.ZIP</CustomArchive>
     <ResourceCacheSize>50</ResourceCacheSize>
     <TempDir>ux0:/data/openclaw/</TempDir>

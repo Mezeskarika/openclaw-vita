@@ -11,6 +11,8 @@
 #include "../Audio/Audio.h"
 
 #include <cctype>
+#include <cstdlib>
+#include <sstream>
 
 std::map<std::string, MenuPage> g_StringToMenuPageEnumMap =
 {
@@ -383,6 +385,21 @@ static IEventDataPtr XmlElemToGeneratedEvent(TiXmlElement* pElem)
         ParseValueFromXmlElem(&isMusic, pElem->FirstChildElement("IsMusic"));
 
         pEventData.reset(new EventData_Sound_Enabled_Changed(isEnabled, isMusic));
+    }
+    else if (eventType == "PlayMovies")
+    {
+        // <Movies>1,2,3</Movies>: indices in CLAW.FEC, played one after the other
+        std::string moviesStr;
+        ParseValueFromXmlElem(&moviesStr, pElem->FirstChildElement("Movies"));
+        std::vector<int> movies;
+        std::istringstream moviesStream(moviesStr);
+        std::string movie;
+        while (std::getline(moviesStream, movie, ','))
+        {
+            movies.push_back(std::atoi(movie.c_str()));
+        }
+
+        pEventData.reset(new EventData_Play_Movies(movies));
     }
     else if (eventType == "SetOption")
     {
@@ -1195,6 +1212,18 @@ bool ScreenElementMenuItem::Initialize(TiXmlElement* pElem)
             {
                 ParseValueFromXmlElem(&menuItemStateStr, pStateConditionElem->FirstChildElement("ConditionForState"));
                 m_State = StringToMenuItemStateEnum(menuItemStateStr);
+            }
+        }
+        else if (conditionTypeStr == "Option")
+        {
+            // <Option>MoviesAvailable</Option><Value>Yes</Value>: the state applies while the option has this value
+            std::string option;
+            std::string value;
+            ParseValueFromXmlElem(&option, pStateConditionElem->FirstChildElement("Option"));
+            ParseValueFromXmlElem(&value, pStateConditionElem->FirstChildElement("Value"));
+            if (g_pApp->GetMenuOption(option) == value)
+            {
+                m_State = StringToMenuItemStateEnum(conditionForStateStr);
             }
         }
     }

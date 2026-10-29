@@ -31,8 +31,8 @@ deciding on deliberately is the Linux host build used for profiling and smoke te
 | 10 | CI job that builds the VPK | infra, **written, not yet run** | — |
 | 11 | Research FOV / resolution settings for the Display menu | research, **done** | — |
 | 12 | Plan difficulty settings (easy to hard options) | research, **decided** | 8 |
-| 13 | Implement the disabled Options submenus | code + menu, **Difficulty and Display in progress** | 3, 4, 8, 11, 12 |
-| 14 | Cutscenes from `CLAW.FEC` | code + menu, **in progress** | — |
+| 13 | Implement the disabled Options submenus | code + menu, **Difficulty and Display done, need Vita3K check** | 3, 4, 8, 11, 12 |
+| 14 | Cutscenes from `CLAW.FEC` | code + menu, **done, needs Vita3K check** | — |
 
 Suggested order: 2, 6 and 9 first (small, visible, and 9 makes everything after it simpler), then
 3 and 8 (they unblock 4, 11, 12, 13), then 1, 4, 11, 12, 13. 5 and 10 can happen any time.
@@ -232,7 +232,7 @@ Lay out options from cheapest to most involved, then pick one:
 For each: what changes, which files, how to test it, and whether it affects saves (should a save
 remember its difficulty?). Recommendation and the Difficulty page layout go into 13.
 
-## 13. Implement the disabled Options submenus **[Difficulty and Display in progress]**
+## 13. Implement the disabled Options submenus **[Difficulty and Display done; Controls and Edit Players open]**
 
 Decisions (2026-10-29):
 
@@ -262,7 +262,13 @@ Every setting is saved through 3. The menus also need pages that change a value 
 (left/right on a setting), as the Audio page already does for volume. Each page needs a Vita3K
 check, and the CHANGELOG (7) entry for it.
 
-## 14. Cutscenes from `CLAW.FEC` **[in progress]**
+## 14. Cutscenes from `CLAW.FEC` **[done; needs a Vita3K/hardware check]**
+
+Done: `Graphics2D/MoviePlayer`, intro at start-up, story scenes after levels, the Replay Movies page
+with the original's art, Display → Movies. Checked on the host with the real `CLAW.FEC`: all ten
+movies are found and decode, skipping works, interlaced and stretched both display correctly.
+Open: two clips at the end of `CLAW.FEC` (48 s montage, 3.5 s ship at night) aren't played; find
+where the original used them (credits? ending?).
 
 The original's ten Smacker movies (Monolith logo, introduction, eight story scenes, plus credits)
 are in `MOVIES/CLAW.FEC` on the game CD (≈355 MB), not in `CLAW.REZ`. OpenClaw never played them.

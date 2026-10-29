@@ -4,4 +4,6 @@ target_sources(openclaw
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Image.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Image.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/MoviePlayer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/MoviePlayer.cpp
 )

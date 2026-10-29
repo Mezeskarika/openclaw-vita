@@ -15,11 +15,14 @@ What changed in each version: [`CHANGELOG.md`](CHANGELOG.md).
   [Vita3K](https://vita3k.org) emulator.
 - **Your own copy of `CLAW.REZ`** from the original Captain Claw. It's the game's data file and
   is **not included**.
+- Optional, for the cutscenes: **`MOVIES/CLAW.FEC`** from the original game CD (about 350 MB, also
+  not included).
 
 ## Install
 
 1. Install the `.vpk` with VitaShell (or open it with Vita3K).
-2. Copy `CLAW.REZ` to `ux0:data/openclaw/`.
+2. Copy `CLAW.REZ` to `ux0:data/openclaw/`. For the cutscenes, copy `CLAW.FEC` from the CD's
+   `MOVIES` folder there too.
    - In Vita3K that folder is `ux0/data/openclaw/` inside Vita3K's data folder (on Linux,
      `~/.local/share/Vita3K/Vita3K/` by default).
 3. Start OpenClaw.
@@ -43,7 +46,7 @@ The game log is written to `ux0:data/SDL_Log.txt`.
 | Triangle | Switch ammo type |
 | Start / Select | In-game menu, back |
 
-Menus can also be used by tapping the touchscreen.
+Menus can also be used by tapping the touchscreen. Any button, or a tap, skips a cutscene.
 
 The buttons can be changed in `ux0:data/openclaw/config.xml`, under `<ControlOptions><Gamepad>`
 (button names: Cross, Circle, Square, Triangle, L, R, Start, Select). An older `config.xml`
@@ -55,6 +58,7 @@ without that section uses the defaults above.
   they were never implemented in OpenClaw. (In 0.3.0 and earlier they're selectable but do
   nothing.)
 - Settings changed in the menus (Audio, Difficulty, Display) are saved in `config.xml`.
+- Replay Movies is greyed out without `CLAW.FEC`.
 - Placeholder LiveArea artwork.
 
 ## Settings (`config.xml`)
@@ -67,13 +71,16 @@ USB mode, edit, copy back). Delete the file to get the defaults back. Options wo
 |---|---|---|
 | `Display/Size`, `Display/Scale` | 960×544, 1 | Render size and zoom. At scale 1 you see 960×544 world pixels; 2 shows half as much, zoomed in (the Display page's Game play area slider). Other values work but draw uneven pixel rows. Keep the size at 960×544. |
 | `Display/FrontLayer` | true | The foreground layer (e.g. the columns in level 1). Set by the Display page. |
+| `Display/Movies` | Interlaced | Cutscenes at the original's 640×480 with every other line black, as the original showed them, or `Stretched` to fill the screen. Set by the Display page. |
 | `Display/UseVerticalSync` | true | Lock to the screen's 60 Hz. Turning it off gives no benefit on the Vita. |
 | `Audio/Frequency` | 22050 | Mixer rate. The game's sounds are 22,050 Hz; 44100 makes each sound get resampled the first time it plays (stutter). |
 | `Audio/SoundVolume`, `Audio/MusicVolume` | 10, 15 | Volumes, sound 0–100 in steps of 10, music 0–20. Set by the Audio page. |
 | `Audio/SoundOn`, `Audio/MusicOn` | true, true | Set by the Audio page. |
+| `Gameplay/PlayIntroMovies` | true | Monolith logo and introduction at start-up (needs `CLAW.FEC`). |
 | `Gameplay/Difficulty` | Normal | `Easy`: Claw's sword, punches and kicks hit harder, as in the original's Easy mode. Set by the Difficulty page. |
 | `Audio/TimidityCfg` | `app0:/freepats/timidity.cfg` | Instrument set for the music. Point it at another Timidity config on `ux0:` to use other instruments. |
 | `Assets/RezArchive` | `ux0:/data/openclaw/CLAW.REZ` | Where the original game data is. |
+| `Assets/MoviesArchive` | `ux0:/data/openclaw/CLAW.FEC` | Where the cutscenes are. |
 | `Assets/ResourceCacheSize` | 50 | Memory (MB) for loaded game data. |
 | `ControlOptions/Gamepad` | see Controls | Button mapping. |
 | `GlobalOptions/ShowFps` | true | FPS counter in the corner. |
@@ -99,5 +106,8 @@ changes how the game plays.
 GPL-3.0, like OpenClaw (see [`LICENSE.txt`](LICENSE.txt)). The bundled FreePats instruments are
 GPL-2.0-or-later with an exception for compositions; their licence files are inside the VPK. The
 menu font, [Cinzel](https://github.com/NDISCOVER/Cinzel), is under the SIL Open Font Licence
-(`Build_Release/fonts/OFL.txt`, also in the VPK).
+(`Build_Release/fonts/OFL.txt`, also in the VPK). The cutscenes are decoded with
+[libsmacker](https://github.com/greg-kennedy/libsmacker) (LGPL-2.1, `ThirdParty/libsmacker/COPYING`);
+the movie player is based on the one in
+[captain-claw-s60](https://github.com/Dante-Leoncini/captain-claw-s60) (GPL-3.0).
 Captain Claw and its data are © Monolith Productions; this project contains no game data.

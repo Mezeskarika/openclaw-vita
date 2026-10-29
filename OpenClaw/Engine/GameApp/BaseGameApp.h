@@ -12,6 +12,8 @@
 #include "../UserInterface/GamepadMapper.h"
 #include "Difficulty.h"
 
+class MoviePlayer;
+
 const int DEFAULT_SCREEN_WIDTH = 1280;
 const int DEFAULT_SCREEN_HEIGHT = 768;
 
@@ -27,6 +29,7 @@ struct GameOptions
         windowHeight = 780;
         scale = 1.0f;
         showFrontLayer = true;
+        interlacedMovies = true;
         useVerticalSync = true;
         isFullscreen = false;
         isFullscreenDesktop = false;
@@ -42,12 +45,18 @@ struct GameOptions
         timidityCfg = "";
 
         difficulty = Difficulty_Normal;
+        playIntroMovies = true;
 
         fontNames.push_back("clacon.ttf");
         consoleFontName = "clacon.ttf";
         consoleFontSize = 20;
 
         rezArchive = "CLAW.REZ";
+#ifdef __vita__
+        moviesArchive = "ux0:/data/openclaw/CLAW.FEC";
+#else
+        moviesArchive = "CLAW.FEC";
+#endif
         customArchive = "ASSETS.ZIP";
         resourceCacheSize = 50;
         tempDir = ".";
@@ -70,6 +79,8 @@ struct GameOptions
     double scale;
     // The foreground tile plane (e.g. the columns in level 1), Options -> Display -> Front Layer
     bool showFrontLayer;
+    // Options -> Display -> Movies: interlaced (the original's default) or stretched
+    bool interlacedMovies;
     bool useVerticalSync;
     bool isFullscreen;
     bool isFullscreenDesktop;
@@ -88,6 +99,8 @@ struct GameOptions
 
     // Gameplay
     Difficulty difficulty;
+    // Monolith logo and introduction at start-up
+    bool playIntroMovies;
 
     // Font
     std::vector<const char*> fontNames;
@@ -98,6 +111,8 @@ struct GameOptions
     std::string assetsFolder;
     std::string rezArchive;
     std::string customArchive;
+    // The original CD's MOVIES/CLAW.FEC, copied by the player; optional
+    std::string moviesArchive;
     unsigned resourceCacheSize;
     std::string tempDir;
     std::string savesFile;
@@ -310,9 +325,15 @@ public:
 
     // Options the menus set by name (menu event "SetOption", visibility condition "Option"):
     // "Difficulty" = Normal/Easy, "FrontLayer" = On/Off, "ViewZoom" = 1/2 (Display/Scale; "Toggle"
-    // switches). Setting one applies it at once and saves the config
+    // switches), "Movies" = Interlaced/Stretched, "MoviesAvailable" = Yes/No (read only).
+    // Setting one applies it at once and saves the config
     std::string GetMenuOption(const std::string& option) const;
     bool SetMenuOption(const std::string& option, const std::string& value);
+
+    // Queues movies of CLAW.FEC (see MoviePlayer). They play before the game updates again; any
+    // button skips one. Nothing happens without CLAW.FEC
+    void PlayMovies(const std::vector<int>& movies);
+    bool IsPlayingMovies() const;
 
     bool LoadLevel(const char* levelResource);
 
@@ -371,11 +392,21 @@ private:
 
     void QuitGameDelegate(IEventDataPtr pEventData);
     void SetMenuOptionDelegate(IEventDataPtr pEventData);
+    void PlayMoviesDelegate(IEventDataPtr pEventData);
+
+    // One frame of movie playback instead of the game
+    void StepMovies(uint32 elapsedTime);
+    void PauseAudioForMovies(bool pause);
 
     TiXmlDocument CreateAndReturnDefaultConfig(const char* inConfigFile);
 
     SDL_Window* m_pWindow;
     SDL_Renderer* m_pRenderer;
+
+    MoviePlayer* m_pMoviePlayer;
+    std::vector<int> m_MovieQueue;
+    bool m_bMoviesAvailable;
+    bool m_bAudioPausedForMovies;
     WapPal* m_pPalette;
 
     bool m_IsRunning;

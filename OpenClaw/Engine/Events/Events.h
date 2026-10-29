@@ -2425,6 +2425,50 @@ private:
 };
 
 //---------------------------------------------------------------------------------------------------------------------
+// EventData_Play_Movies - movies of CLAW.FEC to play one after the other, see BaseGameApp::PlayMovies
+//---------------------------------------------------------------------------------------------------------------------
+class EventData_Play_Movies : public BaseEventData
+{
+public:
+    static const EventType sk_EventType;
+
+    EventData_Play_Movies() { }
+
+    EventData_Play_Movies(const std::vector<int>& movies) : m_Movies(movies) { }
+
+    virtual const EventType& VGetEventType(void) const { return sk_EventType; }
+    virtual IEventDataPtr VCopy() const
+    {
+        return IEventDataPtr(new EventData_Play_Movies(m_Movies));
+    }
+    virtual void VSerialize(std::ostringstream& out) const
+    {
+        out << m_Movies.size();
+        for (int movie : m_Movies)
+        {
+            out << " " << movie;
+        }
+    }
+    virtual void VDeserialize(std::istringstream& in)
+    {
+        size_t count = 0;
+        in >> count;
+        m_Movies.resize(count);
+        for (size_t i = 0; i < count; i++)
+        {
+            in >> m_Movies[i];
+        }
+    }
+
+    const std::vector<int>& GetMovies() const { return m_Movies; }
+
+    virtual const char* GetName(void) const { return "EventData_Play_Movies"; }
+
+private:
+    std::vector<int> m_Movies;
+};
+
+//---------------------------------------------------------------------------------------------------------------------
 // EventData_Menu_Set_Option - a menu item sets a game option, see BaseGameApp::SetMenuOption
 //---------------------------------------------------------------------------------------------------------------------
 class EventData_Menu_Set_Option : public BaseEventData

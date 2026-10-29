@@ -470,6 +470,23 @@ void ScreenElementScoreScreen::ForceNextState()
     }
 }
 
+// Story movie of CLAW.FEC after finishing a level, -1 for none (order from captain-claw-s60)
+static int MovieAfterLevel(int levelNumber)
+{
+    switch (levelNumber)
+    {
+        case 2: return 2;   // Escape
+        case 4: return 3;   // Out of the Woods
+        case 6: return 4;   // The Tavern
+        case 8: return 5;   // The Chase
+        case 10: return 6;  // Reunion
+        case 12: return 7;  // Tiger Island
+        case 13: return 8;  // We Meet Again
+        case 14: return 9;  // The Ceremony
+        default: return -1;
+    }
+}
+
 void ScreenElementScoreScreen::LoadNextLevel()
 {
     if (m_State == ScoreScreenState_Exiting)
@@ -483,6 +500,13 @@ void ScreenElementScoreScreen::LoadNextLevel()
     m_pProcessMgr->AbortAllProcesses(true);
     SAFE_DELETE(m_pProcessMgr);
     IEventMgr::Get()->VAbortAllEvents();
+
+    // Plays before the next level loads
+    int movieIndex = MovieAfterLevel(nextLevelNum - 1);
+    if (movieIndex >= 0)
+    {
+        g_pApp->PlayMovies(std::vector<int>{ movieIndex });
+    }
 
     IEventDataPtr pEvent(new EventData_Menu_LoadGame(nextLevelNum, false, 0));
     IEventMgr::Get()->VQueueEvent(pEvent);

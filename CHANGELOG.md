@@ -17,6 +17,11 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
   powerups are unchanged.
 - Menu labels that the game data has no image for are drawn with the Cinzel font (SIL Open Font
   Licence, bundled with its licence in `fonts/`).
+- Cutscenes: the original's movies from `CLAW.FEC` (copied from the game CD, optional). The Monolith
+  logo and introduction play at start-up, the story scenes after levels 2, 4, 6, 8, 10, 12, 13
+  and 14; Replay Movies lists them all, as in the original. Any button or a tap skips a movie.
+  Options → Display → Movies: interlaced (the original's default) or stretched. The player is based
+  on captain-claw-s60's; decoding uses libsmacker (LGPL-2.1, bundled).
 - Options → Display, with the original page's labels: Front layer on/off (hides the foreground
   layer, e.g. the columns in level 1) and Game play area, which zooms the view: full view (1×) or
   close up (2×, 480×272 world pixels). The HUD keeps its size. Saved in `config.xml`
@@ -127,8 +132,9 @@ Changes in this port compared with pjasicek/OpenClaw@5ee5740, besides the Vita b
 - **Bug fixes in OpenClaw's own code:** quitting from the menu called `exit()` from inside an
   event handler; checkpoint saves could store a dying Claw's health and then crash on load; music
   tracks leaked and could play in the wrong order.
-- **Additions:** gamepad support with configurable buttons, touchscreen menus, menu settings saved
-  to `config.xml`, menu items without a page greyed out, `<LogFrameStats>`, `<TimidityCfg>`,
+- **Additions:** cutscenes from `CLAW.FEC` (OpenClaw never played them), Difficulty and Display
+  pages, gamepad support with configurable buttons, touchscreen menus, menu settings saved to
+  `config.xml`, menu items without a page greyed out, `<LogFrameStats>`, `<TimidityCfg>`,
   `<FrontPlaneMode>`, absolute paths for `<RezArchive>`.
 - **Vita specifics:** SDL's native GXM renderer with batching forced on, 22,050 Hz mixer, raised
   CPU/GPU clocks, `app0:`/`ux0:` file layout, bundled FreePats instruments, the engine's teardown
@@ -149,6 +155,9 @@ How the port plays differently from Captain Claw (1997):
   and has two stops.
 - **Options menu:** Edit Players and Controls (and Multiplayer, Load Custom Level) are greyed out.
   They were never implemented in OpenClaw.
+- **Movies:** all of them can be replayed from the start (the original unlocked them as you went).
+  The last two clips in `CLAW.FEC` (48 s and 3.5 s, after The Ceremony) aren't played; where the
+  original used them is not known yet.
 
 [Unreleased]: https://github.com/Mezeskarika/openclaw-vita/compare/v0.4.0...HEAD
 [0.4.0]: https://github.com/Mezeskarika/openclaw-vita/compare/v0.3.0...v0.4.0
