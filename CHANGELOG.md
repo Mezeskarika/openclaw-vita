@@ -10,6 +10,14 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
 
 ## [Unreleased]
 
+### Added
+- Options → Difficulty: Normal or Easy, changeable at any time and saved in `config.xml`
+  (`<Gameplay><Difficulty>`). Easy is the original game's Easy mode: Claw's sword, punches and
+  kicks hit 4× harder (5× when ducking, 2× on catnip); pistol, magic, dynamite and the sword
+  powerups are unchanged.
+- Menu labels that the game data has no image for are drawn with the Cinzel font (SIL Open Font
+  Licence, bundled with its licence in `fonts/`).
+
 ## [0.4.0] - 2026-10-29
 
 Touch, settings and cleanup. Built and unit-tested; not yet checked in Vita3K.
@@ -130,8 +138,10 @@ How the port plays differently from Captain Claw (1997):
 
 - **Music** uses the FreePats instruments instead of a 1997 sound card or Windows' MIDI synth.
   The tracks themselves are the original ones.
-- **Options menu:** Edit Players, Difficulty, Controls and Display (and Multiplayer, Load Custom
-  Level) are greyed out. They were never implemented in OpenClaw.
+- **Difficulty** is a setting of its own (Options → Difficulty) that can be changed at any time.
+  In the original it was chosen once per player, when the player was created.
+- **Options menu:** Edit Players, Controls and Display (and Multiplayer, Load Custom Level) are
+  greyed out. They were never implemented in OpenClaw.
 
 [Unreleased]: https://github.com/Mezeskarika/openclaw-vita/compare/v0.4.0...HEAD
 [0.4.0]: https://github.com/Mezeskarika/openclaw-vita/compare/v0.3.0...v0.4.0

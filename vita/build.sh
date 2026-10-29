@@ -28,7 +28,7 @@ unzip -l "$VPK"
 
 # The VPK must at least carry these to install and start
 for f in eboot.bin sce_sys/param.sfo sce_sys/icon0.png sce_sys/livearea/contents/template.xml \
-         config.xml SAVES.XML ASSETS.ZIP clacon.ttf console02.tga; do
+         config.xml SAVES.XML ASSETS.ZIP clacon.ttf console02.tga fonts/Cinzel-Bold.ttf; do
     unzip -l "$VPK" "$f" > /dev/null || { echo "MISSING in VPK: $f"; exit 1; }
 done
 echo "VPK OK: $VPK"

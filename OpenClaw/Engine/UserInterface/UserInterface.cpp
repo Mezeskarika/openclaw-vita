@@ -117,6 +117,92 @@ static SDL_Rect GetScreenRect()
     return { 0, 0, targetWidth, targetHeight };
 }
 
+// Width of the menu layout: item positions are in the 640x480 space of the original menus
+static const int MENU_LAYOUT_WIDTH = 640;
+
+// Labels the game data has no image for are drawn with this font (Cinzel, SIL Open Font Licence;
+// its lower case letters are small capitals, like the original labels)
+static const char* MENU_LABEL_FONT = "fonts/Cinzel-Bold.ttf";
+
+// Recolours the opaque pixels of a 32-bit surface with a vertical gradient, keeping their alpha
+static void ApplyVerticalGradient(SDL_Surface* pSurface, SDL_Color top, SDL_Color bottom)
+{
+    SDL_LockSurface(pSurface);
+    for (int y = 0; y < pSurface->h; y++)
+    {
+        float t = pSurface->h > 1 ? (float)y / (pSurface->h - 1) : 0.0f;
+        Uint8 r = (Uint8)(top.r + (bottom.r - top.r) * t);
+        Uint8 g = (Uint8)(top.g + (bottom.g - top.g) * t);
+        Uint8 b = (Uint8)(top.b + (bottom.b - top.b) * t);
+
+        Uint32* pRow = (Uint32*)((Uint8*)pSurface->pixels + y * pSurface->pitch);
+        for (int x = 0; x < pSurface->w; x++)
+        {
+            Uint8 pr, pg, pb, pa;
+            SDL_GetRGBA(pRow[x], pSurface->format, &pr, &pg, &pb, &pa);
+            pRow[x] = SDL_MapRGBA(pSurface->format, r, g, b, pa);
+        }
+    }
+    SDL_UnlockSurface(pSurface);
+}
+
+// A menu label in the style of the original ones: gold letters with a dark outline, brighter
+// letters with a light outline when selected
+static shared_ptr<Image> CreateLabelImage(const std::string& text, int fontSize, bool isActive)
+{
+    // One font per size, kept open for the lifetime of the game
+    static std::map<int, TTF_Font*> s_Fonts;
+    TTF_Font*& pFont = s_Fonts[fontSize];
+    if (pFont == NULL)
+    {
+        std::string fontPath = g_pApp->GetGameConfig()->assetsFolder + MENU_LABEL_FONT;
+        pFont = TTF_OpenFont(fontPath.c_str(), fontSize);
+        if (pFont == NULL)
+        {
+            LOG_ERROR("Could not open menu font " + fontPath + ": " + std::string(TTF_GetError()));
+            return nullptr;
+        }
+    }
+
+    const int outline = 2;
+    const SDL_Color white = { 255, 255, 255, 255 };
+    SDL_Color outlineColor = isActive ? SDL_Color{ 255, 250, 225, 255 } : SDL_Color{ 30, 14, 0, 255 };
+
+    TTF_SetFontOutline(pFont, outline);
+    SDL_Surface* pLabel = TTF_RenderUTF8_Blended(pFont, text.c_str(), outlineColor);
+    TTF_SetFontOutline(pFont, 0);
+    SDL_Surface* pLetters = TTF_RenderUTF8_Blended(pFont, text.c_str(), white);
+    if (pLabel == NULL || pLetters == NULL)
+    {
+        LOG_ERROR("Could not draw menu label " + text + ": " + std::string(TTF_GetError()));
+        SDL_FreeSurface(pLabel);
+        SDL_FreeSurface(pLetters);
+        return nullptr;
+    }
+
+    if (isActive)
+    {
+        ApplyVerticalGradient(pLetters, SDL_Color{ 255, 236, 120, 255 }, SDL_Color{ 235, 150, 20, 255 });
+    }
+    else
+    {
+        ApplyVerticalGradient(pLetters, SDL_Color{ 250, 220, 110, 255 }, SDL_Color{ 190, 120, 20, 255 });
+    }
+
+    SDL_Rect lettersRect = { outline, outline, pLetters->w, pLetters->h };
+    SDL_BlitSurface(pLetters, NULL, pLabel, &lettersRect);
+    SDL_Texture* pTexture = SDL_CreateTextureFromSurface(g_pApp->GetRenderer(), pLabel);
+    SDL_FreeSurface(pLetters);
+    SDL_FreeSurface(pLabel);
+    if (pTexture == NULL)
+    {
+        LOG_ERROR("Could not create texture for menu label " + text);
+        return nullptr;
+    }
+
+    return shared_ptr<Image>(new Image(pTexture));
+}
+
 static shared_ptr<Image> TryLoadPcxImageFromXmlElement(TiXmlElement* pElem)
 {
     if (pElem == NULL)
@@ -294,6 +380,15 @@ static IEventDataPtr XmlElemToGeneratedEvent(TiXmlElement* pElem)
         ParseValueFromXmlElem(&isMusic, pElem->FirstChildElement("IsMusic"));
 
         pEventData.reset(new EventData_Sound_Enabled_Changed(isEnabled, isMusic));
+    }
+    else if (eventType == "SetOption")
+    {
+        std::string option;
+        std::string value;
+        ParseValueFromXmlElem(&option, pElem->FirstChildElement("Option"));
+        ParseValueFromXmlElem(&value, pElem->FirstChildElement("Value"));
+
+        pEventData.reset(new EventData_Menu_Set_Option(option, value));
     }
     else if (eventType == "ModifyMenuItemVisibility")
     {
@@ -1149,6 +1244,15 @@ bool ScreenElementMenuItem::Initialize(TiXmlElement* pElem)
         {
             m_bVisible = false;
         }
+        else if (conditionTypeStr == "Option")
+        {
+            // <Option>Difficulty</Option><Value>Easy</Value>: visible while the option has this value
+            std::string option;
+            std::string value;
+            ParseValueFromXmlElem(&option, pVisibilityConditionElem->FirstChildElement("Option"));
+            ParseValueFromXmlElem(&value, pVisibilityConditionElem->FirstChildElement("Value"));
+            m_bVisible = (g_pApp->GetMenuOption(option) == value);
+        }
     }
     std::string menuItemTypeStr;
     ParseValueFromXmlElem(&menuItemTypeStr, pElem->FirstChildElement("Type"));
@@ -1167,6 +1271,35 @@ bool ScreenElementMenuItem::Initialize(TiXmlElement* pElem)
     if (shared_ptr<Image> pImage = LoadImageFromXmlElement(pElem->FirstChildElement("ActiveImage")))
     {
         m_Images.insert(std::make_pair(MenuItemState_Active, pImage));
+    }
+
+    // <Label size="22">Text</Label> instead of the images: drawn with the menu font
+    if (TiXmlElement* pLabelElem = pElem->FirstChildElement("Label"))
+    {
+        int fontSize = 22;
+        pLabelElem->Attribute("size", &fontSize);
+        std::string label = pLabelElem->GetText() ? pLabelElem->GetText() : "";
+        shared_ptr<Image> pInactive = CreateLabelImage(label, fontSize, false);
+        shared_ptr<Image> pActive = CreateLabelImage(label, fontSize, true);
+        if (pInactive == nullptr || pActive == nullptr)
+        {
+            return false;
+        }
+        m_Images[MenuItemState_Inactive] = pInactive;
+        m_Images[MenuItemState_Active] = pActive;
+    }
+
+    // <Position x="center">: centred horizontally on the menu
+    if (TiXmlElement* pPositionElem = pElem->FirstChildElement("Position"))
+    {
+        const char* x = pPositionElem->Attribute("x");
+        auto inactiveIt = m_Images.find(MenuItemState_Inactive);
+        if (x != NULL && std::string(x) == "center" && inactiveIt != m_Images.end())
+        {
+            double centeredX = (MENU_LAYOUT_WIDTH - inactiveIt->second->GetWidth()) / 2;
+            m_Position.SetX(centeredX);
+            m_DefaultPosition.SetX(centeredX);
+        }
     }
 
     /*for (TiXmlElement* pMenuItemImageElem = pElem->FirstChildElement("MenuItemImage");

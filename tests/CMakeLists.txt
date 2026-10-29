@@ -12,6 +12,7 @@ include_directories(../ThirdParty/)
 add_executable(openclaw_tests
     TestMain.cpp
     GamepadMapperTests.cpp
+    DifficultyTests.cpp
     ../OpenClaw/Engine/UserInterface/GamepadMapper.cpp
 )
 

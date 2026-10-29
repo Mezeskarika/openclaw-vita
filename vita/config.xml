@@ -24,6 +24,10 @@
     <MusicOn>true</MusicOn>
     <TimidityCfg>app0:/freepats/timidity.cfg</TimidityCfg>
   </Audio>
+  <Gameplay>
+    <!-- Normal or Easy (Claw's sword, punches and kicks hit harder). Set in Options -> Difficulty -->
+    <Difficulty>Normal</Difficulty>
+  </Gameplay>
   <Font>
     <Fontt>clacon.ttf</Fontt>
     <ConsoleFont font="clacon.ttf" size="20" />

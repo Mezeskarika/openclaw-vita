@@ -24,5 +24,7 @@ vita_create_vpk(openclaw.vpk ${VITA_TITLEID} eboot.bin
     FILE ${ASSETS_ZIP} ASSETS.ZIP
     FILE Build_Release/clacon.ttf clacon.ttf
     FILE Build_Release/console02.tga console02.tga
+    FILE Build_Release/fonts/Cinzel-Bold.ttf fonts/Cinzel-Bold.ttf
+    FILE Build_Release/fonts/OFL.txt fonts/OFL.txt
     FILE ${FREEPATS_VPK_FILES}
 )

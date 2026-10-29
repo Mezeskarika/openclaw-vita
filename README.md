@@ -51,16 +51,16 @@ without that section uses the defaults above.
 
 ## Known limitations
 
-- Options → Edit Players, Difficulty, Controls and Display (also Multiplayer and Load Custom
-  Level) are greyed out: they were never implemented in OpenClaw. (In 0.3.0 and earlier they're
-  selectable but do nothing.)
-- Only the Audio page's settings exist in the menus so far; they are saved in `config.xml`.
+- Options → Edit Players, Controls and Display (also Multiplayer and Load Custom Level) are
+  greyed out: they were never implemented in OpenClaw. (In 0.3.0 and earlier they're selectable
+  but do nothing.)
+- Settings changed in the menus (Audio, Difficulty) are saved in `config.xml`.
 - Placeholder LiveArea artwork.
 
 ## Settings (`config.xml`)
 
-`ux0:data/openclaw/config.xml` is created from the defaults on first start. The Audio page writes
-its settings there; everything else is edited by hand (copy it to a PC with VitaShell's FTP or
+`ux0:data/openclaw/config.xml` is created from the defaults on first start. The Audio and
+Difficulty pages write their settings there; everything else is edited by hand (copy it to a PC with VitaShell's FTP or
 USB mode, edit, copy back). Delete the file to get the defaults back. Options worth knowing:
 
 | Option | Default | What it does |
@@ -70,6 +70,7 @@ USB mode, edit, copy back). Delete the file to get the defaults back. Options wo
 | `Audio/Frequency` | 22050 | Mixer rate. The game's sounds are 22,050 Hz; 44100 makes each sound get resampled the first time it plays (stutter). |
 | `Audio/SoundVolume`, `Audio/MusicVolume` | 10, 15 | Volumes, sound 0–100 in steps of 10, music 0–20. Set by the Audio page. |
 | `Audio/SoundOn`, `Audio/MusicOn` | true, true | Set by the Audio page. |
+| `Gameplay/Difficulty` | Normal | `Easy`: Claw's sword, punches and kicks hit harder, as in the original's Easy mode. Set by the Difficulty page. |
 | `Audio/TimidityCfg` | `app0:/freepats/timidity.cfg` | Instrument set for the music. Point it at another Timidity config on `ux0:` to use other instruments. |
 | `Assets/RezArchive` | `ux0:/data/openclaw/CLAW.REZ` | Where the original game data is. |
 | `Assets/ResourceCacheSize` | 50 | Memory (MB) for loaded game data. |
@@ -95,5 +96,7 @@ changes how the game plays.
 ## Licence
 
 GPL-3.0, like OpenClaw (see [`LICENSE.txt`](LICENSE.txt)). The bundled FreePats instruments are
-GPL-2.0-or-later with an exception for compositions; their licence files are inside the VPK.
+GPL-2.0-or-later with an exception for compositions; their licence files are inside the VPK. The
+menu font, [Cinzel](https://github.com/NDISCOVER/Cinzel), is under the SIL Open Font Licence
+(`Build_Release/fonts/OFL.txt`, also in the VPK).
 Captain Claw and its data are © Monolith Productions; this project contains no game data.

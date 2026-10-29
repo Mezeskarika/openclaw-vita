@@ -2425,6 +2425,37 @@ private:
 };
 
 //---------------------------------------------------------------------------------------------------------------------
+// EventData_Menu_Set_Option - a menu item sets a game option, see BaseGameApp::SetMenuOption
+//---------------------------------------------------------------------------------------------------------------------
+class EventData_Menu_Set_Option : public BaseEventData
+{
+public:
+    static const EventType sk_EventType;
+
+    EventData_Menu_Set_Option() { }
+
+    EventData_Menu_Set_Option(const std::string& option, const std::string& value)
+        : m_Option(option), m_Value(value) { }
+
+    virtual const EventType& VGetEventType(void) const { return sk_EventType; }
+    virtual IEventDataPtr VCopy() const
+    {
+        return IEventDataPtr(new EventData_Menu_Set_Option(m_Option, m_Value));
+    }
+    virtual void VSerialize(std::ostringstream& out) const { out << m_Option << " " << m_Value; }
+    virtual void VDeserialize(std::istringstream& in) { in >> m_Option >> m_Value; }
+
+    const std::string& GetOption() const { return m_Option; }
+    const std::string& GetValue() const { return m_Value; }
+
+    virtual const char* GetName(void) const { return "EventData_Menu_Set_Option"; }
+
+private:
+    std::string m_Option;
+    std::string m_Value;
+};
+
+//---------------------------------------------------------------------------------------------------------------------
 // EventData_Enter_Menu
 //---------------------------------------------------------------------------------------------------------------------
 class EventData_Enter_Menu : public BaseEventData

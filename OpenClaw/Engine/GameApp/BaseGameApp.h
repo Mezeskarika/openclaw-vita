@@ -10,6 +10,7 @@
 #include "CommandHandler.h"
 #include "../UserInterface/Touch/TouchManager.h"
 #include "../UserInterface/GamepadMapper.h"
+#include "Difficulty.h"
 
 const int DEFAULT_SCREEN_WIDTH = 1280;
 const int DEFAULT_SCREEN_HEIGHT = 768;
@@ -38,6 +39,8 @@ struct GameOptions
         soundOn = true;
         musicOn = true;
         timidityCfg = "";
+
+        difficulty = Difficulty_Normal;
 
         fontNames.push_back("clacon.ttf");
         consoleFontName = "clacon.ttf";
@@ -79,6 +82,9 @@ struct GameOptions
     bool musicOn;
     // Timidity config for MIDI music through SDL_mixer. Empty: SDL_mixer's default search
     std::string timidityCfg;
+
+    // Gameplay
+    Difficulty difficulty;
 
     // Font
     std::vector<const char*> fontNames;
@@ -299,6 +305,11 @@ public:
     // Writes the settings the player can change in the menus back into the loaded config file
     bool SaveGameOptions();
 
+    // Options the menus set by name (menu event "SetOption", visibility condition "Option"):
+    // "Difficulty" = Normal/Easy. Setting one applies it at once and saves the config
+    std::string GetMenuOption(const std::string& option) const;
+    bool SetMenuOption(const std::string& option, const std::string& value);
+
     bool LoadLevel(const char* levelResource);
 
     const GameCheats* GetGameCheats() const { return &m_GameCheats; }
@@ -355,6 +366,7 @@ private:
     void RemoveAllDelegates();
 
     void QuitGameDelegate(IEventDataPtr pEventData);
+    void SetMenuOptionDelegate(IEventDataPtr pEventData);
 
     TiXmlDocument CreateAndReturnDefaultConfig(const char* inConfigFile);
 

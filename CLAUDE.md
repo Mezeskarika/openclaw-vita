@@ -92,13 +92,19 @@ Every new source file must be added to its directory's `CMakeLists.txt` (`target
 
 ## Known gaps in the engine (not Vita bugs)
 
-- Options → Edit Players, Difficulty, Controls, Display, plus Multiplayer and Load Custom Level,
-  point at menu pages that don't exist (`SwitchPageDelegate` logs "Probably not implemented yet").
-  No difficulty logic exists anywhere.
+- Options → Edit Players, Controls, Display, plus Multiplayer and Load Custom Level, point at menu
+  pages that don't exist (`SwitchPageDelegate` logs "Probably not implemented yet").
+- Difficulty: `GameApp/Difficulty.h`. Easy only changes Claw's melee damage (`GetClawMeleeDamage`,
+  unit-tested); it's read at each swing, so a change applies at once.
 - Settings saving: `BaseGameApp::SaveGameOptions` writes only the options the menus change (today:
   `Audio` volumes and on/off) into the loaded `config.xml` document, through `config.xml.tmp` and
   remove-then-rename (the Vita can't rename over an existing file). Call it right after a change,
   not on exit: the Vita build skips `Terminate()`. New menu settings must be added there.
+- **Menu options:** a menu item sets an option with the `SetOption` event (`<Option>`, `<Value>`) and
+  shows only for one value with `<VisibilityCondition><ConditionType>Option</ConditionType>…`; both go
+  through `BaseGameApp::GetMenuOption`/`SetMenuOption`, which applies the option and saves it. Labels
+  without an image in `CLAW.REZ` use `<Label size="…">Text</Label>` (drawn with Cinzel from
+  `Build_Release/fonts/`), and `<Position x="center">` centres an item on the 640-wide menu.
   TinyXML reformats the file and trims trailing spaces in values when it writes it.
 - Startup log noise that is expected: `[MEMORY_PROFILER] … not supported`, `Unknown ammo type`,
   `OnEnemyLeftAgroRange … no such actor`.

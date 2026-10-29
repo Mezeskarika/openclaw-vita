@@ -581,6 +581,19 @@ bool BaseGameApp::LoadGameOptions(const char* inConfigFile)
     }
 
     //-------------------------------------------------------------------------
+    // Gameplay
+    //-------------------------------------------------------------------------
+    if (TiXmlElement* pGameplayElem = configRoot->FirstChildElement("Gameplay"))
+    {
+        std::string difficultyStr;
+        if (ParseValueFromXmlElem(&difficultyStr, pGameplayElem->FirstChildElement("Difficulty")) &&
+            !DifficultyFromString(difficultyStr, m_GameOptions.difficulty))
+        {
+            LOG_WARNING("Unknown difficulty " + difficultyStr + ", using Normal (options: Normal, Easy)");
+        }
+    }
+
+    //-------------------------------------------------------------------------
     // Assets
     //-------------------------------------------------------------------------
     TiXmlElement* assetsElem = configRoot->FirstChildElement("Assets");
@@ -819,6 +832,7 @@ bool BaseGameApp::SaveGameOptions()
     SetConfigValue(pConfigRoot, "Audio", "MusicVolume", ToStr(m_GameOptions.musicVolume));
     SetConfigValue(pConfigRoot, "Audio", "SoundOn", m_GameOptions.soundOn ? "true" : "false");
     SetConfigValue(pConfigRoot, "Audio", "MusicOn", m_GameOptions.musicOn ? "true" : "false");
+    SetConfigValue(pConfigRoot, "Gameplay", "Difficulty", DifficultyToString(m_GameOptions.difficulty));
 
     // Write a temporary file first, so a crash mid-write can't leave a truncated config.
     // The Vita can't rename over an existing file, hence remove-then-rename; LoadGameOptions
@@ -837,6 +851,37 @@ bool BaseGameApp::SaveGameOptions()
     }
 
     return true;
+}
+
+std::string BaseGameApp::GetMenuOption(const std::string& option) const
+{
+    if (option == "Difficulty")
+    {
+        return DifficultyToString(m_GameOptions.difficulty);
+    }
+
+    LOG_WARNING("Unknown menu option: " + option);
+    return "";
+}
+
+bool BaseGameApp::SetMenuOption(const std::string& option, const std::string& value)
+{
+    if (option == "Difficulty")
+    {
+        if (!DifficultyFromString(value, m_GameOptions.difficulty))
+        {
+            LOG_WARNING("Unknown difficulty: " + value);
+            return false;
+        }
+    }
+    else
+    {
+        LOG_WARNING("Unknown menu option: " + option);
+        return false;
+    }
+
+    LOG("Menu option " + option + " = " + value);
+    return SaveGameOptions();
 }
 
 //=====================================================================================================================
@@ -1552,12 +1597,16 @@ void BaseGameApp::RegisterAllDelegates()
 {
     IEventMgr::Get()->VAddListener(MakeDelegate(
         this, &BaseGameApp::QuitGameDelegate), EventData_Quit_Game::sk_EventType);
+    IEventMgr::Get()->VAddListener(MakeDelegate(
+        this, &BaseGameApp::SetMenuOptionDelegate), EventData_Menu_Set_Option::sk_EventType);
 }
 
 void BaseGameApp::RemoveAllDelegates()
 {
     IEventMgr::Get()->VRemoveListener(MakeDelegate(
         this, &BaseGameApp::QuitGameDelegate), EventData_Quit_Game::sk_EventType);
+    IEventMgr::Get()->VRemoveListener(MakeDelegate(
+        this, &BaseGameApp::SetMenuOptionDelegate), EventData_Menu_Set_Option::sk_EventType);
 }
 
 void BaseGameApp::QuitGameDelegate(IEventDataPtr pEventData)
@@ -1565,6 +1614,13 @@ void BaseGameApp::QuitGameDelegate(IEventDataPtr pEventData)
     // Leave the main loop and let Run() shut down. Tearing everything down from inside this
     // event callback, then calling exit(), hung on the Vita.
     m_IsRunning = false;
+}
+
+void BaseGameApp::SetMenuOptionDelegate(IEventDataPtr pEventData)
+{
+    shared_ptr<EventData_Menu_Set_Option> pCastEventData =
+        static_pointer_cast<EventData_Menu_Set_Option>(pEventData);
+    SetMenuOption(pCastEventData->GetOption(), pCastEventData->GetValue());
 }
 
 //=====================================================================================================================
