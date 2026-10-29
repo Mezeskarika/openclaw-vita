@@ -730,7 +730,7 @@ bool BaseGameApp::LoadGameOptions(const char* inConfigFile)
         std::string moviesStr;
         if (ParseValueFromXmlElem(&moviesStr, displayElem->FirstChildElement("Movies")))
         {
-            m_GameOptions.interlacedMovies = (moviesStr != "Stretched");
+            m_GameOptions.interlacedMovies = (moviesStr == "Interlaced");
         }
         ParseValueFromXmlElem(&m_GameOptions.useVerticalSync,
             displayElem->FirstChildElement("UseVerticalSync"));
@@ -1023,7 +1023,6 @@ bool BaseGameApp::SaveGameOptions()
     scaleStr << m_GameOptions.scale;
     SetConfigValue(pConfigRoot, "Display", "Scale", scaleStr.str());
     SetConfigValue(pConfigRoot, "Display", "FrontLayer", m_GameOptions.showFrontLayer ? "true" : "false");
-    SetConfigValue(pConfigRoot, "Display", "Movies", m_GameOptions.interlacedMovies ? "Interlaced" : "Stretched");
     SetConfigValue(pConfigRoot, "Audio", "SoundVolume", ToStr(m_GameOptions.soundVolume));
     SetConfigValue(pConfigRoot, "Audio", "MusicVolume", ToStr(m_GameOptions.musicVolume));
     SetConfigValue(pConfigRoot, "Audio", "SoundOn", m_GameOptions.soundOn ? "true" : "false");
@@ -1063,10 +1062,6 @@ std::string BaseGameApp::GetMenuOption(const std::string& option) const
     {
         return m_GameOptions.scale >= 2.0 ? "2" : "1";
     }
-    else if (option == "Movies")
-    {
-        return m_GameOptions.interlacedMovies ? "Interlaced" : "Stretched";
-    }
     else if (option == "MoviesAvailable")
     {
         return m_bMoviesAvailable ? "Yes" : "No";
@@ -1101,10 +1096,6 @@ bool BaseGameApp::SetMenuOption(const std::string& option, const std::string& va
         }
         m_GameOptions.scale = zoom;
         SetScale(Point(zoom, zoom));
-    }
-    else if (option == "Movies")
-    {
-        m_GameOptions.interlacedMovies = (value == "Interlaced");
     }
     else
     {

@@ -46,7 +46,8 @@ The game log is written to `ux0:data/SDL_Log.txt`.
 | Triangle | Switch ammo type |
 | Start / Select | In-game menu, back |
 
-Menus can also be used by tapping the touchscreen. Any button, or a tap, skips a cutscene.
+Menus can also be used by tapping the touchscreen. Any button, or a tap on the touchscreen, skips
+a cutscene.
 
 The buttons can be changed in `ux0:data/openclaw/config.xml`, under `<ControlOptions><Gamepad>`
 (button names: Cross, Circle, Square, Triangle, L, R, Start, Select). An older `config.xml`
@@ -71,7 +72,7 @@ USB mode, edit, copy back). Delete the file to get the defaults back. Options wo
 |---|---|---|
 | `Display/Size`, `Display/Scale` | 960×544, 1 | Render size and zoom. At scale 1 you see 960×544 world pixels; 2 shows half as much, zoomed in (the Display page's Game play area slider). Other values work but draw uneven pixel rows. Keep the size at 960×544. |
 | `Display/FrontLayer` | true | The foreground layer (e.g. the columns in level 1). Set by the Display page. |
-| `Display/Movies` | Interlaced | Cutscenes at the original's 640×480 with every other line black, as the original showed them, or `Stretched` to fill the screen. Set by the Display page. |
+| `Display/Movies` | Stretched | Cutscenes fill the screen. `Interlaced` shows them at the original's 640×480 with every other line black, as the original did by default; it looks right only on the Vita's own screen (scaled, e.g. in Vita3K or on a PS TV, the lines turn into bands). |
 | `Display/UseVerticalSync` | true | Lock to the screen's 60 Hz. Turning it off gives no benefit on the Vita. |
 | `Audio/Frequency` | 22050 | Mixer rate. The game's sounds are 22,050 Hz; 44100 makes each sound get resampled the first time it plays (stutter). |
 | `Audio/SoundVolume`, `Audio/MusicVolume` | 10, 15 | Volumes, sound 0–100 in steps of 10, music 0–20. Set by the Audio page. |

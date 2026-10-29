@@ -8,9 +8,9 @@
     <Scale>1</Scale>
     <!-- Foreground tile layer, e.g. the columns in level 1 (Options -> Display -> Front layer) -->
     <FrontLayer>true</FrontLayer>
-    <!-- Cutscenes: Interlaced (original size, every other line, the original's default) or
-         Stretched (fills the screen). Options -> Display -> Movies -->
-    <Movies>Interlaced</Movies>
+    <!-- Cutscenes: Stretched (fills the screen) or Interlaced (the original's default: original
+         size, every other line black). Not in the menus -->
+    <Movies>Stretched</Movies>
     <UseVerticalSync>true</UseVerticalSync>
     <IsFullscreen>false</IsFullscreen>
     <IsFullscreenDesktop>false</IsFullscreenDesktop>

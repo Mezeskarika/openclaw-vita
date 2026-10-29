@@ -251,7 +251,8 @@ Decisions (2026-10-29):
   - Detail low/high: the original hid designer-flagged eye-candy and the sparkles around treasure.
     No object in the 14 levels carries the designer flag, so only the sparkles would remain; left
     out unless wanted later.
-  - Movies interlaced/stretched: comes with 14.
+  - Movies interlaced/stretched: comes with 14. Decision (2026-10-29): stretched, and not in the
+    menu; interlaced stays a `config.xml` setting (scaled, its black lines turn into bands).
 - **Edit Players:** skipped for now.
 - **Controls:** later (4, step 2).
 
@@ -267,11 +268,14 @@ Every setting is saved through 3. The menus also need pages that change a value 
 (left/right on a setting), as the Audio page already does for volume. Each page needs a Vita3K
 check, and the CHANGELOG (7) entry for it.
 
-## 14. Cutscenes from `CLAW.FEC` **[done; needs a Vita3K/hardware check]**
+## 14. Cutscenes from `CLAW.FEC` **[done; rear-touchpad fix needs a hardware check]**
 
 Done: `Graphics2D/MoviePlayer`, intro at start-up, story scenes after levels, the Replay Movies page
-with the original's art, Display → Movies. Checked on the host with the real `CLAW.FEC`: all ten
-movies are found and decode, skipping works, interlaced and stretched both display correctly.
+with the original's art, stretched by default (`Display/Movies`). Checked on the host with the real
+`CLAW.FEC`: all ten movies are found and decode, skipping works, interlaced and stretched both
+display correctly. In Vita3K interlaced showed bands (its window scaling); on a Vita the movies
+stopped after a few seconds because the rear touchpad counted as a skip, fixed by checking the touch
+device type; still to confirm on hardware, with the per-movie log line.
 Open: two clips at the end of `CLAW.FEC` (48 s montage, 3.5 s ship at night) aren't played; find
 where the original used them (credits? ending?).
 
@@ -286,6 +290,6 @@ the game runs as before.
   levels 2, 4, 6, 8, 10, 12, 13 and 14.
 - Vita changes: mono mixer, skip with any button (through `GamepadMapper`), music and sounds
   stopped while a movie plays.
-- Menu: "Replay Movies" page; Display → Movies interlaced/stretched.
+- Menu: "Replay Movies" page.
 - Check: needs `CLAW.FEC` next to `CLAW.REZ` in Vita3K's data folder; sound in sync, skipping,
   no stuck keys afterwards, memory stays flat (streamed from the card, not loaded).

@@ -10,12 +10,10 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
 
 ## [Unreleased]
 
-### Fixed
-- Cutscenes stopped after a few seconds on a real Vita: a touch on the rear touchpad (where the
-  hands holding the console rest) counted as a skip. Only the touchscreen skips now. The log
-  (`ux0:data/SDL_Log.txt`) says for each movie why it ended and how smoothly it played.
-
 ## [0.5.0] - 2026-10-29
+
+Difficulty, Display and cutscenes. Cutscenes were tried in Vita3K and on a PS Vita; the fix that
+followed (the rear touchpad skipped them) is checked on the desktop build only.
 
 ### Added
 - Main menu Options → Difficulty: Normal or Easy, changeable between games and saved in `config.xml`
@@ -26,9 +24,11 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
   Licence, bundled with its licence in `fonts/`).
 - Cutscenes: the original's movies from `CLAW.FEC` (copied from the game CD, optional). The Monolith
   logo and introduction play at start-up, the story scenes after levels 2, 4, 6, 8, 10, 12, 13
-  and 14; Replay Movies lists them all, as in the original. Any button or a tap skips a movie.
-  Options → Display → Movies: interlaced (the original's default) or stretched. The player is based
-  on captain-claw-s60's; decoding uses libsmacker (LGPL-2.1, bundled).
+  and 14; Replay Movies lists them all, as in the original. Any button or a tap on the touchscreen
+  skips a movie. Movies fill the screen; `<Display><Movies>Interlaced</Movies>` in `config.xml`
+  shows them as the original did by default instead. The log (`ux0:data/SDL_Log.txt`) says for
+  each movie why it ended and how smoothly it played. The player is based on captain-claw-s60's;
+  decoding uses libsmacker (LGPL-2.1, bundled).
 - Options → Display, with the original page's labels: Front layer on/off (hides the foreground
   layer, e.g. the columns in level 1) and Game play area, which zooms the view: full view (1×) or
   close up (2×, 480×272 world pixels). The HUD keeps its size. Saved in `config.xml`
@@ -155,14 +155,17 @@ How the port plays differently from Captain Claw (1997):
 
 - **Music** uses the FreePats instruments instead of a 1997 sound card or Windows' MIDI synth.
   The tracks themselves are the original ones.
-- **Difficulty** is a setting of its own (Options → Difficulty) that can be changed at any time.
-  In the original it was chosen once per player, when the player was created.
+- **Difficulty** is a setting of its own (main menu Options → Difficulty) that can be changed
+  between games. In the original it was chosen once per player, when the player was created.
 - **Display page:** Color depth and Detail are left out (no equivalent on the Vita, see
   `vita/ROADMAP.md` item 13). The Game play area slider zooms the view instead of letterboxing it,
   and has two stops.
 - **Options menu:** Edit Players and Controls (and Multiplayer, Load Custom Level) are greyed out.
   They were never implemented in OpenClaw.
-- **Movies:** all of them can be replayed from the start (the original unlocked them as you went).
+- **Movies:** they fill the screen. The original showed them interlaced (every other line black) by
+  default and had a Display option for it; here it's a `config.xml` setting only, because the black
+  lines turn into bands whenever the picture is scaled (Vita3K's window, a PS TV). All movies can be
+  replayed from the start (the original unlocked them as you went).
   The last two clips in `CLAW.FEC` (48 s and 3.5 s, after The Ceremony) aren't played; where the
   original used them is not known yet.
 

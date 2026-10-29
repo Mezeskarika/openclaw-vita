@@ -118,7 +118,9 @@ Every new source file must be added to its directory's `CMakeLists.txt` (`target
   named on the Replay Movies page, 10 and 11 unidentified (a 48 s montage, a 3.5 s ship at night).
   All but the logo are 320x240 at 15 fps; sound 22,050 Hz 16-bit stereo, mixed down to the mono
   mixer through `Mix_HookMusic`. `BaseGameApp::StepMovies` runs instead of the game while movies
-  are queued and pauses the game's sound. After-level mapping: `EndLevelScoreScreen.cpp`. Each movie
+  are queued and pauses the game's sound. After-level mapping: `EndLevelScoreScreen.cpp`. Stretched
+  by default; `Display/Movies` Interlaced (config only) draws every other line black at 640x480,
+  which turns into bands wherever the picture is scaled (Vita3K's window, PS TV). Each movie
   logs one line when it ends: why (finished, skipped by what), frames shown, loop fps, decode time
   and sound underruns.
 - Startup log noise that is expected: `[MEMORY_PROFILER] … not supported`, `Unknown ammo type`,

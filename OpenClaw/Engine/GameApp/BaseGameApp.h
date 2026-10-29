@@ -29,7 +29,7 @@ struct GameOptions
         windowHeight = 780;
         scale = 1.0f;
         showFrontLayer = true;
-        interlacedMovies = true;
+        interlacedMovies = false;
         useVerticalSync = true;
         isFullscreen = false;
         isFullscreenDesktop = false;
@@ -79,7 +79,9 @@ struct GameOptions
     double scale;
     // The foreground tile plane (e.g. the columns in level 1), Options -> Display -> Front Layer
     bool showFrontLayer;
-    // Options -> Display -> Movies: interlaced (the original's default) or stretched
+    // Display/Movies in config.xml: Stretched (default, fills the screen) or Interlaced (the
+    // original's default: 640x480 with every other line black). Not in the menus: scaled by
+    // anything but the Vita's own screen (Vita3K's window, a PS TV) the black lines turn into bands
     bool interlacedMovies;
     bool useVerticalSync;
     bool isFullscreen;
@@ -325,7 +327,7 @@ public:
 
     // Options the menus set by name (menu event "SetOption", visibility condition "Option"):
     // "Difficulty" = Normal/Easy, "FrontLayer" = On/Off, "ViewZoom" = 1/2 (Display/Scale; "Toggle"
-    // switches), "Movies" = Interlaced/Stretched, "MoviesAvailable" = Yes/No (read only).
+    // switches), "MoviesAvailable" = Yes/No (read only).
     // Setting one applies it at once and saves the config
     std::string GetMenuOption(const std::string& option) const;
     bool SetMenuOption(const std::string& option, const std::string& value);
