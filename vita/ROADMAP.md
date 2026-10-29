@@ -34,11 +34,11 @@ deciding on deliberately is the Linux host build used for profiling and smoke te
 | 12 | Plan difficulty settings (easy to hard options) | research, **decided** | 8 |
 | 13 | Implement the disabled Options submenus | code + menu, **Difficulty and Display done, need Vita3K check** | 3, 4, 8, 11, 12 |
 | 14 | Cutscenes from `CLAW.FEC` | code + menu, **done; rear-touchpad fix needs a hardware check** | — |
-| 15 | Diagnostics build: timestamps, cheaper logging, movie timing | code, **todo, first** | — |
-| 16 | Crashes in gameplay and during the intro | bug, **todo; needs crash dumps** | 15 |
+| 15 | Diagnostics build: timestamps, cheaper logging, movie timing | code, **done (v0.6.0-alpha.1)** | — |
+| 16 | Crashes in gameplay and during the intro | bug, **fixed from the dumps (v0.6.0-alpha.1), needs hardware check** | — |
 | 17 | Start-up takes about a minute; loading screen | bug + code, **todo** | 15 |
-| 18 | Cutscenes stutter on hardware | bug, **todo** | 15 |
-| 19 | Death on spikes next to a portal | bug, **todo; needs the place** | — |
+| 18 | Cutscenes stutter on hardware | bug, **fixed (v0.6.0-alpha.1), needs hardware check** | — |
+| 19 | Death on spikes next to a portal | bug, **noticed, not solved (seen once)** | — |
 | 20 | Claw stands up on spikes at game over | bug, **research** | — |
 | 21 | Loading a save keeps the stats from when it was saved | research, then code | — |
 | 22 | Moving platforms push Claw; he slides off edges (hardware only) | bug, **todo** | 15 |
@@ -319,7 +319,12 @@ Items 15-26 come from two play sessions on a PS Vita: 2026-10-28 (logs in the ma
 the first step is finding out; the change is made either way, and if the original did the same, it
 gets an on/off setting on the page in 24.
 
-## 15. Diagnostics build **[todo, first]**
+## 15. Diagnostics build **[done in v0.6.0-alpha.1]**
+
+Done: `Logger::InstallLogSink` (file kept open, flushed per line, seconds since start), the build ID
+as the first line, `<LogInput>` for gamepad presses, and the movie line with wall-clock time,
+skipped frames and decode times. Start-up phases are readable from the existing lines' timestamps;
+add more lines if the next log shows a gap without any.
 
 The hardware logs can't answer the open questions: lines have no time, so the one-minute start-up
 (17) can't be split into phases; the movie line measures the movie's own clock, which a stall stops,
@@ -335,7 +340,18 @@ may itself cause the 40-56 ms frames seen every 2 s in gameplay (22).
 
 Done when: a hardware run gives a log that times start-up, each movie and the frame spikes.
 
-## 16. Crashes **[todo; needs crash dumps]**
+## 16. Crashes **[fixed from the dumps in v0.6.0-alpha.1; needs a hardware check]**
+
+Findings: the 10-28 build was v0.3.0 (`eboot.bin` identical to a clean rebuild of the tag; ELF kept
+as `OpenClaw-Vita-0.3.0.elf`). All three of its gameplay dumps stop in
+`BaseAttackAIStateComponent::VCanEnter`: after an attack frame fires, `m_CurrentAttackActionIdx` is one
+past the last action until the animation loops, and when that attack kills Claw every enemy re-picks
+its state (`ClawHealthBelowZeroDelegate` → `EnterBestState` → `VCanEnter` on the current state), which
+read past `m_AttackActions`. The `deleted physics component` line before each crash is unrelated
+noise. The 10-29 "intro" crash was a tap in the menu: `GetMenuItemRect` read the missing Disabled
+image of a greyed-out item. Both fixed; neither reproduced on purpose.
+
+Original analysis:
 
 - 2026-10-28, three times in gameplay (killing an enemy while being shot; once in the air). Each
   crash comes right after `[BeginContact] Ground fixture: Box2D step with already deleted physics
@@ -358,7 +374,15 @@ something has to load, show a loading screen (an image from `CLAW.REZ`, e.g. the
 "Loading" label) instead of a black screen. Playing the movies during loading doesn't solve it: they
 come from the same card and can be skipped.
 
-## 18. Cutscenes stutter on hardware **[todo]**
+## 18. Cutscenes stutter on hardware **[fixed in v0.6.0-alpha.1; needs a hardware check]**
+
+The maintainer's description: choppy, not slow motion, in busy stretches only (the introduction's
+panning shot with the cannons), sound too. Found: libsmacker was compiled without optimisation (C
+code got no `-O2`), and frames were decoded on the main thread only when due. Now `-O2` and a decoder
+thread up to 8 frames ahead. Smacker's first frame carries about a second of sound, so the sound
+buffer was never the problem at the start.
+
+Original analysis:
 
 On the Vita the sound stutters and the movies seem slow; in Vita3K they play fine. The main loop held
 60 fps during movies (worst frames 26-35 ms), so decoding keeps up. Suspect: the sound buffer. The
@@ -367,7 +391,11 @@ mixer asks for 2048 samples (93 ms) at a time. The desktop test didn't show unde
 the Vita first (15). If confirmed: decode a few frames ahead (sound first, pictures in a small queue),
 or start the clock only once enough sound is queued.
 
-## 19. Death on spikes next to a portal **[todo; needs the place]**
+## 19. Death on spikes next to a portal **[noticed, not solved]**
+
+Level 1, after the first checkpoint; seen once, not reproduced. Kept here in case it shows up again
+(with v0.6.0's input log and timestamps, the log around it will help).
+
 
 Claw fell on spikes next to a portal and died; the dying sprite shook, he respawned at the portal's
 other end in the air while still dying, and the portal was gone in the next life. Reproduce on the
@@ -401,8 +429,9 @@ so Box2D takes one long step. Fix by splitting long frames into steps of at most
 - Battlements, level 2: at the top of the first ladder, Claw can't walk onto the platform, only
   jump onto it.
 
-Find out what the original allowed (the Design Bible's controls table lists "Climb top of ladder"
-as unfinished in 1997), fix in `ClawControllableComponent` (`VOnClimb`, `VOnStopClimbing`) and the
+Both seen with the analog stick, probably also with the D-pad: the input log (15) will show
+which keys reached the game. Find out what the original allowed (the Design Bible's controls table
+lists "Climb top of ladder" as unfinished in 1997), fix in `ClawControllableComponent` (`VOnClimb`, `VOnStopClimbing`) and the
 top-of-ladder ground (`FixtureType_TopLadderGround`).
 
 ## 24. Options page for changes that differ from the original **[blocked on 20-23]**

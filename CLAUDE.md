@@ -200,6 +200,9 @@ Build the desktop target in the Ubuntu container (`cmake -S . -B build && make`;
   where). `0.x` while untested on real hardware; `1.0.0` once it plays through on a Vita.
   A new feature or behaviour change bumps the minor version, a fix-only release the patch version.
 - Only tag builds that were tested (Vita3K or hardware), and record where in the tag message.
+- Builds handed over for a hardware test get a pre-release tag, `vX.Y.Z-alpha.N` (annotated, local
+  until approved), so a test log (its first line is the build's describe) and a crash dump map to one
+  commit. Save each one's VPK and ELF as `OpenClaw-Vita-X.Y.Z-alpha.N.vpk`/`.elf` next to the repo.
 - `CHANGELOG.md` (Keep a Changelog): add every user-visible change under `[Unreleased]` in the same
   commit as the change. At release, rename `[Unreleased]` to the version and date, update the
   compare links at the bottom, and keep the "Differences from upstream OpenClaw" / "Differences
