@@ -17,6 +17,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -g")
 add_subdirectory(Box2D)
 add_subdirectory(libwap)
 add_subdirectory(./ThirdParty/Tinyxml)
+add_subdirectory(./ThirdParty/libsmacker)
 
 # Directories with headers
 include_directories(./Box2D/)
@@ -24,7 +25,7 @@ include_directories(./libwap/)
 if (Vita)
     # ThirdParty/SDL2 holds old SDL 2.0.4 headers, which would shadow the VitaSDK ones.
     # Expose only the other ThirdParty headers.
-    file(COPY ./ThirdParty/Tinyxml ./ThirdParty/FastDelegate
+    file(COPY ./ThirdParty/Tinyxml ./ThirdParty/FastDelegate ./ThirdParty/libsmacker
         DESTINATION ${CMAKE_BINARY_DIR}/ThirdParty
         FILES_MATCHING PATTERN "*.h")
     include_directories(${CMAKE_BINARY_DIR}/ThirdParty/)
@@ -48,6 +49,7 @@ add_subdirectory(OpenClaw)
 list(APPEND TARGET_LIBS
     libwap
     tinyxml
+    libsmacker
     Box2D
 )
 if (Vita)
