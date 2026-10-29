@@ -11,7 +11,7 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
 ## [Unreleased]
 
 ### Added
-- Options → Difficulty: Normal or Easy, changeable at any time and saved in `config.xml`
+- Main menu Options → Difficulty: Normal or Easy, changeable between games and saved in `config.xml`
   (`<Gameplay><Difficulty>`). Easy is the original game's Easy mode: Claw's sword, punches and
   kicks hit 4× harder (5× when ducking, 2× on catnip); pistol, magic, dynamite and the sword
   powerups are unchanged.

@@ -207,7 +207,11 @@ Decision (2026-10-29): **Normal and Easy**, as in the original. Easy multiplies 
 by the Design Bible's Easy/Normal ratios (section 7.1) applied to OpenClaw's own values: sword,
 punch, kick and jump swipe ×4, ducking swipe ×5, catnip swipe ×2; ranged attacks, magic, dynamite
 and sword powerups unchanged. Unlike the original (difficulty fixed per player), it's a global
-setting on its own Options → Difficulty page, changeable at any time. Implemented in 13.
+setting on its own Options → Difficulty page, changeable at any time from the main menu.
+Implemented in 13.
+
+Decision (2026-10-29): Difficulty is **only in the main menu's Options**, not in the in-game
+Options (which keeps only Audio).
 
 Plan and recommendation in `vita/OPTIONS_RESEARCH.md` ("Difficulty"): the original's Easy mode
 raised Claw's melee damage (5 → 20); OpenClaw hard-codes it in `ClawControllableComponent`.
