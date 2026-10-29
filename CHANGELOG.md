@@ -17,6 +17,9 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
   reopened for every line.
 
 ### Fixed
+- Physics steps at most 1/60 s at a time: a long frame (the Vita has a 40-56 ms one every few
+  seconds) moved everything in one big step, which may have let moving platforms and edges push
+  Claw around. Frames at 60 fps behave as before.
 - Cutscenes stuttered on a PS Vita in busy scenes (e.g. the cannons in the introduction), picture
   and sound. The decoder was built without optimisation, and decoded each frame only when it was
   due; it is now optimised and runs on its own thread, up to half a second ahead. Each movie's log

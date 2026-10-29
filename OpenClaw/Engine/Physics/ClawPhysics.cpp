@@ -398,7 +398,19 @@ void ClawPhysics::VOnUpdate(const uint32 msDiff)
 
     {
         FrameStats::ScopedTimer physicsTimer(FrameStats::Section_Physics);
-        m_pWorld->Step(msDiff / 1000.0f, 10, 8);
+
+        // A long frame (on the Vita, 40-56 ms every few seconds) is stepped in parts of at most one
+        // 60 fps frame: a single long Box2D step let moving platforms and edges push Claw around.
+        // Frames at 60 fps are one step, as before
+        const uint32 maxStepMs = 17;
+        uint32 remainingMs = msDiff;
+        do
+        {
+            const uint32 stepMs = remainingMs < maxStepMs ? remainingMs : maxStepMs;
+            m_pWorld->Step(stepMs / 1000.0f, 10, 8);
+            remainingMs -= stepMs;
+        }
+        while (remainingMs > 0);
     }
 
     // Remove actors form physics simulation which are scheduled to be destroyed
