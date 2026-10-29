@@ -11,6 +11,9 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
 ## [Unreleased]
 
 ### Added
+- Options → Display → Game play area has four stops: 2× (zoomed in), 1× (the full view), and,
+  zoomed out, 0.75× and 0.5×. The zoomed-out views draw uneven pixel rows and, at 0.5×, about 3.5
+  times as much per frame, so they may run slower on the Vita.
 - The log (`ux0:data/SDL_Log.txt`) starts with the build it came from (`git describe`), each line
   starts with the seconds since start-up, and with `<LogInput>` (on in the Vita config) every
   button and stick direction is logged with the key it becomes. The file is kept open instead of
@@ -184,7 +187,7 @@ How the port plays differently from Captain Claw (1997):
   between games. In the original it was chosen once per player, when the player was created.
 - **Display page:** Color depth and Detail are left out (no equivalent on the Vita, see
   `vita/ROADMAP.md` item 13). The Game play area slider zooms the view instead of letterboxing it,
-  and has two stops.
+  and has four stops, from 2× in to 0.5× out.
 - **Options menu:** Edit Players and Controls (and Multiplayer, Load Custom Level) are greyed out.
   They were never implemented in OpenClaw.
 - **Movies:** they fill the screen. The original showed them interlaced (every other line black) by

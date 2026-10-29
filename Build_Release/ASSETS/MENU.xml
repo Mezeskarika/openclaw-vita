@@ -2608,7 +2608,7 @@
             <GeneratedEvent>
                 <Type>SetOption</Type>
                 <Option>ViewZoom</Option>
-                <Value>Toggle</Value>
+                <Value>Next</Value>
             </GeneratedEvent>
             <GeneratedEvent>
                 <Type>PlaySound</Type>
@@ -2641,7 +2641,7 @@
                     <Event>
                         <Type>SetOption</Type>
                         <Option>ViewZoom</Option>
-                        <Value>2</Value>
+                        <Value>In</Value>
                     </Event>
                     <Event>
                         <Type>PlaySound</Type>
@@ -2656,7 +2656,7 @@
                     <Event>
                         <Type>SetOption</Type>
                         <Option>ViewZoom</Option>
-                        <Value>1</Value>
+                        <Value>Out</Value>
                     </Event>
                     <Event>
                         <Type>PlaySound</Type>

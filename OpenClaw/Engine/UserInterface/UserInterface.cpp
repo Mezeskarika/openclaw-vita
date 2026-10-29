@@ -122,7 +122,7 @@ static SDL_Rect GetScreenRect()
 // Width of the menu layout: item positions are in the 640x480 space of the original menus
 static const int MENU_LAYOUT_WIDTH = 640;
 
-// Distance between the two stops of the Display page's play area slider
+// Distance between the end stops of the Display page's play area slider
 static const int PLAY_AREA_KNOB_TRAVEL = 195;
 
 // Labels the game data has no image for are drawn with this font (Cinzel, SIL Open Font Licence;
@@ -1107,9 +1107,9 @@ void ScreenElementMenuItem::VOnUpdate(uint32 msDiff)
     }
     else if (m_Name == "PLAY_AREA_KNOB")
     {
-        // Left end: zoomed in (smaller play area), right end: the full view, as in the original
-        bool isZoomedIn = g_pApp->GetGameConfig()->scale >= 2.0;
-        m_Position.SetX(m_DefaultPosition.x + (isZoomedIn ? 0 : PLAY_AREA_KNOB_TRAVEL));
+        // Left: zoomed in (smaller play area), as in the original; then the full view, then zoomed out
+        int stop = BaseGameApp::FindViewZoomStop(g_pApp->GetGameConfig()->scale);
+        m_Position.SetX(m_DefaultPosition.x + stop * PLAY_AREA_KNOB_TRAVEL / (BaseGameApp::VIEW_ZOOM_STOP_COUNT - 1));
     }
 }
 

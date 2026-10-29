@@ -70,7 +70,7 @@ USB mode, edit, copy back). Delete the file to get the defaults back. Options wo
 
 | Option | Default | What it does |
 |---|---|---|
-| `Display/Size`, `Display/Scale` | 960×544, 1 | Render size and zoom. At scale 1 you see 960×544 world pixels; 2 shows half as much, zoomed in (the Display page's Game play area slider). Other values work but draw uneven pixel rows. Keep the size at 960×544. |
+| `Display/Size`, `Display/Scale` | 960×544, 1 | Render size and zoom. At scale 1 you see 960×544 world pixels; 2 shows half as much, zoomed in; 0.75 and 0.5 show more, zoomed out (the Display page's Game play area slider has these four stops). Anything but 1 and 2 draws uneven pixel rows, and 0.5 draws about 3.5 times as much per frame. Keep the size at 960×544. |
 | `Display/FrontLayer` | true | The foreground layer (e.g. the columns in level 1). Set by the Display page. |
 | `Display/Movies` | Stretched | Cutscenes fill the screen. `Interlaced` shows them at the original's 640×480 with every other line black, as the original did by default; it looks right only on the Vita's own screen (scaled, e.g. in Vita3K or on a PS TV, the lines turn into bands). |
 | `Display/UseVerticalSync` | true | Lock to the screen's 60 Hz. Turning it off gives no benefit on the Vita. |

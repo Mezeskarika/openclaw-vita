@@ -330,11 +330,17 @@ public:
     bool SaveGameOptions();
 
     // Options the menus set by name (menu event "SetOption", visibility condition "Option"):
-    // "Difficulty" = Normal/Easy, "FrontLayer" = On/Off, "ViewZoom" = 1/2 (Display/Scale; "Toggle"
-    // switches), "MoviesAvailable" = Yes/No (read only).
+    // "Difficulty" = Normal/Easy, "FrontLayer" = On/Off, "ViewZoom" = one of the stops below
+    // (Display/Scale; "In"/"Out" step along them, "Next" cycles), "MoviesAvailable" = Yes/No (read only).
     // Setting one applies it at once and saves the config
     std::string GetMenuOption(const std::string& option) const;
     bool SetMenuOption(const std::string& option, const std::string& value);
+
+    // The Game play area slider's stops, left to right: zoomed in (2) to zoomed out (0.5)
+    static const int VIEW_ZOOM_STOP_COUNT = 4;
+    static double GetViewZoomStop(int index);
+    // The stop nearest to a scale
+    static int FindViewZoomStop(double scale);
 
     // Queues movies of CLAW.FEC (see MoviePlayer). They play before the game updates again; any
     // button skips one. Nothing happens without CLAW.FEC

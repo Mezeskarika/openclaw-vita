@@ -1094,7 +1094,9 @@ std::string BaseGameApp::GetMenuOption(const std::string& option) const
     }
     else if (option == "ViewZoom")
     {
-        return m_GameOptions.scale >= 2.0 ? "2" : "1";
+        std::ostringstream zoomStr;
+        zoomStr << GetViewZoomStop(FindViewZoomStop(m_GameOptions.scale));
+        return zoomStr.str();
     }
     else if (option == "MoviesAvailable")
     {
@@ -1103,6 +1105,25 @@ std::string BaseGameApp::GetMenuOption(const std::string& option) const
 
     LOG_WARNING("Unknown menu option: " + option);
     return "";
+}
+
+double BaseGameApp::GetViewZoomStop(int index)
+{
+    static const double stops[VIEW_ZOOM_STOP_COUNT] = { 2.0, 1.0, 0.75, 0.5 };
+    return stops[index < 0 ? 0 : (index >= VIEW_ZOOM_STOP_COUNT ? VIEW_ZOOM_STOP_COUNT - 1 : index)];
+}
+
+int BaseGameApp::FindViewZoomStop(double scale)
+{
+    int nearest = 0;
+    for (int i = 1; i < VIEW_ZOOM_STOP_COUNT; i++)
+    {
+        if (fabs(GetViewZoomStop(i) - scale) < fabs(GetViewZoomStop(nearest) - scale))
+        {
+            nearest = i;
+        }
+    }
+    return nearest;
 }
 
 bool BaseGameApp::SetMenuOption(const std::string& option, const std::string& value)
@@ -1121,9 +1142,27 @@ bool BaseGameApp::SetMenuOption(const std::string& option, const std::string& va
     }
     else if (option == "ViewZoom")
     {
-        // Whole numbers only: in between, nearest-neighbour scaling draws uneven pixel rows
-        // (roadmap 11). The menus draw unscaled and restore this scale after themselves
-        double zoom = (value == "Toggle") ? (m_GameOptions.scale >= 2.0 ? 1.0 : 2.0) : (value == "2" ? 2.0 : 1.0);
+        // 0.75 and 0.5 draw uneven pixel rows (nearest-neighbour scaling, roadmap 11); they are there
+        // for a wider view all the same (roadmap 26). The menus draw unscaled and restore this scale
+        // after themselves
+        int stop = FindViewZoomStop(m_GameOptions.scale);
+        if (value == "In")
+        {
+            stop = stop > 0 ? stop - 1 : 0;
+        }
+        else if (value == "Out")
+        {
+            stop = stop < VIEW_ZOOM_STOP_COUNT - 1 ? stop + 1 : stop;
+        }
+        else if (value == "Next" || value == "Toggle")
+        {
+            stop = (stop + 1) % VIEW_ZOOM_STOP_COUNT;
+        }
+        else
+        {
+            stop = FindViewZoomStop(atof(value.c_str()));
+        }
+        double zoom = GetViewZoomStop(stop);
         if (zoom == m_GameOptions.scale)
         {
             return true;
