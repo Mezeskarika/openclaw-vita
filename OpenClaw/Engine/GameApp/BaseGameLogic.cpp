@@ -358,14 +358,24 @@ bool BaseGameLogic::VLoadGame(const char* xmlLevelResource)
     loadingProgress = 95.0f;
     RenderLoadingScreen(pBackgroundImage, backgroundRect, scale, loadingProgress);
 
-    // Load claw stats: Score, Health, Lives, Ammo: Bullets, Magic, Dynamite
+    // Load claw stats: Score, Health, Lives, Ammo: Bullets, Magic, Dynamite. The original restored all
+    // of them from the save; with Options -> Gameplay -> Loaded games: New game (the default), a game
+    // loaded from the menu keeps its score but starts with a new game's lives, health and ammo
+    const CheckpointSave* pStatsSave = pCheckpointSave;
+    if (m_pCurrentLevel->m_bIsFromLoadMenu && g_pApp->GetGameConfig()->loadedGamesStartFresh)
+    {
+        if (const CheckpointSave* pNewGameSave = m_pGameSaveMgr->GetCheckpointSave(1, 0))
+        {
+            pStatsSave = pNewGameSave;
+        }
+    }
     IEventMgr* pEventMgr = IEventMgr::Get();
     pEventMgr->VQueueEvent(IEventDataPtr(new EventData_Modify_Player_Stat(clawId, PlayerStat_Score, pCheckpointSave->score, false)));
-    pEventMgr->VQueueEvent(IEventDataPtr(new EventData_Modify_Player_Stat(clawId, PlayerStat_Health, pCheckpointSave->health, false)));
-    pEventMgr->VQueueEvent(IEventDataPtr(new EventData_Modify_Player_Stat(clawId, PlayerStat_Lives, pCheckpointSave->lives, false)));
-    pEventMgr->VQueueEvent(IEventDataPtr(new EventData_Modify_Player_Stat(clawId, PlayerStat_Bullets, pCheckpointSave->bulletCount, false)));
-    pEventMgr->VQueueEvent(IEventDataPtr(new EventData_Modify_Player_Stat(clawId, PlayerStat_Magic, pCheckpointSave->magicCount, false)));
-    pEventMgr->VQueueEvent(IEventDataPtr(new EventData_Modify_Player_Stat(clawId, PlayerStat_Dynamite, pCheckpointSave->dynamiteCount, false)));
+    pEventMgr->VQueueEvent(IEventDataPtr(new EventData_Modify_Player_Stat(clawId, PlayerStat_Health, pStatsSave->health, false)));
+    pEventMgr->VQueueEvent(IEventDataPtr(new EventData_Modify_Player_Stat(clawId, PlayerStat_Lives, pStatsSave->lives, false)));
+    pEventMgr->VQueueEvent(IEventDataPtr(new EventData_Modify_Player_Stat(clawId, PlayerStat_Bullets, pStatsSave->bulletCount, false)));
+    pEventMgr->VQueueEvent(IEventDataPtr(new EventData_Modify_Player_Stat(clawId, PlayerStat_Magic, pStatsSave->magicCount, false)));
+    pEventMgr->VQueueEvent(IEventDataPtr(new EventData_Modify_Player_Stat(clawId, PlayerStat_Dynamite, pStatsSave->dynamiteCount, false)));
 
     // Set claw to spawn location
     m_CurrentSpawnPosition = GetSpawnPosition(m_pCurrentLevel->m_LeveNumber, m_pCurrentLevel->m_LoadedCheckpoint);

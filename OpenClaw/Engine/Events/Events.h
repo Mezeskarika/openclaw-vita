@@ -2295,13 +2295,16 @@ public:
     EventData_Menu_LoadGame()
     {
         m_bIsNewGame = false;
+        m_bIsFromLoadMenu = false;
         m_LevelNumber = -1;
         m_CheckpointNumber = -1;
     }
 
-    EventData_Menu_LoadGame(int levelNumber, bool isNewGame, int checkpointNumber)
+    // isFromLoadMenu: Single Player -> Load Game, as opposed to a new game or the next level
+    EventData_Menu_LoadGame(int levelNumber, bool isNewGame, int checkpointNumber, bool isFromLoadMenu = false)
     {
         m_bIsNewGame = isNewGame;
+        m_bIsFromLoadMenu = isFromLoadMenu;
         m_LevelNumber = levelNumber;
         m_CheckpointNumber = checkpointNumber;
     }
@@ -2309,12 +2312,13 @@ public:
     virtual const EventType& VGetEventType(void) const { return sk_EventType; }
     virtual IEventDataPtr VCopy() const
     {
-        return IEventDataPtr(new EventData_Menu_LoadGame(m_LevelNumber, m_bIsNewGame, m_CheckpointNumber));
+        return IEventDataPtr(new EventData_Menu_LoadGame(m_LevelNumber, m_bIsNewGame, m_CheckpointNumber, m_bIsFromLoadMenu));
     }
     virtual void VSerialize(std::ostringstream& out) const { out << m_LevelNumber << m_bIsNewGame << m_CheckpointNumber; }
     virtual void VDeserialize(std::istringstream& in) { in >> m_LevelNumber >> m_bIsNewGame >> m_CheckpointNumber; }
 
     bool GetIsNewGame() { return m_bIsNewGame; }
+    bool GetIsFromLoadMenu() { return m_bIsFromLoadMenu; }
     int GetLevelNumber() { return m_LevelNumber; }
     int GetCheckpointNumber() { return m_CheckpointNumber; }
 
@@ -2322,6 +2326,7 @@ public:
 
 private:
     bool m_bIsNewGame;
+    bool m_bIsFromLoadMenu;
     int m_LevelNumber;
     int m_CheckpointNumber;
 };

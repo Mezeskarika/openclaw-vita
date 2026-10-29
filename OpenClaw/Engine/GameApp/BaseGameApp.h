@@ -46,6 +46,7 @@ struct GameOptions
 
         difficulty = Difficulty_Normal;
         playIntroMovies = true;
+        loadedGamesStartFresh = true;
 
         fontNames.push_back("clacon.ttf");
         consoleFontName = "clacon.ttf";
@@ -103,6 +104,9 @@ struct GameOptions
     Difficulty difficulty;
     // Monolith logo and introduction at start-up
     bool playIntroMovies;
+    // Gameplay/LoadedGames: NewGame (true) starts a game loaded from the menu with a new game's lives,
+    // health and ammo; AsSaved restores them from the save, as the original did
+    bool loadedGamesStartFresh;
 
     // Font
     std::vector<const char*> fontNames;
@@ -331,7 +335,8 @@ public:
 
     // Options the menus set by name (menu event "SetOption", visibility condition "Option"):
     // "Difficulty" = Normal/Easy, "FrontLayer" = On/Off, "ViewZoom" = one of the stops below
-    // (Display/Scale; "In"/"Out" step along them, "Next" cycles), "MoviesAvailable" = Yes/No (read only).
+    // (Display/Scale; "In"/"Out" step along them, "Next" cycles), "LoadedGames" = NewGame/AsSaved,
+    // "MoviesAvailable" = Yes/No (read only).
     // Setting one applies it at once and saves the config
     std::string GetMenuOption(const std::string& option) const;
     bool SetMenuOption(const std::string& option, const std::string& value);

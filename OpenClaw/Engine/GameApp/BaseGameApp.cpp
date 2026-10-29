@@ -852,6 +852,11 @@ bool BaseGameApp::LoadGameOptions(const char* inConfigFile)
         }
         ParseValueFromXmlElem(&m_GameOptions.playIntroMovies,
             pGameplayElem->FirstChildElement("PlayIntroMovies"));
+        std::string loadedGamesStr;
+        if (ParseValueFromXmlElem(&loadedGamesStr, pGameplayElem->FirstChildElement("LoadedGames")))
+        {
+            m_GameOptions.loadedGamesStartFresh = (loadedGamesStr != "AsSaved");
+        }
     }
 
     //-------------------------------------------------------------------------
@@ -1102,6 +1107,7 @@ bool BaseGameApp::SaveGameOptions()
     SetConfigValue(pConfigRoot, "Audio", "SoundOn", m_GameOptions.soundOn ? "true" : "false");
     SetConfigValue(pConfigRoot, "Audio", "MusicOn", m_GameOptions.musicOn ? "true" : "false");
     SetConfigValue(pConfigRoot, "Gameplay", "Difficulty", DifficultyToString(m_GameOptions.difficulty));
+    SetConfigValue(pConfigRoot, "Gameplay", "LoadedGames", m_GameOptions.loadedGamesStartFresh ? "NewGame" : "AsSaved");
 
     // Write a temporary file first, so a crash mid-write can't leave a truncated config.
     // The Vita can't rename over an existing file, hence remove-then-rename; LoadGameOptions
@@ -1127,6 +1133,10 @@ std::string BaseGameApp::GetMenuOption(const std::string& option) const
     if (option == "Difficulty")
     {
         return DifficultyToString(m_GameOptions.difficulty);
+    }
+    else if (option == "LoadedGames")
+    {
+        return m_GameOptions.loadedGamesStartFresh ? "NewGame" : "AsSaved";
     }
     else if (option == "FrontLayer")
     {
@@ -1179,6 +1189,10 @@ bool BaseGameApp::SetMenuOption(const std::string& option, const std::string& va
     else if (option == "FrontLayer")
     {
         m_GameOptions.showFrontLayer = (value == "On");
+    }
+    else if (option == "LoadedGames")
+    {
+        m_GameOptions.loadedGamesStartFresh = (value != "AsSaved");
     }
     else if (option == "ViewZoom")
     {

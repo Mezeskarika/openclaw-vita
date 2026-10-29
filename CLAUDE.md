@@ -114,6 +114,10 @@ Every new source file must be added to its directory's `CMakeLists.txt` (`target
 - View zoom is the renderer scale (`Display/Scale`); the slider's stops are
   `BaseGameApp::GetViewZoomStop` (2, 1, 0.75, 0.5). Only whole numbers look right (nearest-neighbour
   scaling); 0.5 makes about 3.5 times the draw calls of 1 (level 1 start: ~1,200). The menus and the HUD (`GameHUD.cpp`, `HUDSceneNode.cpp`) draw at scale 1 and restore it.
+- Options → Gameplay (`MenuPage_Options_Gameplay`) holds switches for the port's changes to how the
+  original played (roadmap 24). Loaded games: `LevelData::m_bIsFromLoadMenu` marks a load from the
+  Load Game pages (the next-level load uses the same event); new-game stats come from level 1's
+  checkpoint 0 in `SAVES.XML`.
 - Difficulty: `GameApp/Difficulty.h`. Easy only changes Claw's melee damage (`GetClawMeleeDamage`,
   unit-tested); it's read at each swing, so a change applies at once.
 - Settings saving: `BaseGameApp::SaveGameOptions` writes only the options the menus change (today:

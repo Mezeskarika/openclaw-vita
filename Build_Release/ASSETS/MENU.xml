@@ -2320,12 +2320,24 @@
             </GeneratedEvent>
         </MenuItem>
         <MenuItem>
+            <Name>GAMEPLAY_BUTTON</Name>
+            <Type>Button</Type>
+            <State>Active</State>
+            <!-- Not in the original: the changes that differ from it can be switched back here -->
+            <Label size="28">Gameplay</Label>
+            <Position x="center" y="400" />
+            <GeneratedEvent>
+                <Type>SwitchPage</Type>
+                <PageName>MenuPage_Options_Gameplay</PageName>
+            </GeneratedEvent>
+        </MenuItem>
+        <MenuItem>
             <Name>BACK_BUTTON</Name>
             <Type>Button</Type>
             <State>Active</State>
             <InactiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/012_PREVIOUSMENU.PCX</InactiveImage>
             <ActiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/013_PREVIOUSMENU.PCX</ActiveImage>
-            <Position x="266" y="400" />
+            <Position x="266" y="435" />
             <GeneratedEvent>
                 <Type>SwitchPage</Type>
                 <PageName>MenuPage_Main</PageName>
@@ -2855,6 +2867,170 @@
             <GeneratedEvent>
                 <Type>SwitchPage</Type>
                 <PageName>MenuPage_Main</PageName>
+            </GeneratedEvent>
+        </MenuItem>
+    </MenuPage>
+
+    <!-- GAMEPLAY PAGE (not in the original): switches for the port's changes to how the original played, labels drawn with the menu font -->
+    <MenuPage>
+        <PageName>MenuPage_Options_Gameplay</PageName>
+        <KeyboardEvent>
+            <KeyType>Escape</KeyType>
+            <GeneratedEvent>
+                <Type>SwitchPage</Type>
+                <PageName>MenuPage_Options</PageName>
+            </GeneratedEvent>
+        </KeyboardEvent>
+
+        <MenuItem>
+            <Name>GAMEPLAY_TITLE_TEXT</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <Label size="30">Gameplay</Label>
+            <Position x="center" y="160" />
+        </MenuItem>
+        <MenuItem>
+            <Name>LOADED_GAMES_NEW_BUTTON</Name>
+            <Type>Button</Type>
+            <State>Active</State>
+            <VisibilityCondition>
+                <ConditionType>Option</ConditionType>
+                <Option>LoadedGames</Option>
+                <Value>NewGame</Value>
+            </VisibilityCondition>
+            <Label>Loaded games: New game</Label>
+            <Position x="center" y="240" />
+            <GeneratedEvent>
+                <Type>SetOption</Type>
+                <Option>LoadedGames</Option>
+                <Value>AsSaved</Value>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemVisibility</Type>
+                <MenuItemName>LOADED_GAMES_NEW_BUTTON</MenuItemName>
+                <IsVisible>false</IsVisible>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemState</Type>
+                <MenuItemName>LOADED_GAMES_NEW_BUTTON</MenuItemName>
+                <State>Inactive</State>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemVisibility</Type>
+                <MenuItemName>LOADED_GAMES_SAVED_BUTTON</MenuItemName>
+                <IsVisible>true</IsVisible>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemState</Type>
+                <MenuItemName>LOADED_GAMES_SAVED_BUTTON</MenuItemName>
+                <State>Active</State>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemVisibility</Type>
+                <MenuItemName>LOADED_GAMES_NEW_TEXT</MenuItemName>
+                <IsVisible>false</IsVisible>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemVisibility</Type>
+                <MenuItemName>LOADED_GAMES_SAVED_TEXT</MenuItemName>
+                <IsVisible>true</IsVisible>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>PlaySound</Type>
+                <SoundName>/STATES/MENU/SOUNDS/SELECT.WAV</SoundName>
+                <Volume>100</Volume>
+                <IsMusic>false</IsMusic>
+                <Loops>-0</Loops>
+            </GeneratedEvent>
+        </MenuItem>
+        <MenuItem>
+            <Name>LOADED_GAMES_SAVED_BUTTON</Name>
+            <Type>Button</Type>
+            <State>Active</State>
+            <VisibilityCondition>
+                <ConditionType>Option</ConditionType>
+                <Option>LoadedGames</Option>
+                <Value>AsSaved</Value>
+            </VisibilityCondition>
+            <Label>Loaded games: As saved</Label>
+            <Position x="center" y="240" />
+            <GeneratedEvent>
+                <Type>SetOption</Type>
+                <Option>LoadedGames</Option>
+                <Value>NewGame</Value>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemVisibility</Type>
+                <MenuItemName>LOADED_GAMES_SAVED_BUTTON</MenuItemName>
+                <IsVisible>false</IsVisible>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemState</Type>
+                <MenuItemName>LOADED_GAMES_SAVED_BUTTON</MenuItemName>
+                <State>Inactive</State>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemVisibility</Type>
+                <MenuItemName>LOADED_GAMES_NEW_BUTTON</MenuItemName>
+                <IsVisible>true</IsVisible>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemState</Type>
+                <MenuItemName>LOADED_GAMES_NEW_BUTTON</MenuItemName>
+                <State>Active</State>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemVisibility</Type>
+                <MenuItemName>LOADED_GAMES_NEW_TEXT</MenuItemName>
+                <IsVisible>true</IsVisible>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemVisibility</Type>
+                <MenuItemName>LOADED_GAMES_SAVED_TEXT</MenuItemName>
+                <IsVisible>false</IsVisible>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>PlaySound</Type>
+                <SoundName>/STATES/MENU/SOUNDS/SELECT.WAV</SoundName>
+                <Volume>100</Volume>
+                <IsMusic>false</IsMusic>
+                <Loops>-0</Loops>
+            </GeneratedEvent>
+        </MenuItem>
+        <MenuItem>
+            <Name>LOADED_GAMES_NEW_TEXT</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <VisibilityCondition>
+                <ConditionType>Option</ConditionType>
+                <Option>LoadedGames</Option>
+                <Value>NewGame</Value>
+            </VisibilityCondition>
+            <Label size="16">Start with a new game's lives, health and ammo</Label>
+            <Position x="center" y="290" />
+        </MenuItem>
+        <MenuItem>
+            <Name>LOADED_GAMES_SAVED_TEXT</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <VisibilityCondition>
+                <ConditionType>Option</ConditionType>
+                <Option>LoadedGames</Option>
+                <Value>AsSaved</Value>
+            </VisibilityCondition>
+            <Label size="16">Lives, health and ammo as at the save point (original)</Label>
+            <Position x="center" y="290" />
+        </MenuItem>
+        <MenuItem>
+            <Name>BACK_BUTTON</Name>
+            <Type>Button</Type>
+            <State>Active</State>
+            <InactiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/DIFFICULTY/001_PREVIOUSMENU.PCX</InactiveImage>
+            <ActiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/DIFFICULTY/002_PREVIOUSMENU.PCX</ActiveImage>
+            <Position x="266" y="400" />
+            <GeneratedEvent>
+                <Type>SwitchPage</Type>
+                <PageName>MenuPage_Options</PageName>
             </GeneratedEvent>
         </MenuItem>
     </MenuPage>

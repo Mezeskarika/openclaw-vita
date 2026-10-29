@@ -688,6 +688,7 @@ void HumanView::LoadGameDelegate(IEventDataPtr pEventData)
     if (pCastEventData)
     {
         bool isNewGame = pCastEventData->GetIsNewGame();
+        bool isFromLoadMenu = pCastEventData->GetIsFromLoadMenu();
         int levelNumber = pCastEventData->GetLevelNumber();
         int checkpointNumber = pCastEventData->GetCheckpointNumber();
 
@@ -707,6 +708,7 @@ void HumanView::LoadGameDelegate(IEventDataPtr pEventData)
         else
         {
             shared_ptr<LevelData> pLevelData(new LevelData(levelNumber, isNewGame, checkpointNumber));
+            pLevelData->SetIsFromLoadMenu(isFromLoadMenu);
             g_pApp->GetGameLogic()->SetLevelData(pLevelData);
 
             g_pApp->GetGameLogic()->VChangeState(GameState_LoadingLevel);

@@ -58,7 +58,7 @@ without that section uses the defaults above.
 - Options → Edit Players and Controls (also Multiplayer and Load Custom Level) are greyed out:
   they were never implemented in OpenClaw. (In 0.3.0 and earlier they're selectable but do
   nothing.)
-- Settings changed in the menus (Audio, Difficulty, Display) are saved in `config.xml`.
+- Settings changed in the menus (Audio, Difficulty, Display, Gameplay) are saved in `config.xml`.
 - Replay Movies is greyed out without `CLAW.FEC`.
 - Placeholder LiveArea artwork.
 
@@ -77,6 +77,7 @@ USB mode, edit, copy back). Delete the file to get the defaults back. Options wo
 | `Audio/Frequency` | 22050 | Mixer rate. The game's sounds are 22,050 Hz; 44100 makes each sound get resampled the first time it plays (stutter). |
 | `Audio/SoundVolume`, `Audio/MusicVolume` | 10, 15 | Volumes, sound 0–100 in steps of 10, music 0–20. Set by the Audio page. |
 | `Audio/SoundOn`, `Audio/MusicOn` | true, true | Set by the Audio page. |
+| `Gameplay/LoadedGames` | NewGame | A game loaded from the menu starts with a new game's lives, health and ammo (the score is kept); `AsSaved` restores them from the save point, as the original did. Set by Options → Gameplay. |
 | `Gameplay/PlayIntroMovies` | true | Monolith logo and introduction at start-up (needs `CLAW.FEC`). |
 | `Gameplay/Difficulty` | Normal | `Easy`: Claw's sword, punches and kicks hit harder, as in the original's Easy mode. Set by the Difficulty page. |
 | `Audio/TimidityCfg` | `app0:/freepats/timidity.cfg` | Instrument set for the music. Point it at another Timidity config on `ux0:` to use other instruments. |

@@ -48,6 +48,7 @@ std::map<std::string, MenuPage> g_StringToMenuPageEnumMap =
     { "MenuPage_Options_Difficulty",            MenuPage_Options_Difficulty },
     { "MenuPage_Options_Controls",              MenuPage_Options_Controls },
     { "MenuPage_Options_Display",               MenuPage_Options_Display },
+    { "MenuPage_Options_Gameplay",              MenuPage_Options_Gameplay },
     { "MenuPage_Options_Audio",                 MenuPage_Options_Audio },
     { "MenuPage_Multiplayer_LevelRacing",       MenuPage_Multiplayer_LevelRacing },
     { "MenuPage_Multiplayer_EditMacros",        MenuPage_Multiplayer_EditMacros },
@@ -370,7 +371,8 @@ static IEventDataPtr XmlElemToGeneratedEvent(TiXmlElement* pElem)
         ParseValueFromXmlElem(&levelNumber, pElem->FirstChildElement("LevelNumber"));
         ParseValueFromXmlElem(&checkpointNumber, pElem->FirstChildElement("CheckpointNumber"));
 
-        pEventData.reset(new EventData_Menu_LoadGame(levelNumber, isNewGame, checkpointNumber));
+        // The menus' LoadGame events are new games or the Load Game pages
+        pEventData.reset(new EventData_Menu_LoadGame(levelNumber, isNewGame, checkpointNumber, !isNewGame));
         //pEventData.reset(new EventData_Finished_Level());
     }
     else if (eventType == "QuitGame")

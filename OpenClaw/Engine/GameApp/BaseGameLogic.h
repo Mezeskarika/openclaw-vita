@@ -195,6 +195,7 @@ class LevelData
 public:
     LevelData(int levelNumber, bool isNewGame, int loadedCheckpoint)
     {
+        m_bIsFromLoadMenu = false;
         m_bIsNewGame = isNewGame;
         m_LeveNumber = levelNumber;
         m_LoadedCheckpoint = loadedCheckpoint;
@@ -207,6 +208,7 @@ public:
         m_LevelCreatedDate = "Unknown";
 
         m_bIsNewGame = true;
+        m_bIsFromLoadMenu = false;
         m_LeveNumber = -1;
         m_LoadedCheckpoint = -1;
     }
@@ -216,6 +218,8 @@ public:
     std::string GetLevelCreatedDate() const { return m_LevelCreatedDate; }
     uint32 GetLevelNumber() const { return m_LeveNumber; }
     uint32 GetLoadedCheckpointNumber() const { return m_LoadedCheckpoint; }
+    // Loaded from Single Player -> Load Game (not a new game, not the next level)
+    void SetIsFromLoadMenu(bool isFromLoadMenu) { m_bIsFromLoadMenu = isFromLoadMenu; }
 
     const PickupMap* GetLootedItems() { return &m_LootedPickupsMap; }
 
@@ -225,6 +229,7 @@ private:
     std::string m_LevelCreatedDate;
 
     bool m_bIsNewGame;
+    bool m_bIsFromLoadMenu;
     uint32 m_LeveNumber;
     uint32 m_LoadedCheckpoint;
 

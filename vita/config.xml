@@ -36,6 +36,9 @@
     <Difficulty>Normal</Difficulty>
     <!-- Monolith logo and the introduction at start-up (needs CLAW.FEC, see Assets) -->
     <PlayIntroMovies>true</PlayIntroMovies>
+    <!-- Games loaded from the menu: NewGame (a new game's lives, health and ammo, keeping the score)
+         or AsSaved (as when the save point was reached, as in the original). Options -> Gameplay -->
+    <LoadedGames>NewGame</LoadedGames>
   </Gameplay>
   <Font>
     <Fontt>clacon.ttf</Fontt>

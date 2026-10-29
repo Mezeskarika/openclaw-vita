@@ -11,6 +11,10 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
 ## [Unreleased]
 
 ### Added
+- Options → Gameplay, for the port's changes to how the original played. Loaded games: New game
+  (default) starts a game loaded from Single Player → Load Game with a new game's lives, health and
+  ammo, keeping its score; As saved restores them from the save point, as the original did. Saved
+  in `config.xml` (`<Gameplay><LoadedGames>`).
 - While the game starts and while the menus are built after the start-up movies, the original's
   title screen is shown instead of a black screen.
 - The selected menu item has a spinning gold coin on each side, as in the original (its own coin
@@ -199,6 +203,8 @@ How the port plays differently from Captain Claw (1997):
   and has four stops, from 2× in to 0.5× out.
 - **Options menu:** Edit Players and Controls (and Multiplayer, Load Custom Level) are greyed out.
   They were never implemented in OpenClaw.
+- **Loaded games** start with a new game's lives, health and ammo (the score is kept). The original
+  restored them from the save point; Options → Gameplay → Loaded games: As saved does that.
 - **Movies:** they fill the screen. The original showed them interlaced (every other line black) by
   default and had a Display option for it; here it's a `config.xml` setting only, because the black
   lines turn into bands whenever the picture is scaled (Vita3K's window, a PS TV). All movies can be
