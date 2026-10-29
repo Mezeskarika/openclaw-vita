@@ -55,6 +55,7 @@ private:
     static SDL_Event CreateKeyEvent(const KeyBinding& key, bool pressed, Uint32 timestamp);
 
     void TranslateAxis(Uint8 axis, Sint16 value, Uint32 timestamp, std::vector<SDL_Event>& outKeyEvents);
+    void UpdateStick(Uint32 timestamp, std::vector<SDL_Event>& outKeyEvents);
     void SetInputState(int inputId, const KeyBinding& key, bool pressed, Uint32 timestamp,
                        std::vector<SDL_Event>& outKeyEvents);
     bool IsInputHeld(int inputId, const KeyBinding& key) const;
@@ -65,6 +66,10 @@ private:
     // Several inputs can hold the same key (D-pad left and stick left).
     // A key goes down with the first input and up when the last one lets go.
     std::map<SDL_Keycode, std::set<int>> m_HeldKeys;
+
+    // Last position of the left stick
+    Sint16 m_StickX = 0;
+    Sint16 m_StickY = 0;
 };
 
 #endif

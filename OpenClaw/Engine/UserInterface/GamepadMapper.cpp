@@ -10,6 +10,13 @@ namespace
     const int AXIS_PRESS_THRESHOLD = 16000;
     const int AXIS_RELEASE_THRESHOLD = 12000;
 
+    // The stick is four directions, not two independent axes: up and down only within 30 degrees of
+    // vertical (35 once held), left and right anywhere else. Read as two axes, pushing right and a
+    // little up pressed Up too, which kept Claw climbing at the top of a ladder and made him ignore
+    // Jump on it (PS Vita, 0.5.0). Claw needs no diagonals: picking up is Up plus a button
+    const double VERTICAL_PRESS_RATIO = 1.73;   // tan(60 degrees)
+    const double VERTICAL_HOLD_RATIO = 1.43;    // tan(55 degrees)
+
     // Stick directions get input ids after the button ids: two per axis (negative, positive)
     int GetAxisInputId(Uint8 axis, bool isPositive)
     {
@@ -193,31 +200,67 @@ bool GamepadMapper::GetButtonBinding(Uint8 button, KeyBinding& outBinding) const
 
 void GamepadMapper::TranslateAxis(Uint8 axis, Sint16 value, Uint32 timestamp, std::vector<SDL_Event>& outKeyEvents)
 {
-    KeyBinding negativeKey;
-    KeyBinding positiveKey;
     if (axis == SDL_CONTROLLER_AXIS_LEFTX)
     {
-        negativeKey = { SDLK_LEFT, SDL_SCANCODE_LEFT };
-        positiveKey = { SDLK_RIGHT, SDL_SCANCODE_RIGHT };
+        m_StickX = value;
     }
     else if (axis == SDL_CONTROLLER_AXIS_LEFTY)
     {
-        negativeKey = { SDLK_UP, SDL_SCANCODE_UP };
-        positiveKey = { SDLK_DOWN, SDL_SCANCODE_DOWN };
+        m_StickY = value;
     }
     else
     {
         return;
     }
+    UpdateStick(timestamp, outKeyEvents);
+}
 
-    int negativeId = GetAxisInputId(axis, false);
-    int positiveId = GetAxisInputId(axis, true);
+void GamepadMapper::UpdateStick(Uint32 timestamp, std::vector<SDL_Event>& outKeyEvents)
+{
+    struct Direction
+    {
+        int inputId;
+        KeyBinding key;
+        bool isVertical;
+        int sign;
+        bool pressed;
+    };
+    Direction directions[] =
+    {
+        { GetAxisInputId(SDL_CONTROLLER_AXIS_LEFTY, false), { SDLK_UP, SDL_SCANCODE_UP }, true, -1, false },
+        { GetAxisInputId(SDL_CONTROLLER_AXIS_LEFTY, true), { SDLK_DOWN, SDL_SCANCODE_DOWN }, true, 1, false },
+        { GetAxisInputId(SDL_CONTROLLER_AXIS_LEFTX, false), { SDLK_LEFT, SDL_SCANCODE_LEFT }, false, -1, false },
+        { GetAxisInputId(SDL_CONTROLLER_AXIS_LEFTX, true), { SDLK_RIGHT, SDL_SCANCODE_RIGHT }, false, 1, false },
+    };
 
-    int negativeThreshold = IsInputHeld(negativeId, negativeKey) ? AXIS_RELEASE_THRESHOLD : AXIS_PRESS_THRESHOLD;
-    int positiveThreshold = IsInputHeld(positiveId, positiveKey) ? AXIS_RELEASE_THRESHOLD : AXIS_PRESS_THRESHOLD;
+    const bool wasVertical = IsInputHeld(directions[0].inputId, directions[0].key) ||
+        IsInputHeld(directions[1].inputId, directions[1].key);
+    const double absX = m_StickX < 0 ? -(double)m_StickX : (double)m_StickX;
+    const double absY = m_StickY < 0 ? -(double)m_StickY : (double)m_StickY;
+    const bool isVertical = absY > absX * (wasVertical ? VERTICAL_HOLD_RATIO : VERTICAL_PRESS_RATIO);
 
-    SetInputState(negativeId, negativeKey, value < -negativeThreshold, timestamp, outKeyEvents);
-    SetInputState(positiveId, positiveKey, value > positiveThreshold, timestamp, outKeyEvents);
+    for (Direction& direction : directions)
+    {
+        const int value = (direction.isVertical ? m_StickY : m_StickX) * direction.sign;
+        const int threshold = IsInputHeld(direction.inputId, direction.key) ? AXIS_RELEASE_THRESHOLD : AXIS_PRESS_THRESHOLD;
+        direction.pressed = (direction.isVertical == isVertical) && value > threshold;
+    }
+
+    // Releases first, so a direction change reads as one key up, then the other down
+    for (const Direction& direction : directions)
+    {
+        if (!direction.pressed)
+        {
+            SetInputState(direction.inputId, direction.key, false, timestamp, outKeyEvents);
+        }
+    }
+    for (const Direction& direction : directions)
+    {
+        if (direction.pressed)
+        {
+            SetInputState(direction.inputId, direction.key, true, timestamp, outKeyEvents);
+        }
+    }
 }
 
 void GamepadMapper::SetInputState(int inputId, const KeyBinding& key, bool pressed, Uint32 timestamp,

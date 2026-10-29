@@ -95,8 +95,8 @@ Every new source file must be added to its directory's `CMakeLists.txt` (`target
   `SDL_TOUCH_DEVICE_INDIRECT_ABSOLUTE`, the touchscreen is `DIRECT`), and the hands holding the
   console rest on it: check the type before reacting to a finger. Taps become mouse clicks only
   from the touchscreen (`SDL_HINT_VITA_TOUCH_MOUSE_DEVICE`).
-- **Input:** `GamepadMapper` turns controller buttons and the left stick into the key events the
-  game already handles (`BaseGameApp::OnEvent`). Gameplay reacts to key *events*; nothing in
+- **Input:** `GamepadMapper` turns controller buttons and the left stick (four directions, see
+  `UpdateStick`) into the key events the game already handles (`BaseGameApp::OnEvent`). Gameplay reacts to key *events*; nothing in
   gameplay polls `SDL_GetKeyboardState`.
 - **Linking** is static with an explicit library list in the root `CMakeLists.txt`: the SDK's CMake
   configs and pkg-config files leave out zlib, libpng, `SceShaccCgExt` and pthread.
