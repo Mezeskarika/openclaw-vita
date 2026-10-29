@@ -26,5 +26,6 @@ vita_create_vpk(openclaw.vpk ${VITA_TITLEID} eboot.bin
     FILE Build_Release/console02.tga console02.tga
     FILE Build_Release/fonts/Cinzel-Bold.ttf fonts/Cinzel-Bold.ttf
     FILE Build_Release/fonts/OFL.txt fonts/OFL.txt
+    FILE ThirdParty/libsmacker/COPYING libsmacker/COPYING
     FILE ${FREEPATS_VPK_FILES}
 )

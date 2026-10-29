@@ -139,11 +139,13 @@ Build the desktop target in the Ubuntu container (`cmake -S . -B build && make`;
 - `xvfb-run -a` (SDL's `dummy` video driver has no accelerated renderer, and the game asks for one)
   and `SDL_AUDIODRIVER=dummy`;
 - `ASSETS.ZIP` from `build-vita/ASSETS.ZIP` (or `python3 -I vita/tools/make_assets_zip.py
-  Build_Release/ASSETS <out>`), plus `SAVES.XML`, `clacon.ttf` and `console02.tga` from
-  `Build_Release/`;
+  Build_Release/ASSETS <out>`), plus `SAVES.XML`, `clacon.ttf`, `console02.tga` and the `fonts/`
+  folder from `Build_Release/` (without the menu font the menus fail to load);
 - a `config.xml` derived from `vita/config.xml` with `AssetsFolder` empty, `RezArchive` pointing at
-  `CLAW.REZ`, `TimidityCfg` removed (or pointing at a FreePats folder), vsync off, and
-  `<SkipMenu>true</SkipMenu>` to go straight into level 1;
+  `CLAW.REZ`, `MoviesArchive` at `CLAW.FEC` (or anywhere missing, for no movies), `TimidityCfg`
+  removed (or pointing at a FreePats folder), vsync off, and `<SkipMenu>true</SkipMenu>` to go
+  straight into level 1 (it also skips the intro movies);
+- any key press skips a movie, so wait with `sleep`, not with key presses;
 - screenshots for checking menus: run under a plain `Xvfb :N -screen 0 960x544x24`, send keys with
   `xdotool key Down`, capture with ImageMagick `import -window root shot.png`;
 - `startup_commands.txt` in the working directory for console commands at level start, e.g.
@@ -166,7 +168,9 @@ Build the desktop target in the Ubuntu container (`cmake -S . -B build && make`;
 - Commits use the GitHub no-reply address configured in the repo's local git config. Never
   commit or tag with a work email; check `git log --format='%ae %ce'` before pushing.
 - Licence GPL-3.0 (`LICENSE.txt`). FreePats: GPL-2.0-or-later with an exception; its `COPYING`
-  and `README` ship in the VPK.
+  and `README` ship in the VPK. Cinzel (menu font): SIL OFL, `fonts/OFL.txt` ships in the VPK.
+  libsmacker: LGPL-2.1, `libsmacker/COPYING` ships in the VPK. Third-party licence files in the
+  VPK are checked by `vita/build.sh`.
 - **Never add Captain Claw data** to the repo or VPK: `CLAW.REZ`, anything extracted or rendered
   from it (music renders, sprites), Monolith logos/art. That includes LiveArea artwork.
 

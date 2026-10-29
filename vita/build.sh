@@ -26,9 +26,10 @@ VPK="$BUILD_DIR/openclaw.vpk"
 echo "Contents of $VPK:"
 unzip -l "$VPK"
 
-# The VPK must at least carry these to install and start
+# The VPK must at least carry these to install and start, plus the third-party licences
 for f in eboot.bin sce_sys/param.sfo sce_sys/icon0.png sce_sys/livearea/contents/template.xml \
-         config.xml SAVES.XML ASSETS.ZIP clacon.ttf console02.tga fonts/Cinzel-Bold.ttf; do
+         config.xml SAVES.XML ASSETS.ZIP clacon.ttf console02.tga fonts/Cinzel-Bold.ttf \
+         fonts/OFL.txt libsmacker/COPYING; do
     unzip -l "$VPK" "$f" > /dev/null || { echo "MISSING in VPK: $f"; exit 1; }
 done
 echo "VPK OK: $VPK"

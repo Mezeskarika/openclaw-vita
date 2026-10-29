@@ -107,7 +107,8 @@ GPL-3.0, like OpenClaw (see [`LICENSE.txt`](LICENSE.txt)). The bundled FreePats 
 GPL-2.0-or-later with an exception for compositions; their licence files are inside the VPK. The
 menu font, [Cinzel](https://github.com/NDISCOVER/Cinzel), is under the SIL Open Font Licence
 (`Build_Release/fonts/OFL.txt`, also in the VPK). The cutscenes are decoded with
-[libsmacker](https://github.com/greg-kennedy/libsmacker) (LGPL-2.1, `ThirdParty/libsmacker/COPYING`);
+[libsmacker](https://github.com/greg-kennedy/libsmacker) (LGPL-2.1, `ThirdParty/libsmacker/COPYING`, also
+in the VPK);
 the movie player is based on the one in
 [captain-claw-s60](https://github.com/Dante-Leoncini/captain-claw-s60) (GPL-3.0).
 Captain Claw and its data are © Monolith Productions; this project contains no game data.
