@@ -7,10 +7,10 @@ starts.
 Status: **[todo]** not started, **[research]** needs findings before any code, **[blocked]** waits on
 another item.
 
-Current state (v0.5.0): the game boots in Vita3K, runs at 60 fps, plays music, saves and quits
-cleanly; menus work by touch and save their settings. Difficulty and Display pages and the
-cutscenes are in, not yet checked in Vita3K. A first run on real hardware has happened;
-its logs are still to be looked at.
+Current state (v0.5.0): the game boots in Vita3K and on a PS Vita, runs at 60 fps, plays music,
+saves and quits cleanly; menus work by touch and save their settings. Difficulty and Display pages
+and the cutscenes are in. Play sessions on a PS Vita (2026-10-28 and 10-29) found crashes, a long
+start-up, stuttering cutscenes and movement problems: items 15-26, planned for 0.6.0.
 
 **Scope: the PS Vita only.** Changes don't need to keep the Windows, Linux, macOS, Android or
 WebAssembly builds working; item 9 removes what the Vita doesn't need. The one exception worth
@@ -33,9 +33,25 @@ deciding on deliberately is the Linux host build used for profiling and smoke te
 | 11 | Research FOV / resolution settings for the Display menu | research, **done** | — |
 | 12 | Plan difficulty settings (easy to hard options) | research, **decided** | 8 |
 | 13 | Implement the disabled Options submenus | code + menu, **Difficulty and Display done, need Vita3K check** | 3, 4, 8, 11, 12 |
-| 14 | Cutscenes from `CLAW.FEC` | code + menu, **done, needs Vita3K check** | — |
+| 14 | Cutscenes from `CLAW.FEC` | code + menu, **done; rear-touchpad fix needs a hardware check** | — |
+| 15 | Diagnostics build: timestamps, cheaper logging, movie timing | code, **todo, first** | — |
+| 16 | Crashes in gameplay and during the intro | bug, **todo; needs crash dumps** | 15 |
+| 17 | Start-up takes about a minute; loading screen | bug + code, **todo** | 15 |
+| 18 | Cutscenes stutter on hardware | bug, **todo** | 15 |
+| 19 | Death on spikes next to a portal | bug, **todo; needs the place** | — |
+| 20 | Claw stands up on spikes at game over | bug, **research** | — |
+| 21 | Loading a save keeps the stats from when it was saved | research, then code | — |
+| 22 | Moving platforms push Claw; he slides off edges (hardware only) | bug, **todo** | 15 |
+| 23 | Ladders: no jump with a direction; stuck at a ladder top (level 2) | bug, **research** | — |
+| 24 | Options page for changes that differ from the original | code + menu, **blocked** | 20, 21, 22, 23 |
+| 25 | Spinning coins next to the selected menu item | code, **todo** | — |
+| 26 | Zoom out: Game play area 0.5× and 0.75× | code + menu, **todo** | — |
 
-Suggested order: 2, 6 and 9 first (small, visible, and 9 makes everything after it simpler), then
+Order for 0.6.0: 15 first (one small build that the hardware tests of 16, 17, 18 and 22 need), with
+the stopgap in 16, 25, 26 and the research for 20, 21 and 23 in parallel. Then 16 (root cause), 17,
+18 and 22 once the diagnostics build has run on the Vita; then 19, 20, 21, 23 and 24.
+
+Earlier order: 2, 6 and 9 first (small, visible, and 9 makes everything after it simpler), then
 3 and 8 (they unblock 4, 11, 12, 13), then 1, 4, 11, 12, 13. 5 and 10 can happen any time.
 
 ---
@@ -293,3 +309,118 @@ the game runs as before.
 - Menu: "Replay Movies" page.
 - Check: needs `CLAW.FEC` next to `CLAW.REZ` in Vita3K's data folder; sound in sync, skipping,
   no stuck keys afterwards, memory stays flat (streamed from the card, not loaded).
+
+---
+
+Items 15-26 come from two play sessions on a PS Vita: 2026-10-28 (logs in the maintainer's
+`SDL_Log.txt`, an earlier build) and 2026-10-29 (0.5.0 before the rear-touchpad fix,
+`SDL_Log_lagging_video_touch_crash.txt`; built from `beffd30`, ELF kept as
+`OpenClaw-Vita-0.5.0-beffd30.elf`). Where the original game may have behaved the same way (20-23),
+the first step is finding out; the change is made either way, and if the original did the same, it
+gets an on/off setting on the page in 24.
+
+## 15. Diagnostics build **[todo, first]**
+
+The hardware logs can't answer the open questions: lines have no time, so the one-minute start-up
+(17) can't be split into phases; the movie line measures the movie's own clock, which a stall stops,
+so slow motion wouldn't show (18); and every log line opens and closes `ux0:data/SDL_Log.txt`, which
+may itself cause the 40-56 ms frames seen every 2 s in gameplay (22).
+
+- Every log line starts with the milliseconds since start-up.
+- One log sink (`SDL_LogSetOutputFunction`) that keeps the file open and flushes each line, so the
+  last lines before a crash survive. Measure the frame-time spikes before and after.
+- Movie line: wall-clock time from open to end next to the movie clock, and how much sound was
+  buffered after opening.
+- Log the start of each start-up phase (`BaseGameApp::Initialize`, menu creation, music loading).
+
+Done when: a hardware run gives a log that times start-up, each movie and the frame spikes.
+
+## 16. Crashes **[todo; needs crash dumps]**
+
+- 2026-10-28, three times in gameplay (killing an enemy while being shot; once in the air). Each
+  crash comes right after `[BeginContact] Ground fixture: Box2D step with already deleted physics
+  component`, logged at `PhysicsContactListener.cpp:160`. That branch returns safely, but four other
+  places in the same listener only `assert` that the component exists. Asserts are active in the Vita
+  build (no `NDEBUG`), so a failed one aborts the game.
+- 2026-10-29, once within 2 s of the intro starting (`Playing movie 1`, then a fresh start-up).
+
+Steps: null checks at every `GetPhysicsComponentFromB2Body` call as a stopgap; then the root cause,
+a body still active in Box2D after its actor's component is gone (actor destruction running ahead
+of `ClawPhysics::VRemoveActor`). Confirm with the crash dumps (`ux0:data/*.psp2dmp`, symbolized with
+the ELF of the build that crashed; for 10-28 find which VPK was installed and rebuild that tag from
+a clean export, checking `eboot.bin` matches). The movie crash needs its dump.
+
+## 17. Start-up takes about a minute; loading screen **[todo]**
+
+About a minute passes before the first movie, and the first frame after skipping the intro took
+13.2 s (2.4 s after skipping movie 2). Measure the phases with 15, then cut the biggest. While
+something has to load, show a loading screen (an image from `CLAW.REZ`, e.g. the one levels use, and a
+"Loading" label) instead of a black screen. Playing the movies during loading doesn't solve it: they
+come from the same card and can be skipped.
+
+## 18. Cutscenes stutter on hardware **[todo]**
+
+On the Vita the sound stutters and the movies seem slow; in Vita3K they play fine. The main loop held
+60 fps during movies (worst frames 26-35 ms), so decoding keeps up. Suspect: the sound buffer. The
+player decodes a frame only when it is due, so about one frame (67 ms) of sound is queued, while the
+mixer asks for 2048 samples (93 ms) at a time. The desktop test didn't show underruns, so measure on
+the Vita first (15). If confirmed: decode a few frames ahead (sound first, pictures in a small queue),
+or start the clock only once enough sound is queued.
+
+## 19. Death on spikes next to a portal **[todo; needs the place]**
+
+Claw fell on spikes next to a portal and died; the dying sprite shook, he respawned at the portal's
+other end in the air while still dying, and the portal was gone in the next life. Reproduce on the
+desktop build (`startup_commands.txt` teleport) once the level and place are known.
+
+## 20. Claw stands up on spikes at game over **[research]**
+
+When the last life is lost, Claw stands up on the deadly spikes while the game-over screen runs.
+Find out what the original showed; fix (stay in the death pose).
+
+## 21. Loading a save keeps the stats from when it was saved **[research, then code]**
+
+Load Game starts with the lives, health and ammo Claw had when he reached the save point, not a new
+game's. The original saved automatically at the end of each level and at super checkpoints (Design
+Bible 6.1.1.2.1.4); what it kept is to be found out. The 10-28 log also has `[AddCheckpointSave]
+Creating checkpoint for level save which is unitialized`, to be looked at here. If the original kept
+the stats, the new-game values become a setting (24).
+
+## 22. Moving platforms push Claw; he slides off edges **[todo]**
+
+On the Vita (not in Vita3K) Claw can't walk onto a moving platform: it pushes him back the way it
+moves. Standing near an edge, he sometimes slides off by himself. Lead: physics steps by the frame
+time (`ClawPhysics::VOnUpdate`, `Step(msDiff / 1000)`), and hardware has a 40-56 ms frame every 2 s,
+so Box2D takes one long step. Fix by splitting long frames into steps of at most 1/60 s (frames at
+60 fps behave as now), and remove the spikes' cause if it's the logging (15). The original had a
+"teeter" animation at edges (Design Bible, controls table), not sliding.
+
+## 23. Ladders **[research]**
+
+- Right+Jump on a ladder doesn't jump off; Jump first, then Right, does.
+- Battlements, level 2: at the top of the first ladder, Claw can't walk onto the platform, only
+  jump onto it.
+
+Find out what the original allowed (the Design Bible's controls table lists "Climb top of ladder"
+as unfinished in 1997), fix in `ClawControllableComponent` (`VOnClimb`, `VOnStopClimbing`) and the
+top-of-ladder ground (`FixtureType_TopLadderGround`).
+
+## 24. Options page for changes that differ from the original **[blocked on 20-23]**
+
+One new page under Options (Cinzel labels, like Difficulty) with an on/off setting for each change in
+20-23 that turns out to differ from the original, saved through `SetMenuOption`/`SaveGameOptions`.
+Default: the fixed behaviour.
+
+## 25. Spinning coins next to the selected menu item **[todo]**
+
+The original marks the selected menu item with a spinning coin on each side:
+`/STATES/MENU/IMAGES/COINS/frame001-009.pid` in `CLAW.REZ` (sounds `/STATES/MENU/SOUNDS/select.wav`,
+`coinching.wav`). Draw them on both sides of the active item in every menu page
+(`ScreenElementMenuPage`), keeping the highlighted label.
+
+## 26. Zoom out: Game play area 0.5× and 0.75× **[todo]**
+
+The slider gets four stops: 0.5, 0.75, 1, 2. Non-integer scales draw uneven pixel rows (11), but the
+maintainer wants to see them. Check that tile and actor culling covers window size ÷ scale (or the
+edges stay empty), how the camera behaves at level edges, and the cost: 0.5 shows 4× the area, so
+about 4× the draw calls. Test on the desktop build first (menushot `SCALE=0.5`).
