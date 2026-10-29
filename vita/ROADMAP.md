@@ -36,16 +36,16 @@ deciding on deliberately is the Linux host build used for profiling and smoke te
 | 14 | Cutscenes from `CLAW.FEC` | code + menu, **done; rear-touchpad fix needs a hardware check** | — |
 | 15 | Diagnostics build: timestamps, cheaper logging, movie timing | code, **done (v0.6.0-alpha.1)** | — |
 | 16 | Crashes in gameplay and during the intro | bug, **fixed from the dumps (v0.6.0-alpha.1), needs hardware check** | — |
-| 17 | Start-up takes about a minute; loading screen | bug + code, **todo** | 15 |
+| 17 | Start-up takes about a minute; loading screen | bug + code, **fixed (v0.6.0-alpha.2), needs hardware check** | — |
 | 18 | Cutscenes stutter on hardware | bug, **fixed (v0.6.0-alpha.1), needs hardware check** | — |
 | 19 | Death on spikes next to a portal | bug, **noticed, not solved (seen once)** | — |
 | 20 | Claw stands up on spikes at game over | bug, **research** | — |
 | 21 | Loading a save keeps the stats from when it was saved | research, then code | — |
-| 22 | Moving platforms push Claw; he slides off edges (hardware only) | bug, **todo** | 15 |
-| 23 | Ladders: no jump with a direction; stuck at a ladder top (level 2) | bug, **research** | — |
+| 22 | Moving platforms push Claw; he slides off edges (hardware only) | bug, **likely fixed (v0.6.0-alpha.2), needs hardware check** | — |
+| 23 | Ladders: no jump with a direction; stuck at a ladder top (level 2) | bug, **likely fixed (v0.6.0-alpha.2), needs hardware check** | — |
 | 24 | Options page for changes that differ from the original | code + menu, **blocked** | 20, 21, 22, 23 |
-| 25 | Spinning coins next to the selected menu item | code, **todo** | — |
-| 26 | Zoom out: Game play area 0.5× and 0.75× | code + menu, **todo** | — |
+| 25 | Spinning coins next to the selected menu item | code, **done (v0.6.0-alpha.2)** | — |
+| 26 | Zoom out: Game play area 0.5× and 0.75× | code + menu, **done (v0.6.0-alpha.2), needs hardware check** | — |
 
 Order for 0.6.0: 15 first (one small build that the hardware tests of 16, 17, 18 and 22 need), with
 the stopgap in 16, 25, 26 and the research for 20, 21 and 23 in parallel. Then 16 (root cause), 17,
@@ -366,7 +366,15 @@ of `ClawPhysics::VRemoveActor`). Confirm with the crash dumps (`ux0:data/*.psp2d
 the ELF of the build that crashed; for 10-28 find which VPK was installed and rebuild that tag from
 a clean export, checking `eboot.bin` matches). The movie crash needs its dump.
 
-## 17. Start-up takes about a minute; loading screen **[todo]**
+## 17. Start-up takes about a minute; loading screen **[fixed in v0.6.0-alpha.2; needs a hardware check]**
+
+Found: opening `CLAW.REZ` read its directory field by field, 98,462 reads and 98,459 seeks (strace on
+the desktop); on the card that is about the minute. Now one read per directory block (1,373 reads,
+1,370 seeks, identical result). The title screen (`TITLE.PCX`) is shown at start-up and while the
+menus are built after the start-up movies (13 s in 0.5.0, not explained yet: the log now has "Menu
+built", so the next hardware log times it; on the desktop it takes 40 ms).
+
+Original analysis:
 
 About a minute passes before the first movie, and the first frame after skipping the intro took
 13.2 s (2.4 s after skipping movie 2). Measure the phases with 15, then cut the biggest. While
@@ -414,7 +422,13 @@ Bible 6.1.1.2.1.4); what it kept is to be found out. The 10-28 log also has `[Ad
 Creating checkpoint for level save which is unitialized`, to be looked at here. If the original kept
 the stats, the new-game values become a setting (24).
 
-## 22. Moving platforms push Claw; he slides off edges **[todo]**
+## 22. Moving platforms push Claw; he slides off edges **[likely fixed in v0.6.0-alpha.2; needs a hardware check]**
+
+Two changes: the stick is four directions (right and a little down pressed Down, so Claw ducked and
+the platform carried him), and long frames are stepped in parts of at most 17 ms. The edge sliding
+may be something else; the input log will show whether a direction was held.
+
+Original analysis:
 
 On the Vita (not in Vita3K) Claw can't walk onto a moving platform: it pushes him back the way it
 moves. Standing near an edge, he sometimes slides off by himself. Lead: physics steps by the frame
@@ -423,7 +437,15 @@ so Box2D takes one long step. Fix by splitting long frames into steps of at most
 60 fps behave as now), and remove the spikes' cause if it's the logging (15). The original had a
 "teeter" animation at edges (Design Bible, controls table), not sliding.
 
-## 23. Ladders **[research]**
+## 23. Ladders **[likely fixed in v0.6.0-alpha.2; needs a hardware check]**
+
+Cause found in the input mapping, not in the ladder code: read as two axes, the stick pressed Up when
+pushed right and a little up. On a ladder any held Up/Down keeps Claw climbing and sets
+`m_IgnoreJump`, so he couldn't walk off the top and ignored Jump with a direction. The stick is four
+directions now (`GamepadMapper::UpdateStick`). If it still happens with the D-pad, the ladder code
+(`PhysicsComponent::VUpdate`, climbing branch) is next.
+
+Original analysis:
 
 - Right+Jump on a ladder doesn't jump off; Jump first, then Right, does.
 - Battlements, level 2: at the top of the first ladder, Claw can't walk onto the platform, only
@@ -440,14 +462,22 @@ One new page under Options (Cinzel labels, like Difficulty) with an on/off setti
 20-23 that turns out to differ from the original, saved through `SetMenuOption`/`SaveGameOptions`.
 Default: the fixed behaviour.
 
-## 25. Spinning coins next to the selected menu item **[todo]**
+## 25. Spinning coins next to the selected menu item **[done in v0.6.0-alpha.2]**
+
+Main menu pages only so far (`<SelectionCoins>` in `MENU.xml`); the in-game menu could get them too
+(its own images may be `/GAME/IMAGES/CURSOR/`, 19 frames, not checked).
+
 
 The original marks the selected menu item with a spinning coin on each side:
 `/STATES/MENU/IMAGES/COINS/frame001-009.pid` in `CLAW.REZ` (sounds `/STATES/MENU/SOUNDS/select.wav`,
 `coinching.wav`). Draw them on both sides of the active item in every menu page
 (`ScreenElementMenuPage`), keeping the highlighted label.
 
-## 26. Zoom out: Game play area 0.5× and 0.75× **[todo]**
+## 26. Zoom out: Game play area 0.5× and 0.75× **[done in v0.6.0-alpha.2; needs a hardware check]**
+
+Desktop: the wider views render correctly; 0.5× makes about 1,200 draw calls per frame at the start
+of level 1 against ~350 at 1×, so check the frame rate on the Vita.
+
 
 The slider gets four stops: 0.5, 0.75, 1, 2. Non-integer scales draw uneven pixel rows (11), but the
 maintainer wants to see them. Check that tile and actor culling covers window size ÷ scale (or the
