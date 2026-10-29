@@ -10,7 +10,19 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-29
+
+Touch, settings and cleanup. Built and unit-tested; not yet checked in Vita3K.
+
 ### Added
+- Menus can be used by tapping the front touchscreen.
+- Button mapping can be changed in `config.xml` (`<ControlOptions><Gamepad>`), including the
+  L and R buttons.
+- Sound and music volume and on/off, changed on the Audio page, are saved to `config.xml`
+  immediately and kept across restarts.
+- On Vita, an unreadable `config.xml` is replaced with the Vita defaults from the VPK instead of
+  desktop defaults.
+- GitHub Actions workflow that builds the VPK and runs the unit tests on every push.
 - `vita/ROADMAP.md`: the remaining work, numbered.
 - `CLAUDE.md`: build commands, conventions and the Vita findings so far.
 - This changelog and version numbers (`v0.1.0`–`v0.3.0` replace the earlier `vita-vita3k-*` tags).
@@ -24,15 +36,7 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
   the upstream history stays available at pjasicek/OpenClaw.
 - Menu items that lead nowhere are shown greyed out and can't be selected: Multiplayer,
   Load Custom Level, and Options → Edit Players, Difficulty, Controls, Display.
-
-- GitHub Actions workflow that builds the VPK and runs the unit tests on every push.
-- Menus can be used by tapping the front touchscreen.
-- Button mapping can be changed in `config.xml` (`<ControlOptions><Gamepad>`), including the
-  L and R buttons.
-- Sound and music volume and on/off, changed on the Audio page, are saved to `config.xml`
-  immediately and kept across restarts.
-- On Vita, an unreadable `config.xml` is replaced with the Vita defaults from the VPK instead of
-  desktop defaults.
+- The VPK's version is 00.40 (was 01.00 in 0.1.0–0.3.0).
 
 ### Removed
 - Everything the Vita build doesn't use: Windows, Android and Emscripten builds and code paths,
@@ -111,8 +115,9 @@ Changes in this port compared with pjasicek/OpenClaw@5ee5740, besides the Vita b
 - **Bug fixes in OpenClaw's own code:** quitting from the menu called `exit()` from inside an
   event handler; checkpoint saves could store a dying Claw's health and then crash on load; music
   tracks leaked and could play in the wrong order.
-- **Additions:** gamepad support, `<LogFrameStats>`, `<TimidityCfg>`, `<FrontPlaneMode>`, absolute
-  paths for `<RezArchive>`.
+- **Additions:** gamepad support with configurable buttons, touchscreen menus, menu settings saved
+  to `config.xml`, menu items without a page greyed out, `<LogFrameStats>`, `<TimidityCfg>`,
+  `<FrontPlaneMode>`, absolute paths for `<RezArchive>`.
 - **Vita specifics:** SDL's native GXM renderer with batching forced on, 22,050 Hz mixer, raised
   CPU/GPU clocks, `app0:`/`ux0:` file layout, bundled FreePats instruments, the engine's teardown
   skipped on exit.
@@ -128,7 +133,8 @@ How the port plays differently from Captain Claw (1997):
 - **Options menu:** Edit Players, Difficulty, Controls and Display (and Multiplayer, Load Custom
   Level) are greyed out. They were never implemented in OpenClaw.
 
-[Unreleased]: https://github.com/Mezeskarika/openclaw-vita/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/Mezeskarika/openclaw-vita/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/Mezeskarika/openclaw-vita/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Mezeskarika/openclaw-vita/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Mezeskarika/openclaw-vita/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Mezeskarika/openclaw-vita/releases/tag/v0.1.0
