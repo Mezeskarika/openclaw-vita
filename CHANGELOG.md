@@ -14,6 +14,9 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
 - Tapping a menu page below a greyed-out item (e.g. Options or Quit on the main menu, Audio or
   Back on the Options page) crashed the game (0.4.0 and 0.5.0). Found in a crash dump from a PS
   Vita.
+- The game crashed when an enemy's shot killed Claw (three crashes on a PS Vita in 0.3.0, also in
+  later versions): the enemy read past the end of its attack list while picking its next move.
+  Found from the crash dumps; not reproduced on purpose.
 
 ## [0.5.0] - 2026-10-29
 

@@ -1182,7 +1182,7 @@ bool BaseAttackAIStateComponent::VCanEnter()
     // Since the first found actor is picked
 
     // TODO: Revisit this if enemy ever has more than one attack action per AttackAIStateComponent
-    EnemyAttackAction& action = *m_AttackActions[m_CurrentAttackActionIdx];
+    const EnemyAttackAction& action = GetCurrentAttackAction();
 
     // Check if enemy is within line of sight
     Point fromPoint = m_pOwner->GetPositionComponent()->GetPosition() + action.agroSensorFixture.offset;
@@ -1200,6 +1200,15 @@ bool BaseAttackAIStateComponent::VCanEnter()
     }
 
     return true;
+}
+
+// Once an attack's frame has fired, the index points one past the last action until the animation
+// loops. VCanEnter can run in between: when that attack (e.g. a bullet) kills Claw, every enemy
+// re-picks its state. Reading past the list crashed the game (hardware, 0.3.0)
+const EnemyAttackAction& BaseAttackAIStateComponent::GetCurrentAttackAction() const
+{
+    const size_t idx = (size_t)m_CurrentAttackActionIdx < m_AttackActions.size() ? m_CurrentAttackActionIdx : 0;
+    return *m_AttackActions[idx];
 }
 
 void BaseAttackAIStateComponent::ClawHealthBelowZeroDelegate(IEventDataPtr pEventData)

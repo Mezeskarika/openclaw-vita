@@ -402,6 +402,7 @@ public:
 
 private:
     void ClawHealthBelowZeroDelegate(IEventDataPtr pEventData);
+    const EnemyAttackAction& GetCurrentAttackAction() const;
 
     int m_AttackDelay;
 
