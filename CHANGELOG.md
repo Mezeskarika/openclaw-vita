@@ -24,6 +24,8 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
   reopened for every line.
 
 ### Fixed
+- After losing the last life, Claw stood up on whatever killed him (e.g. spikes) while the game-over
+  screen came up; he now stays down.
 - Starting the game took about a minute on a PS Vita: opening `CLAW.REZ` read its directory one
   field at a time, about 197,000 small reads and seeks on the memory card. It now reads each
   directory block at once (about 2,700 calls; the result is identical for all 13,077 files).

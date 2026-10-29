@@ -967,11 +967,21 @@ void ClawControllableComponent::VOnAnimationLooped(Animation* pAnimation)
         shared_ptr<LifeComponent> pClawLifeComponent = MakeStrongPtr(m_pOwner->GetComponent<LifeComponent>());
         assert(pClawLifeComponent != nullptr);
 
+        const int remainingLives = pClawLifeComponent->GetLives() - 1;
         shared_ptr<EventData_Claw_Died> pEvent(new EventData_Claw_Died(
             m_pOwner->GetGUID(), 
             m_pPositionComponent->GetPosition(), 
-            pClawLifeComponent->GetLives() - 1));
+            remainingLives));
         IEventMgr::Get()->VTriggerEvent(pEvent);
+
+        // That was the last life: the game-over screen comes up over him. He stays on the death
+        // animation's last frame instead of standing up on whatever killed him
+        if (remainingLives < 0)
+        {
+            pAnimation->SetAnimationFrame(pAnimation->GetAnimFramesSize() - 1);
+            pAnimation->Pause();
+            return;
+        }
 
         SetCurrentPhysicsState();
         m_pPhysicsComponent->RestoreGravityScale();
