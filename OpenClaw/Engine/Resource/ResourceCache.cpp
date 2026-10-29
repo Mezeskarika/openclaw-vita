@@ -269,6 +269,17 @@ void ResourceCache::RegisterLoader(std::shared_ptr<IResourceLoader> loader)
     _resourceLoaderList.push_front(loader);
 }
 
+bool ResourceCache::GetRawResource(Resource* r, std::vector<char>& outData)
+{
+    int32 rawSize = _resourceFile->VGetRawResourceSize(r);
+    if (rawSize <= 0)
+    {
+        return false;
+    }
+    outData.assign(rawSize, 0);
+    return _resourceFile->VGetRawResource(r, &outData[0]) >= 0;
+}
+
 std::shared_ptr<ResourceHandle> ResourceCache::GetHandle(Resource* r)
 {
     std::shared_ptr<ResourceHandle> handle(Find(r));

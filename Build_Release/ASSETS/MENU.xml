@@ -3,6 +3,13 @@
     <StartingPage>MenuPage_Main</StartingPage>
     <BackgroundImage>/STATES/MENU/SCREENS/MENU.PCX</BackgroundImage>
     <BackgroundMusic>/STATES/MENU/SOUNDS/MENUBED.WAV</BackgroundMusic>
+    <!-- A spinning coin on each side of the selected item, as in the original -->
+    <SelectionCoins>
+        <Images>/STATES/MENU/IMAGES/COINS/FRAME%03d.PID</Images>
+        <FrameCount>9</FrameCount>
+        <FrameTime>75</FrameTime>
+        <PaletteFrom>/STATES/MENU/SCREENS/MENU.PCX</PaletteFrom>
+    </SelectionCoins>
     
     <!-- MAIN (DEFAULT) PAGE -->
     <MenuPage>

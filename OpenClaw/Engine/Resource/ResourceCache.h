@@ -172,6 +172,9 @@ public:
     void RegisterLoader(std::shared_ptr<IResourceLoader> loader);
 
     std::shared_ptr<ResourceHandle> GetHandle(Resource* r);
+    // The file's bytes as stored, bypassing loaders and the cache (e.g. the palette at the end of a
+    // PCX, which the PCX loader drops). False if there is no such file
+    bool GetRawResource(Resource* r, std::vector<char>& outData);
 
     int32 Preload(const std::string pattern, void(*progressCallback)(int32, bool &));
     std::vector<std::string> Match(const std::string pattern);

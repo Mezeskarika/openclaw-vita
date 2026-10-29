@@ -11,6 +11,8 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
 ## [Unreleased]
 
 ### Added
+- The selected menu item has a spinning gold coin on each side, as in the original (its own coin
+  images from `CLAW.REZ`).
 - Options → Display → Game play area has four stops: 2× (zoomed in), 1× (the full view), and,
   zoomed out, 0.75× and 0.5×. The zoomed-out views draw uneven pixel rows and, at 0.5×, about 3.5
   times as much per frame, so they may run slower on the Vita.

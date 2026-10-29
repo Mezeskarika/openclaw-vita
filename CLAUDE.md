@@ -123,6 +123,10 @@ Every new source file must be added to its directory's `CMakeLists.txt` (`target
   without an image in `CLAW.REZ` use `<Label size="…">Text</Label>` (drawn with Cinzel from
   `Build_Release/fonts/`), and `<Position x="center">` centres an item on the 640-wide menu.
   TinyXML reformats the file and trims trailing spaces in values when it writes it.
+  `<SelectionCoins>` in a menu file draws the original's spinning coins beside the selected button;
+  the coin PIDs have no palette of their own and use `MENU.PCX`'s (read through
+  `ResourceCache::GetRawResource`, since the PCX loader drops it). Before a level loads there is no
+  current palette at all (`GetCurrentPalette()` is NULL).
 - **Cutscenes:** `CLAW.FEC` (from the CD, `<MoviesArchive>`) is 12 Smacker files back to back; its
   own directory is encrypted, so `MoviePlayer::FindMovieOffset` walks from header to header. Order:
   0 Monolith logo (640x240, half height, 30 fps), 1 introduction (7 min), 2–9 the story scenes as

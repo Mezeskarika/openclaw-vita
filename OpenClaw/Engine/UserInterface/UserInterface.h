@@ -143,6 +143,9 @@ public:
     bool Initialize(TiXmlElement* pElem);
 
 private:
+    bool LoadSelectionCoins(TiXmlElement* pElem);
+    void RenderSelectionCoins(uint32 msDiff);
+
     void SwitchPageDelegate(IEventDataPtr pEventData);
     void ModifyMenuItemVisibilityDelegate(IEventDataPtr pEventData);
     void ModifyMenuItemStateDelegate(IEventDataPtr pEventData);
@@ -162,6 +165,11 @@ private:
 
     MenuPageMap m_MenuPageMap;
     shared_ptr<ScreenElementMenuPage> m_pActiveMenuPage;
+
+    // A spinning coin on each side of the selected item (<SelectionCoins>), as in the original
+    std::vector<shared_ptr<Image>> m_SelectionCoinFrames;
+    uint32 m_SelectionCoinFrameTime;
+    uint32 m_SelectionCoinTime;
 };
 
 class ScreenElementMenuItem;
@@ -193,6 +201,8 @@ public:
     void OnPageLoaded();
 
     shared_ptr<ScreenElementMenuItem> FindMenuItemByName(std::string name);
+    // Where the selected button is, in menu coordinates; false if no button is selected
+    bool GetSelectedButtonRect(SDL_Rect& outRect);
 
 private:
     void DeactivateAllMenuItems();

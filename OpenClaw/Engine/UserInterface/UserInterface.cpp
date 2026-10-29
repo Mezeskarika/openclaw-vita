@@ -553,10 +553,94 @@ void ScreenElementMenu::VOnRender(uint32 msDiff)
 
     assert(m_pActiveMenuPage);
     m_pActiveMenuPage->VOnRender(msDiff);
+    RenderSelectionCoins(msDiff);
 
     // Restore scale
     Point scale = Point(g_pApp->GetGameConfig()->scale, g_pApp->GetGameConfig()->scale);
     SDL_RenderSetScale(m_pRenderer, (float)scale.x, (float)scale.y);
+}
+
+void ScreenElementMenu::RenderSelectionCoins(uint32 msDiff)
+{
+    SDL_Rect itemRect;
+    if (m_SelectionCoinFrames.empty() || !m_pActiveMenuPage->GetSelectedButtonRect(itemRect))
+    {
+        return;
+    }
+
+    m_SelectionCoinTime += msDiff;
+    const size_t frame = (m_SelectionCoinTime / m_SelectionCoinFrameTime) % m_SelectionCoinFrames.size();
+    shared_ptr<Image> pCoin = m_SelectionCoinFrames[frame];
+
+    // The frames get narrower as the coin turns; each one is centred where the full coin would be
+    int coinWidth = 0;
+    for (shared_ptr<Image> pFrame : m_SelectionCoinFrames)
+    {
+        coinWidth = pFrame->GetWidth() > coinWidth ? pFrame->GetWidth() : coinWidth;
+    }
+    const int gap = 6;
+    const int centreY = itemRect.y + itemRect.h / 2;
+    const int centresX[2] = { itemRect.x - gap - coinWidth / 2, itemRect.x + itemRect.w + gap + coinWidth / 2 };
+    for (int centreX : centresX)
+    {
+        SDL_Rect renderRect;
+        renderRect.x = (int)((centreX - pCoin->GetWidth() / 2) * g_MenuScale.x);
+        renderRect.y = (int)((centreY - pCoin->GetHeight() / 2) * g_MenuScale.y);
+        renderRect.w = (int)(pCoin->GetWidth() * g_MenuScale.x);
+        renderRect.h = (int)(pCoin->GetHeight() * g_MenuScale.y);
+        SDL_RenderCopy(m_pRenderer, pCoin->GetTexture(), NULL, &renderRect);
+    }
+}
+
+// <SelectionCoins>: <Images> with %d for the frame number (from 1), <FrameCount>, <FrameTime> in ms,
+// and <PaletteFrom>, the PCX whose palette the PID frames use (the menu background's)
+bool ScreenElementMenu::LoadSelectionCoins(TiXmlElement* pElem)
+{
+    std::string imagesPattern, palettePath;
+    int frameCount = 0;
+    m_SelectionCoinFrameTime = 75;
+    if (!ParseValueFromXmlElem(&imagesPattern, pElem->FirstChildElement("Images")) ||
+        !ParseValueFromXmlElem(&palettePath, pElem->FirstChildElement("PaletteFrom")) ||
+        !ParseValueFromXmlElem(&frameCount, pElem->FirstChildElement("FrameCount")))
+    {
+        LOG_WARNING("SelectionCoins needs Images, PaletteFrom and FrameCount");
+        return false;
+    }
+    ParseValueFromXmlElem(&m_SelectionCoinFrameTime, pElem->FirstChildElement("FrameTime"));
+    if (m_SelectionCoinFrameTime == 0)
+    {
+        m_SelectionCoinFrameTime = 75;
+    }
+
+    // A 256-colour PCX ends with its palette
+    Resource pcxResource(palettePath);
+    std::vector<char> pcxData;
+    if (!g_pApp->GetResourceCache()->GetRawResource(&pcxResource, pcxData) || pcxData.size() < WAP_PALETTE_SIZE_BYTES)
+    {
+        LOG_WARNING("No palette for the selection coins in " + palettePath);
+        return false;
+    }
+    std::unique_ptr<WapPal> pPalette(WAP_PalLoadFromData(&pcxData[pcxData.size() - WAP_PALETTE_SIZE_BYTES],
+        WAP_PALETTE_SIZE_BYTES));
+    if (!pPalette)
+    {
+        return false;
+    }
+
+    for (int i = 1; i <= frameCount; i++)
+    {
+        char framePath[256];
+        snprintf(framePath, sizeof(framePath), imagesPattern.c_str(), i);
+        shared_ptr<Image> pFrame = PidResourceLoader::LoadAndReturnImage(framePath, pPalette.get());
+        if (!pFrame)
+        {
+            LOG_WARNING(std::string("Missing selection coin frame: ") + framePath);
+            m_SelectionCoinFrames.clear();
+            return false;
+        }
+        m_SelectionCoinFrames.push_back(pFrame);
+    }
+    return true;
 }
 
 bool ScreenElementMenu::VOnEvent(SDL_Event& evt)
@@ -662,6 +746,12 @@ bool ScreenElementMenu::Initialize(TiXmlElement* pElem)
         soundInfo.loops = -1;
         IEventMgr::Get()->VTriggerEvent(IEventDataPtr(
             new EventData_Request_Play_Sound(soundInfo)));
+    }
+
+    m_SelectionCoinTime = 0;
+    if (TiXmlElement* pCoinsElem = pElem->FirstChildElement("SelectionCoins"))
+    {
+        LoadSelectionCoins(pCoinsElem);
     }
 
     //
@@ -989,6 +1079,20 @@ int ScreenElementMenuPage::GetActiveMenuItemIdx()
     }
 
     return -1;
+}
+
+bool ScreenElementMenuPage::GetSelectedButtonRect(SDL_Rect& outRect)
+{
+    for (shared_ptr<ScreenElementMenuItem> pMenuItem : m_MenuItems)
+    {
+        // Sliders' knobs light up with their button; only the button counts
+        if (pMenuItem->GetState() == MenuItemState_Active && pMenuItem->CanBeFocused())
+        {
+            outRect = pMenuItem->GetMenuItemRect();
+            return outRect.w > 0;
+        }
+    }
+    return false;
 }
 
 shared_ptr<ScreenElementMenuItem> ScreenElementMenuPage::GetActiveMenuItem()
