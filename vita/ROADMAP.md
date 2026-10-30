@@ -10,7 +10,8 @@ another item.
 Current state (v0.5.0): the game boots in Vita3K and on a PS Vita, runs at 60 fps, plays music,
 saves and quits cleanly; menus work by touch and save their settings. Difficulty and Display pages
 and the cutscenes are in. Play sessions on a PS Vita (2026-10-28 and 10-29) found crashes, a long
-start-up, stuttering cutscenes and movement problems: items 15-26, planned for 0.6.0.
+start-up, stuttering cutscenes and movement problems: items 15-26, planned for 0.6.0. The session
+of 2026-10-30 (alpha.3, no crashes) added items 27-36.
 
 **Scope: the PS Vita only.** Changes don't need to keep the Windows, Linux, macOS, Android or
 WebAssembly builds working; item 9 removes what the Vita doesn't need. The one exception worth
@@ -39,13 +40,23 @@ deciding on deliberately is the Linux host build used for profiling and smoke te
 | 17 | Start-up takes about a minute; loading screen | bug + code, **fixed (v0.6.0-alpha.2), needs hardware check** | — |
 | 18 | Cutscenes stutter on hardware | bug, **fixed (v0.6.0-alpha.1), needs hardware check** | — |
 | 19 | Death on spikes next to a portal | bug, **noticed, not solved (seen once)** | — |
-| 20 | Claw stands up on spikes at game over | bug, **fixed (v0.6.0-alpha.3), needs hardware check** | — |
+| 20 | Claw stands up on spikes at game over; play goes on after the last life | bug, **reopened (2026-10-30 session)** | — |
 | 21 | Loading a save keeps the stats from when it was saved | **done (v0.6.0-alpha.3): original behaviour, now a setting** | — |
 | 22 | Moving platforms push Claw; he slides off edges (hardware only) | bug, **partly addressed (physics substeps); needs hardware check** | — |
 | 23 | Ladders: no jump with a direction; stuck at a ladder top (level 2) | bug, **open: four-way stick reverted** | — |
 | 24 | Options page for changes that differ from the original | code + menu, **done (v0.6.0-alpha.3): Options → Gameplay** | — |
 | 25 | Spinning coins next to the selected menu item | code, **done (v0.6.0-alpha.2)** | — |
-| 26 | Zoom out: Game play area 0.5× and 0.75× | code + menu, **done (v0.6.0-alpha.2), needs hardware check** | — |
+| 26 | Zoom out: Game play area 0.5× and 0.75× | code + menu, **done (v0.6.0-alpha.2); camera fixed in alpha.4, needs hardware check** | — |
+| 27 | Touches skip cutscenes; only face buttons should | bug, **fixed (v0.6.0-alpha.4)** | — |
+| 28 | Circle goes back in every menu | code, **done (v0.6.0-alpha.4)** | — |
+| 29 | Display page: slider shows the values; layout | menu | — |
+| 30 | Difficulty: a list to choose from | menu | — |
+| 31 | Drawn labels bigger and lighter; Options spacing | menu | — |
+| 32 | Loading screen zoomed in at Game play area 2× | bug, **fixed (v0.6.0-alpha.4)** | — |
+| 33 | In-game Help shows the Vita controls | menu | — |
+| 34 | 0.5×: level drawn only in the top-left quarter | bug, **fixed (v0.6.0-alpha.4)** | 26 |
+| 35 | Claw stutters during the portal and death fades | bug | — |
+| 36 | Portal entered while standing next to it | bug, **research** | — |
 
 Order for 0.6.0: 15 first (one small build that the hardware tests of 16, 17, 18 and 22 need), with
 the stopgap in 16, 25, 26 and the research for 20, 21 and 23 in parallel. Then 16 (root cause), 17,
@@ -413,7 +424,15 @@ Claw fell on spikes next to a portal and died; the dying sprite shook, he respaw
 other end in the air while still dying, and the portal was gone in the next life. Reproduce on the
 desktop build (`startup_commands.txt` teleport) once the level and place are known.
 
-## 20. Claw stands up on spikes at game over **[fixed in v0.6.0-alpha.3; needs a hardware check]**
+## 20. Claw stands up on spikes at game over **[reopened after the 2026-10-30 session]**
+
+2026-10-30, 16:10 (alpha.3): Claw fell on spikes with what the maintainer took for his last life,
+stood up and play went on; the next hit (a dog) ended the game. The alpha.3 change only covers the
+death that ends the game. The port ends the game when Claw dies with 0 lives on the counter, so if
+the counter showed 1 that is the port's rule working; if it showed 0, it is a bug. alpha.4 logs every
+death with the lives before and after, which settles it next time. To find out: what the original
+did when the counter reached 0, and what "standing up" looked like (the respawn fade in alpha.3 left
+the screen unredrawn, see 35, so he may have been shown standing on the spikes before the respawn).
 
 A bug, not the original's behaviour (the original has its own death-on-spikes animation; no source
 has him standing up). On the last life `VOnAnimationLooped` put him back on his feet after sending
@@ -511,3 +530,67 @@ The slider gets four stops: 0.5, 0.75, 1, 2. Non-integer scales draw uneven pixe
 maintainer wants to see them. Check that tile and actor culling covers window size ÷ scale (or the
 edges stay empty), how the camera behaves at level edges, and the cost: 0.5 shows 4× the area, so
 about 4× the draw calls. Test on the desktop build first (menushot `SCALE=0.5`).
+
+## 27. Touches skip cutscenes **[fixed in v0.6.0-alpha.4]**
+
+2026-10-30: a hand on the touchscreen skipped the introduction ("Movie 1 skipped by touch"). Only
+Cross, Circle, Square and Triangle skip now (`BaseGameApp::StepMovies`); taps, the D-pad, L, R,
+Start and Select don't.
+
+## 28. Circle goes back in every menu **[done in v0.6.0-alpha.4]**
+
+Every menu page already reacts to Escape, so `GamepadMapper` sends Escape for Circle (and Return for
+Cross) while a menu is shown (`HumanView::IsMenuShown`). On the main page Escape opens the Quit page,
+as it did with Start.
+
+## 29. Display page: Game play area slider **[todo]**
+
+The slider doesn't say what its stops are or which is the normal view (1×); it sits right after its
+label, and label plus slider barely fit the width; the − and + ends are small. Put the slider on its
+own row under the label with the stop values (2×, 1×, 0.75×, 0.5×) under its stops, marking 1× as the
+default, and keep the original's slider art as it is if − and + are part of it.
+
+## 30. Difficulty: a list to choose from **[todo]**
+
+A single "Difficulty: Normal" button that changes on press doesn't read as a setting. Show Easy and
+Normal as a list, the current one marked, with its description under it. Main menu only (decided
+earlier: difficulty can't change during a game).
+
+## 31. Drawn labels bigger and lighter; Options spacing **[todo]**
+
+The Cinzel labels (`<Label>`) are a bit small and dark next to the original's images. Options:
+Gameplay sits much closer to Back than to Display.
+
+## 32. Loading screen at Game play area 2× **[fixed in v0.6.0-alpha.4]**
+
+The loading screen was drawn at the view zoom, so at 2× only the top-left quarter of its picture
+showed. `RenderLoadingScreen` draws at scale 1 now (desktop screenshots at 1× and 2×).
+
+## 33. In-game Help shows the Vita controls **[todo]**
+
+Help (main and in-game menu) shows the original's keyboard help picture (`HELP.PCX`). Show the
+Vita's buttons instead, from the current bindings (`GamepadMapper::GetActionButtons`).
+
+## 34. 0.5×: the level filled only the top-left quarter **[fixed in v0.6.0-alpha.4]**
+
+Changing Game play area in the menus didn't reach the camera, which took the zoom only when it was
+made (at start-up): Claw was centred, but tiles and actors were only drawn for the old, smaller
+area. The camera picks up the configured zoom each frame now. The earlier desktop test set the zoom
+in `config.xml` before start, which hid this; checked now the way it was hit.
+
+## 35. Claw stutters during the portal and death fades **[todo]**
+
+2026-10-30, 16:02, and earlier with a death: while the screen fades to black on a portal, Claw
+jitters. Both fades (`TeleportFadeInOutProcess`, `DeathFadeInOutProcess` in `HumanView.cpp`) stop
+drawing the scene during the fade-in but keep presenting frames; the Vita's swap chain then shows
+whichever old buffers it has, two or three different frames in turn. Fix: keep drawing the frozen
+scene under the fade, and move Claw only at the fade's midpoint (now he is moved at once, so the
+redrawn scene would show the destination).
+
+## 36. Portal entered while standing next to it **[research]**
+
+2026-10-30, 16:04: standing next to a portal and pressing Cross (Jump by default) took Claw through.
+Only Claw's body can trigger a pickup (attacks can't), so the jump probably touched the portal's
+trigger area. Compare the trigger area with the visible portal before changing anything; the levels
+have both horizontal and vertical portals (`GAME_WARP`, `GAME_VERTWARP`), so "only from above"
+doesn't fit all of them.
