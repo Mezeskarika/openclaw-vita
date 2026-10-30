@@ -43,7 +43,7 @@ deciding on deliberately is the Linux host build used for profiling and smoke te
 | 20 | Claw stands up on spikes at game over; play goes on after the last life | bug, **fixed (v0.6.0-alpha.5): original rule, now a setting** | — |
 | 21 | Loading a save keeps the stats from when it was saved | **done (v0.6.0-alpha.3): original behaviour, now a setting** | — |
 | 22 | Moving platforms push Claw; he slides off edges (hardware only) | bug, **partly addressed (physics substeps); needs hardware check** | — |
-| 23 | Ladders: no jump with a direction; stuck at a ladder top (level 2) | bug, **open: four-way stick reverted** | — |
+| 23 | Ladders: no jump with a direction; stuck at a ladder top (level 2) | bug, **four-way stick at ladders only (v0.6.0-alpha.7, experimental)** | — |
 | 24 | Options page for changes that differ from the original | code + menu, **done (v0.6.0-alpha.3): Options → Gameplay** | — |
 | 25 | Spinning coins next to the selected menu item | code, **done (v0.6.0-alpha.2)** | — |
 | 26 | Zoom out: Game play area 0.5× and 0.75× | code + menu, **done (v0.6.0-alpha.2); camera fixed in alpha.4, needs hardware check** | — |
@@ -484,7 +484,15 @@ so Box2D takes one long step. Fix by splitting long frames into steps of at most
 60 fps behave as now), and remove the spikes' cause if it's the logging (15). The original had a
 "teeter" animation at edges (Design Bible, controls table), not sliding.
 
-## 23. Ladders **[open: the four-way stick was reverted]**
+## 23. Ladders **[experimental in v0.6.0-alpha.7: four-way stick at ladders only]**
+
+alpha.7 does what the 2026-10-30 notes suggested: the stick is four directions only while Claw
+overlaps a ladder or climbs (`BaseGameApp::UpdateGamepadLadderMode`), two axes elsewhere. It enters
+ladder mode at once and leaves it only when the stick has no vertical push, so jumping off with the
+stick up-right doesn't press Up in mid-air and grab the ladder again. Unit-tested; on the desktop the
+mode switches as Claw passes a ladder (log: "Input: stick four directions (at a ladder)"). The feel
+needs judging on hardware. If it doesn't work out, the ladder-side alternative is still open:
+sideways plus Jump leaves the ladder even with Up held.
 
 Cause found in the input mapping, not in the ladder code: read as two axes, the stick pressed Up when
 pushed right and a little up. On a ladder any held Up/Down keeps Claw climbing and sets

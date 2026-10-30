@@ -34,6 +34,14 @@ public:
     // are bound to in the game. A button's release always lets go of the key its press held.
     void SetMenuMode(bool isMenuShown) { m_bMenuMode = isMenuShown; }
 
+    // At a ladder the left stick is four directions instead of two axes: right and a little up is
+    // only Right, so Claw can walk off the top or jump off sideways. Elsewhere diagonals stay, so
+    // he can duck with a direction held. Ladder mode starts at once and ends only when the stick
+    // has no vertical push (jumping off with the stick up-right must not press Up in the air).
+    // Appends the key changes a switch causes; returns whether the mode changed.
+    bool SetLadderMode(bool isAtLadder, Uint32 timestamp, std::vector<SDL_Event>& outKeyEvents);
+    bool IsLadderMode() const { return m_bLadderMode; }
+
     // Binds an action to a comma-separated list of Vita button names (see ButtonFromName), replacing
     // the buttons it had; a button taken from another action leaves that action. Returns false,
     // changing nothing, if the list is empty or has an unknown name.
@@ -59,6 +67,7 @@ private:
     static SDL_Event CreateKeyEvent(const KeyBinding& key, bool pressed, Uint32 timestamp);
 
     void TranslateAxis(Uint8 axis, Sint16 value, Uint32 timestamp, std::vector<SDL_Event>& outKeyEvents);
+    void UpdateStick(Uint32 timestamp, std::vector<SDL_Event>& outKeyEvents);
     void SetInputState(int inputId, const KeyBinding& key, bool pressed, Uint32 timestamp,
                        std::vector<SDL_Event>& outKeyEvents);
     bool IsInputHeld(int inputId, const KeyBinding& key) const;
@@ -73,6 +82,11 @@ private:
     // The key each held button pressed, for its release (the menu may have opened or closed since)
     std::map<Uint8, KeyBinding> m_PressedButtonKeys;
     bool m_bMenuMode;
+    bool m_bLadderMode;
+
+    // Last position of the left stick
+    Sint16 m_StickX;
+    Sint16 m_StickY;
 };
 
 #endif

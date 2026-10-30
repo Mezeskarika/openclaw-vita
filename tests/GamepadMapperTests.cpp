@@ -123,6 +123,66 @@ TEST_CASE("----- GAMEPAD MAPPER -----")
         RequireKeyEvent(flick[1], SDL_KEYDOWN, SDLK_DOWN, SDL_SCANCODE_DOWN);
     }
 
+    SECTION("Away from ladders the stick is two axes: right and a little down is Right and Down")
+    {
+        Translate(mapper, AxisEvent(SDL_CONTROLLER_AXIS_LEFTX, 20000));
+        std::vector<SDL_Event> down = Translate(mapper, AxisEvent(SDL_CONTROLLER_AXIS_LEFTY, 17000));
+        REQUIRE(down.size() == 1);
+        RequireKeyEvent(down[0], SDL_KEYDOWN, SDLK_DOWN, SDL_SCANCODE_DOWN);
+    }
+
+    SECTION("At a ladder the stick is four directions: right and a little up is only Right")
+    {
+        std::vector<SDL_Event> events;
+        REQUIRE(mapper.SetLadderMode(true, 0, events));
+        REQUIRE(events.empty());
+
+        std::vector<SDL_Event> right = Translate(mapper, AxisEvent(SDL_CONTROLLER_AXIS_LEFTX, 20000));
+        REQUIRE(right.size() == 1);
+        RequireKeyEvent(right[0], SDL_KEYDOWN, SDLK_RIGHT, SDL_SCANCODE_RIGHT);
+
+        // 45 degrees up and right: still only Right
+        REQUIRE(Translate(mapper, AxisEvent(SDL_CONTROLLER_AXIS_LEFTY, -20000)).empty());
+
+        // Within 30 degrees of vertical: Right lets go, Up goes down
+        std::vector<SDL_Event> up = Translate(mapper, AxisEvent(SDL_CONTROLLER_AXIS_LEFTX, 8000));
+        REQUIRE(up.size() == 2);
+        RequireKeyEvent(up[0], SDL_KEYUP, SDLK_RIGHT, SDL_SCANCODE_RIGHT);
+        RequireKeyEvent(up[1], SDL_KEYDOWN, SDLK_UP, SDL_SCANCODE_UP);
+
+        // Once Up is held it stays down up to 35 degrees from vertical
+        REQUIRE(Translate(mapper, AxisEvent(SDL_CONTROLLER_AXIS_LEFTX, 13000)).empty());
+    }
+
+    SECTION("Reaching a ladder with the stick up and right lets go of Up")
+    {
+        Translate(mapper, AxisEvent(SDL_CONTROLLER_AXIS_LEFTX, 20000));
+        Translate(mapper, AxisEvent(SDL_CONTROLLER_AXIS_LEFTY, -20000));
+        std::vector<SDL_Event> events;
+        REQUIRE(mapper.SetLadderMode(true, 0, events));
+        REQUIRE(events.size() == 1);
+        RequireKeyEvent(events[0], SDL_KEYUP, SDLK_UP, SDL_SCANCODE_UP);
+    }
+
+    SECTION("Ladder mode ends only when the stick has no vertical push")
+    {
+        std::vector<SDL_Event> events;
+        mapper.SetLadderMode(true, 0, events);
+        Translate(mapper, AxisEvent(SDL_CONTROLLER_AXIS_LEFTX, 20000));
+        Translate(mapper, AxisEvent(SDL_CONTROLLER_AXIS_LEFTY, -20000));
+
+        // Jumped off the ladder with the stick up and right: no Up in the air
+        REQUIRE_FALSE(mapper.SetLadderMode(false, 0, events));
+        REQUIRE(events.empty());
+        REQUIRE(mapper.IsLadderMode());
+
+        // The stick back to plain right: two axes again, and nothing changes
+        Translate(mapper, AxisEvent(SDL_CONTROLLER_AXIS_LEFTY, -2000));
+        REQUIRE(mapper.SetLadderMode(false, 0, events));
+        REQUIRE(events.empty());
+        REQUIRE_FALSE(mapper.IsLadderMode());
+    }
+
     SECTION("Other axes are ignored")
     {
         REQUIRE(Translate(mapper, AxisEvent(SDL_CONTROLLER_AXIS_RIGHTX, 32767)).empty());

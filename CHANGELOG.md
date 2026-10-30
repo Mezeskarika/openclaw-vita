@@ -65,6 +65,11 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
   Found from the crash dumps; not reproduced on purpose.
 
 ### Changed
+- Experimental: at a ladder (in front of it or climbing) the left stick reads as four directions,
+  so right and a little up is only Right: Claw can walk off the top or jump off sideways without
+  the stick also pressing Up. Elsewhere it stays two axes, so ducking with a direction held works.
+  It switches back only once the stick has no vertical push, so jumping off with the stick up-right
+  doesn't grab the ladder again. The D-pad is unchanged.
 - Options → Difficulty lists Easy and Normal to choose from, the current one marked with », with
   what it does below (it was one button that changed the difficulty when pressed).
 - Options → Display: the Game play area slider has a row of its own under its label, with its stops

@@ -300,6 +300,8 @@ public:
     // HW Events
     void OnEvent(SDL_Event& event);
     void LogGamepadInput(const SDL_Event& event, const std::vector<SDL_Event>& keyEvents);
+    // Tells the gamepad mapper whether Claw is at a ladder (four-direction stick there)
+    void UpdateGamepadLadderMode();
     void OnDisplayChange(int newWidth, int newHeight);
     void VOnRestore();
     void VOnMinimized();

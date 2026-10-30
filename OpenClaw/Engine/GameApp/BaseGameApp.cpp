@@ -5,6 +5,8 @@
 #include "../Events/Events.h"
 #include "BaseGameLogic.h"
 #include "../UserInterface/HumanView.h"
+#include "../Actor/Actor.h"
+#include "../Actor/Components/PhysicsComponent.h"
 #include "../Resource/ResourceMgr.h"
 #include "../Graphics2D/Image.h"
 #include "../Graphics2D/MoviePlayer.h"
@@ -292,6 +294,8 @@ void BaseGameApp::StepLoop() {
             StepMovies(elapsedTime);
             return;
         }
+
+        UpdateGamepadLadderMode();
 
         // Handle all input events
         while (SDL_PollEvent(&event))
@@ -1781,6 +1785,38 @@ bool BaseGameApp::InitializeEventMgr()
     }
 
     return true;
+}
+
+void BaseGameApp::UpdateGamepadLadderMode()
+{
+    HumanView* pHumanView = m_pGame ? GetHumanView() : NULL;
+    if (pHumanView == NULL || pHumanView->IsMenuShown())
+    {
+        return;
+    }
+
+    // At a ladder: in front of one (overlapping it) or climbing
+    bool isAtLadder = false;
+    if (m_pGame->GetGameState() == GameState_IngameRunning)
+    {
+        StrongActorPtr pClaw = m_pGame->GetClawActor();
+        shared_ptr<PhysicsComponent> pPhysics = pClaw ? pClaw->GetPhysicsComponent() : nullptr;
+        isAtLadder = pPhysics && (pPhysics->IsOnLadder() || pPhysics->IsClimbing());
+    }
+
+    std::vector<SDL_Event> keyEvents;
+    if (m_GamepadMapper.SetLadderMode(isAtLadder, SDL_GetTicks(), keyEvents))
+    {
+        if (m_GlobalOptions.logInput)
+        {
+            LOG(std::string("Input: stick ") + (m_GamepadMapper.IsLadderMode() ?
+                "four directions (at a ladder)" : "two axes"));
+        }
+        for (SDL_Event& keyEvent : keyEvents)
+        {
+            OnEvent(keyEvent);
+        }
+    }
 }
 
 Point BaseGameApp::GetScale()

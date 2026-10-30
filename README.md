@@ -51,7 +51,8 @@ cutscene.
 
 The buttons can be changed in `ux0:data/openclaw/config.xml`, under `<ControlOptions><Gamepad>`
 (button names: Cross, Circle, Square, Triangle, L, R, Start, Select). In the menus Cross always
-confirms and Circle always goes back. An older `config.xml`
+confirms and Circle always goes back. At a ladder the left stick counts only its main direction
+(right and a little up is just Right), elsewhere its diagonals count. An older `config.xml`
 without that section uses the defaults above.
 
 ## Known limitations

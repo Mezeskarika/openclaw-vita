@@ -102,7 +102,11 @@ Every new source file must be added to its directory's `CMakeLists.txt` (`target
   from the touchscreen (`SDL_HINT_VITA_TOUCH_MOUSE_DEVICE`).
 - **Input:** `GamepadMapper` turns controller buttons and the left stick into the key events the
   game already handles (`BaseGameApp::OnEvent`). While a menu is shown (`HumanView::IsMenuShown`)
-  Cross is Return and Circle is Escape; a button's release always sends the key its press sent. Gameplay reacts to key *events*; nothing in
+  Cross is Return and Circle is Escape; a button's release always sends the key its press sent.
+  The left stick is two axes except at a ladder (`BaseGameApp::UpdateGamepadLadderMode` each frame,
+  from `PhysicsComponent::IsOnLadder`/`IsClimbing`), where it is four directions
+  (`GamepadMapper::SetLadderMode`, unit-tested). Four directions everywhere (alpha.2) broke ducking
+  with a direction held, so it was reverted. Gameplay reacts to key *events*; nothing in
   gameplay polls `SDL_GetKeyboardState`.
 - **Linking** is static with an explicit library list in the root `CMakeLists.txt`: the SDK's CMake
   configs and pkg-config files leave out zlib, libpng, `SceShaccCgExt` and pthread.
