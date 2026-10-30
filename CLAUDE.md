@@ -42,7 +42,7 @@ decisions), `vita/PERFORMANCE.md` (measurements and why the renderer is set up a
 | `OpenClaw/` | Game (`Claw*.cpp`, `ActorController.cpp`) and engine (`Engine/`: Actor components, Audio, Events, GameApp, Physics, Resource, Scene, UserInterface, Util) |
 | `libwap/` | Readers for the original formats: REZ archive, WWD levels, PID images, PAL, ANI, XMI→MIDI |
 | `Box2D/` | Bundled Box2D 2.3.2. Use this one; the SDK's box2d is a different version |
-| `ThirdParty/` | TinyXML, FastDelegate, libsmacker (Smacker decoder, unmodified 1.2.0), and **old SDL 2.0.4 headers in `ThirdParty/SDL2/`**: the Vita build must not see them (see gotchas); the host unit tests compile against them |
+| `ThirdParty/` | TinyXML, FastDelegate, libsmacker (Smacker decoder 1.2.0; `smk_open` in disk mode adds up frame offsets instead of seeking per frame, marked in `smacker.c`), and **old SDL 2.0.4 headers in `ThirdParty/SDL2/`**: the Vita build must not see them (see gotchas); the host unit tests compile against them |
 | `Build_Release/` | Runtime files. `ASSETS/` (menus `MENU.xml`, actor prototypes, level metadata) is zipped into `ASSETS.ZIP` by the Vita build (`vita/Assets.cmake` → `vita/tools/make_assets_zip.py`), so edit `ASSETS/`, not the zip. The game's zip reader needs sizes in the local headers: don't switch to `cmake -E tar` or other streaming zip writers; `SAVES.XML` template, `clacon.ttf`, `console02.tga` |
 | `vita/` | `Vita.cmake` (VPK packaging), `Freepats.cmake`, `config.xml` (Vita defaults), `timidity.cfg`, `sce_sys/` LiveArea, `tools/`, docs |
 | `tests/` | Host unit tests (`GamepadMapperTests.cpp`) |

@@ -46,8 +46,8 @@ The game log is written to `ux0:data/SDL_Log.txt`.
 | Triangle | Switch ammo type |
 | Start / Select | In-game menu, back |
 
-Menus can also be used by tapping the touchscreen. Any button, or a tap on the touchscreen, skips
-a cutscene.
+Menus can also be used by tapping the touchscreen. Cross, Circle, Square or Triangle skips a
+cutscene.
 
 The buttons can be changed in `ux0:data/openclaw/config.xml`, under `<ControlOptions><Gamepad>`
 (button names: Cross, Circle, Square, Triangle, L, R, Start, Select). An older `config.xml`
@@ -111,7 +111,7 @@ GPL-2.0-or-later with an exception for compositions; their licence files are ins
 menu font, [Cinzel](https://github.com/NDISCOVER/Cinzel), is under the SIL Open Font Licence
 (`Build_Release/fonts/OFL.txt`, also in the VPK). The cutscenes are decoded with
 [libsmacker](https://github.com/greg-kennedy/libsmacker) (LGPL-2.1, `ThirdParty/libsmacker/COPYING`, also
-in the VPK);
+in the VPK; changed to open movies with fewer file calls, the change is described in `smacker.c`);
 the movie player is based on the one in
 [captain-claw-s60](https://github.com/Dante-Leoncini/captain-claw-s60) (GPL-3.0).
 Captain Claw and its data are © Monolith Productions; this project contains no game data.

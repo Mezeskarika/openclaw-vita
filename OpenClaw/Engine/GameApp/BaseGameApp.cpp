@@ -420,7 +420,8 @@ void BaseGameApp::StepMovies(uint32 elapsedTime)
             case SDL_CONTROLLERBUTTONUP:
             case SDL_CONTROLLERAXISMOTION:
             {
-                // Through the mapper, so it keeps track of what is held. Any button skips the movie
+                // Through the mapper, so it keeps track of what is held. Only the face buttons skip
+                // the movie: the D-pad, shoulder buttons and Start are easily pressed by accident
                 std::vector<SDL_Event> keyEvents;
                 m_GamepadMapper.TranslateEvent(event, keyEvents);
                 for (SDL_Event& keyEvent : keyEvents)
@@ -430,7 +431,11 @@ void BaseGameApp::StepMovies(uint32 elapsedTime)
                         OnEvent(keyEvent);
                     }
                 }
-                if (event.type == SDL_CONTROLLERBUTTONDOWN)
+                if (event.type == SDL_CONTROLLERBUTTONDOWN &&
+                    (event.cbutton.button == SDL_CONTROLLER_BUTTON_A ||
+                     event.cbutton.button == SDL_CONTROLLER_BUTTON_B ||
+                     event.cbutton.button == SDL_CONTROLLER_BUTTON_X ||
+                     event.cbutton.button == SDL_CONTROLLER_BUTTON_Y))
                 {
                     const char* pButton =
                         SDL_GameControllerGetStringForButton((SDL_GameControllerButton)event.cbutton.button);
@@ -438,20 +443,8 @@ void BaseGameApp::StepMovies(uint32 elapsedTime)
                 }
                 break;
             }
-            case SDL_MOUSEBUTTONDOWN:
-                skipReason = "tap";
-                break;
-            case SDL_FINGERDOWN:
-                // Only the touchscreen: the Vita's rear touchpad sends finger events too, and the
-                // hands holding the console rest on it
-#if SDL_VERSION_ATLEAST(2, 0, 10)
-                if (SDL_GetTouchDeviceType(event.tfinger.touchId) != SDL_TOUCH_DEVICE_DIRECT)
-                {
-                    break;
-                }
-#endif
-                skipReason = "touch";
-                break;
+            // Touches don't skip: a hand resting on the touchscreen or the rear touchpad ended
+            // movies by accident (the touchscreen also arrives as mouse clicks)
             case SDL_CONTROLLERDEVICEADDED:
             case SDL_CONTROLLERDEVICEREMOVED:
                 OnEvent(event);

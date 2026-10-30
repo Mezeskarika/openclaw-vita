@@ -371,8 +371,12 @@ a clean export, checking `eboot.bin` matches). The movie crash needs its dump.
 Found: opening `CLAW.REZ` read its directory field by field, 98,462 reads and 98,459 seeks (strace on
 the desktop); on the card that is about the minute. Now one read per directory block (1,373 reads,
 1,370 seeks, identical result). The title screen (`TITLE.PCX`) is shown at start-up and while the
-menus are built after the start-up movies (13 s in 0.5.0, not explained yet: the log now has "Menu
-built", so the next hardware log times it; on the desktop it takes 40 ms).
+menus are built after the start-up movies.
+
+Hardware log of 2026-10-30 (alpha.3): start-up to the first movie took 9.7 s, and building the menus
+2.5 s. The 13 s black screen was opening the introduction ("opened in 12361 ms"): libsmacker called
+ftell and fseek once per frame, 12,576 calls for its 6,288 frames. Fixed in alpha.4 by adding up the
+frame sizes (one call of each per movie, offsets identical for all 12 movies).
 
 Original analysis:
 

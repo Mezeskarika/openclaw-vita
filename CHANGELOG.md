@@ -33,6 +33,10 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
 - Starting the game took about a minute on a PS Vita: opening `CLAW.REZ` read its directory one
   field at a time, about 197,000 small reads and seeks on the memory card. It now reads each
   directory block at once (about 2,700 calls; the result is identical for all 13,077 files).
+- The introduction took 12 s to start on a PS Vita (a black screen after the Monolith logo):
+  libsmacker found its 6,288 frames with a seek and a position query each, about 12,600 calls on
+  the memory card. It now adds up the frame sizes instead, with one call of each per movie (frame
+  positions identical for all 12 movies). This was the "13 s menu build" after the movies in 0.5.0.
 - Physics steps at most 1/60 s at a time: a long frame (the Vita has a 40-56 ms one every few
   seconds) moved everything in one big step, which may have let moving platforms and edges push
   Claw around. Frames at 60 fps behave as before.
@@ -46,6 +50,10 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
 - The game crashed when an enemy's shot killed Claw (three crashes on a PS Vita in 0.3.0, also in
   later versions): the enemy read past the end of its attack list while picking its next move.
   Found from the crash dumps; not reproduced on purpose.
+
+### Changed
+- Only Cross, Circle, Square and Triangle skip a cutscene. Touches no longer do (a hand on the
+  touchscreen ended movies by accident), nor do the D-pad, L, R, Start and Select.
 
 ## [0.5.0] - 2026-10-29
 

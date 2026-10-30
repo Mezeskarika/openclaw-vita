@@ -7,6 +7,10 @@
 	smacker.c
 		Main implementation file of libsmacker.
 		Open, close, query, render, advance and seek an smk
+
+	Modified for the OpenClaw PS Vita port, 2026-10-30: in SMK_MODE_DISK, smk_open adds up
+	the frame offsets instead of calling ftell and fseek once per frame (each call goes to the
+	memory card on the Vita: 12 s for a 6288-frame movie). See the comment at that loop.
 */
 
 #include "smacker.h"
@@ -840,17 +844,27 @@ static smk smk_open_generic(const unsigned char m, union smk_read_t fp, unsigned
 		}
 	} else {
 		/* MODE_STREAM: don't read anything now, just precompute offsets.
-			use fseek to verify that the file is "complete" */
+			OpenClaw PS Vita port: the frames follow each other, so the offsets are added up
+			from one ftell instead of an ftell and an fseek per frame. One fseek to the last
+			frame still checks that the file reaches that far. */
+		long offset;
 		smk_malloc(s->source.file.chunk_offset, (s->f + s->ring_frame) * sizeof(unsigned long));
 
+		offset = ftell(fp.file);
+		if (offset < 0) {
+			fprintf(stderr, "libsmacker::smk_open - ERROR: ftell not OK.\n");
+			goto error;
+		}
 		for (temp_u = 0; temp_u < (s->f + s->ring_frame); temp_u ++) {
-			s->source.file.chunk_offset[temp_u] = ftell(fp.file);
+			s->source.file.chunk_offset[temp_u] = (unsigned long)offset;
+			offset += s->chunk_size[temp_u];
+		}
 
-			if (fseek(fp.file, s->chunk_size[temp_u], SEEK_CUR)) {
-				fprintf(stderr, "libsmacker::smk_open - ERROR: fseek to frame %lu not OK.\n", temp_u);
-				perror("\tError reported was");
-				goto error;
-			}
+		if (s->f + s->ring_frame > 0 &&
+			fseek(fp.file, (long)s->source.file.chunk_offset[s->f + s->ring_frame - 1], SEEK_SET)) {
+			fprintf(stderr, "libsmacker::smk_open - ERROR: fseek to the last frame not OK.\n");
+			perror("\tError reported was");
+			goto error;
 		}
 	}
 
