@@ -171,7 +171,6 @@
     <!-- HELP PAGE -->
     <MenuPage>
         <PageName>MenuPage_Help</PageName>
-        <BackgroundImage>/STATES/HELP/SCREENS/HELP.PCX</BackgroundImage>
         <KeyboardEvent>
             <KeyType>Escape</KeyType>
             <GeneratedEvent>
@@ -180,35 +179,60 @@
             </GeneratedEvent>
         </KeyboardEvent>
         <MenuItem>
-            <Name>TOUCHSCREEN_BUTTON</Name>
-            <Type>Button</Type>
-            <State>Active</State>
-            <InactiveImage>/CONTROLS/touchscreen_title.png</InactiveImage>
-            <ActiveImage>/CONTROLS/touchscreen_title.png</ActiveImage>
-            <Position x="325" y="452" />
-            <GeneratedEvent>
-                <Type>SwitchPage</Type>
-                <PageName>MenuPage_Help_TouchScreen</PageName>
-            </GeneratedEvent>
-        </MenuItem>
-    </MenuPage>
-
-    <!-- HELP TOUCHSCREEN PAGE -->
-    <MenuPage>
-        <PageName>MenuPage_Help_TouchScreen</PageName>
-        <KeyboardEvent>
-            <KeyType>Escape</KeyType>
-            <GeneratedEvent>
-                <Type>SwitchPage</Type>
-                <PageName>MenuPage_Main</PageName>
-            </GeneratedEvent>
-        </KeyboardEvent>
-        <MenuItem>
-            <Name>CONTROL_IMAGE</Name>
+            <Name>HELP_TITLE_TEXT</Name>
             <Type>Text</Type>
-            <State>Disabled</State>
-            <DisabledImage>/CONTROLS/touchscreen_img.png</DisabledImage>
-            <Position x="10" y="135" />
+            <State>Inactive</State>
+            <Label size="30">Controls</Label>
+            <Position x="center" y="160" />
+        </MenuItem>
+        <MenuItem>
+            <Name>HELP_LINE_1_TEXT</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <Label size="17">D-pad or left stick: move, climb, duck</Label>
+            <Position x="center" y="205" />
+        </MenuItem>
+        <MenuItem>
+            <Name>HELP_LINE_2_TEXT</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <Label size="17">{Jump}: jump</Label>
+            <Position x="center" y="232" />
+        </MenuItem>
+        <MenuItem>
+            <Name>HELP_LINE_3_TEXT</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <Label size="17">{Attack}: sword, punch, kick</Label>
+            <Position x="center" y="259" />
+        </MenuItem>
+        <MenuItem>
+            <Name>HELP_LINE_4_TEXT</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <Label size="17">{Fire}: pistol, magic claw or dynamite</Label>
+            <Position x="center" y="286" />
+        </MenuItem>
+        <MenuItem>
+            <Name>HELP_LINE_5_TEXT</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <Label size="17">{SwitchAmmo}: change pistol, magic or dynamite</Label>
+            <Position x="center" y="313" />
+        </MenuItem>
+        <MenuItem>
+            <Name>HELP_LINE_6_TEXT</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <Label size="17">{Menu}: this menu</Label>
+            <Position x="center" y="340" />
+        </MenuItem>
+        <MenuItem>
+            <Name>HELP_LINE_7_TEXT</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <Label size="17">Menus: Cross chooses, Circle goes back</Label>
+            <Position x="center" y="367" />
         </MenuItem>
         <MenuItem>
             <Name>BACK_BUTTON</Name>
@@ -216,13 +240,14 @@
             <State>Active</State>
             <InactiveImage>/STATES/MENU/IMAGES/MAIN/SINGLEPLAYER/SAVE/001_PREVIOUSMENU.PCX</InactiveImage>
             <ActiveImage>/STATES/MENU/IMAGES/MAIN/SINGLEPLAYER/SAVE/002_PREVIOUSMENU.PCX</ActiveImage>
-            <Position x="266" y="420" />
+            <Position x="266" y="405" />
             <GeneratedEvent>
                 <Type>SwitchPage</Type>
                 <PageName>MenuPage_Main</PageName>
             </GeneratedEvent>
         </MenuItem>
     </MenuPage>
+
 
     <!-- OPTIONS PAGE -->
     <MenuPage>

@@ -152,10 +152,63 @@ static void ApplyVerticalGradient(SDL_Surface* pSurface, SDL_Color top, SDL_Colo
     SDL_UnlockSurface(pSurface);
 }
 
+// Labels are drawn this much larger than their size in the menu files (2026-10-30: a bit small next
+// to the original's images)
+static const int LABEL_SIZE_PERCENT = 115;
+
+// The rows of a 32-bit surface that have any visible pixel
+static void FindInkRows(SDL_Surface* pSurface, int& outTop, int& outBottom)
+{
+    outTop = pSurface->h;
+    outBottom = -1;
+    SDL_LockSurface(pSurface);
+    for (int y = 0; y < pSurface->h; y++)
+    {
+        Uint32* pRow = (Uint32*)((Uint8*)pSurface->pixels + y * pSurface->pitch);
+        for (int x = 0; x < pSurface->w; x++)
+        {
+            Uint8 r, g, b, a;
+            SDL_GetRGBA(pRow[x], pSurface->format, &r, &g, &b, &a);
+            if (a > 0)
+            {
+                outTop = y < outTop ? y : outTop;
+                outBottom = y;
+                break;
+            }
+        }
+    }
+    SDL_UnlockSurface(pSurface);
+}
+
+// {Jump}, {Attack}, {Fire}, {SwitchAmmo}, {Menu} in a label: the buttons bound to that action,
+// e.g. "Start / Select"
+static std::string FillButtonPlaceholders(std::string text)
+{
+    for (int action = 0; action < GamepadMapper::Action_Count; action++)
+    {
+        const std::string placeholder = "{" + std::string(GamepadMapper::GetActionName((GamepadMapper::Action)action)) + "}";
+        size_t pos = text.find(placeholder);
+        if (pos == std::string::npos)
+        {
+            continue;
+        }
+        std::string buttons = g_pApp->GetGamepadMapper().GetActionButtons((GamepadMapper::Action)action);
+        for (size_t comma = buttons.find(','); comma != std::string::npos; comma = buttons.find(',', comma))
+        {
+            buttons.replace(comma, 1, " / ");
+        }
+        text.replace(pos, placeholder.size(), buttons);
+    }
+    return text;
+}
+
 // A menu label in the style of the original ones: gold letters with a dark outline, brighter
-// letters with a light outline when selected
+// letters with a light outline when selected. Trimmed to its letters top and bottom, so it is placed
+// like the original's images (the font's line spacing left the letters well below the position)
 static shared_ptr<Image> CreateLabelImage(const std::string& text, int fontSize, bool isActive)
 {
+    fontSize = fontSize * LABEL_SIZE_PERCENT / 100;
+
     // One font per size, kept open for the lifetime of the game
     static std::map<int, TTF_Font*> s_Fonts;
     TTF_Font*& pFont = s_Fonts[fontSize];
@@ -188,17 +241,34 @@ static shared_ptr<Image> CreateLabelImage(const std::string& text, int fontSize,
 
     if (isActive)
     {
-        ApplyVerticalGradient(pLetters, SDL_Color{ 255, 236, 120, 255 }, SDL_Color{ 235, 150, 20, 255 });
+        ApplyVerticalGradient(pLetters, SDL_Color{ 255, 248, 170, 255 }, SDL_Color{ 245, 175, 50, 255 });
     }
     else
     {
-        ApplyVerticalGradient(pLetters, SDL_Color{ 250, 220, 110, 255 }, SDL_Color{ 190, 120, 20, 255 });
+        ApplyVerticalGradient(pLetters, SDL_Color{ 255, 240, 160, 255 }, SDL_Color{ 225, 165, 55, 255 });
     }
 
     SDL_Rect lettersRect = { outline, outline, pLetters->w, pLetters->h };
     SDL_BlitSurface(pLetters, NULL, pLabel, &lettersRect);
-    SDL_Texture* pTexture = SDL_CreateTextureFromSurface(g_pApp->GetRenderer(), pLabel);
     SDL_FreeSurface(pLetters);
+
+    int inkTop, inkBottom;
+    FindInkRows(pLabel, inkTop, inkBottom);
+    if (inkBottom >= inkTop && (inkTop > 0 || inkBottom < pLabel->h - 1))
+    {
+        SDL_Surface* pTrimmed = SDL_CreateRGBSurface(0, pLabel->w, inkBottom - inkTop + 1, 32,
+            pLabel->format->Rmask, pLabel->format->Gmask, pLabel->format->Bmask, pLabel->format->Amask);
+        if (pTrimmed != NULL)
+        {
+            SDL_Rect inkRect = { 0, inkTop, pLabel->w, inkBottom - inkTop + 1 };
+            SDL_SetSurfaceBlendMode(pLabel, SDL_BLENDMODE_NONE);
+            SDL_BlitSurface(pLabel, &inkRect, pTrimmed, NULL);
+            SDL_FreeSurface(pLabel);
+            pLabel = pTrimmed;
+        }
+    }
+
+    SDL_Texture* pTexture = SDL_CreateTextureFromSurface(g_pApp->GetRenderer(), pLabel);
     SDL_FreeSurface(pLabel);
     if (pTexture == NULL)
     {
@@ -1191,7 +1261,7 @@ ScreenElementMenuItem::ScreenElementMenuItem(SDL_Renderer* pRenderer)
     m_Hotkey(SDL_SCANCODE_UNKNOWN),
     m_bVisible(true)
 {
-
+    m_Crop = { 0, 0, 0, 0 };
 }
 
 ScreenElementMenuItem::~ScreenElementMenuItem()
@@ -1201,6 +1271,11 @@ ScreenElementMenuItem::~ScreenElementMenuItem()
 
 void ScreenElementMenuItem::VOnUpdate(uint32 msDiff)
 {
+    if (!m_VisibilityOption.empty())
+    {
+        m_bVisible = (g_pApp->GetMenuOption(m_VisibilityOption) == m_VisibilityValue);
+    }
+
     // This is a bit hacky but implementing this via XML would be pain in the ass right now...
     if (m_Name == "SOUND_KNOB")
     {
@@ -1230,18 +1305,19 @@ void ScreenElementMenuItem::VOnRender(uint32 msDiff)
         return;
     }
 
+    const SDL_Rect* pSourceRect = m_Crop.w > 0 ? &m_Crop : NULL;
     SDL_Rect renderRect;
     renderRect.x = (int)((m_Position.x + pCurrImage->GetOffsetX()) * g_MenuScale.x);
     renderRect.y = (int)(m_Position.y * g_MenuScale.y);
-    renderRect.w = (int)(pCurrImage->GetWidth() * g_MenuScale.x);
-    renderRect.h = (int)(pCurrImage->GetHeight() * g_MenuScale.y);
+    renderRect.w = (int)((pSourceRect ? m_Crop.w : pCurrImage->GetWidth()) * g_MenuScale.x);
+    renderRect.h = (int)((pSourceRect ? m_Crop.h : pCurrImage->GetHeight()) * g_MenuScale.y);
 
     if (darken)
     {
         SDL_SetTextureColorMod(pCurrImage->GetTexture(), 90, 90, 90);
     }
 
-    SDL_RenderCopy(m_pRenderer, pCurrImage->GetTexture(), NULL, &renderRect);
+    SDL_RenderCopy(m_pRenderer, pCurrImage->GetTexture(), pSourceRect, &renderRect);
 
     if (darken)
     {
@@ -1388,6 +1464,8 @@ bool ScreenElementMenuItem::Initialize(TiXmlElement* pElem)
             ParseValueFromXmlElem(&option, pVisibilityConditionElem->FirstChildElement("Option"));
             ParseValueFromXmlElem(&value, pVisibilityConditionElem->FirstChildElement("Value"));
             m_bVisible = (g_pApp->GetMenuOption(option) == value);
+            m_VisibilityOption = option;
+            m_VisibilityValue = value;
         }
     }
     std::string menuItemTypeStr;
@@ -1414,7 +1492,7 @@ bool ScreenElementMenuItem::Initialize(TiXmlElement* pElem)
     {
         int fontSize = 22;
         pLabelElem->Attribute("size", &fontSize);
-        std::string label = pLabelElem->GetText() ? pLabelElem->GetText() : "";
+        std::string label = FillButtonPlaceholders(pLabelElem->GetText() ? pLabelElem->GetText() : "");
         shared_ptr<Image> pInactive = CreateLabelImage(label, fontSize, false);
         shared_ptr<Image> pActive = CreateLabelImage(label, fontSize, true);
         if (pInactive == nullptr || pActive == nullptr)
@@ -1425,14 +1503,29 @@ bool ScreenElementMenuItem::Initialize(TiXmlElement* pElem)
         m_Images[MenuItemState_Active] = pActive;
     }
 
-    // <Position x="center">: centred horizontally on the menu
+    if (TiXmlElement* pCropElem = pElem->FirstChildElement("Crop"))
+    {
+        pCropElem->Attribute("x", &m_Crop.x);
+        pCropElem->Attribute("y", &m_Crop.y);
+        pCropElem->Attribute("w", &m_Crop.w);
+        pCropElem->Attribute("h", &m_Crop.h);
+    }
+
+    // <Position x="center">: centred horizontally on the menu; <Position cx="300">: centred on x 300
     if (TiXmlElement* pPositionElem = pElem->FirstChildElement("Position"))
     {
         const char* x = pPositionElem->Attribute("x");
-        auto inactiveIt = m_Images.find(MenuItemState_Inactive);
-        if (x != NULL && std::string(x) == "center" && inactiveIt != m_Images.end())
+        int centreX = 0;
+        const bool hasCentreX = pPositionElem->Attribute("cx", &centreX) != NULL;
+        if (x != NULL && std::string(x) == "center")
         {
-            double centeredX = (MENU_LAYOUT_WIDTH - inactiveIt->second->GetWidth()) / 2;
+            centreX = MENU_LAYOUT_WIDTH / 2;
+        }
+        auto inactiveIt = m_Images.find(MenuItemState_Inactive);
+        if (((x != NULL && std::string(x) == "center") || hasCentreX) && inactiveIt != m_Images.end())
+        {
+            const int width = m_Crop.w > 0 ? m_Crop.w : inactiveIt->second->GetWidth();
+            double centeredX = centreX - width / 2;
             m_Position.SetX(centeredX);
             m_DefaultPosition.SetX(centeredX);
         }
@@ -1694,7 +1787,12 @@ SDL_Rect ScreenElementMenuItem::GetMenuItemRect()
 
     // Taps on a page with a greyed-out item crashed here before (0.4.0, 0.5.0): its state had no image
     shared_ptr<Image> pImage = GetCurrentImage();
-    if (pImage)
+    if (pImage && m_Crop.w > 0)
+    {
+        itemRect.w = m_Crop.w;
+        itemRect.h = m_Crop.h;
+    }
+    else if (pImage)
     {
         SDL_QueryTexture(pImage->GetTexture(), NULL, NULL, &itemRect.w, &itemRect.h);
     }

@@ -65,9 +65,19 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
   Found from the crash dumps; not reproduced on purpose.
 
 ### Changed
+- Options → Difficulty lists Easy and Normal to choose from, the current one marked with », with
+  what it does below (it was one button that changed the difficulty when pressed).
+- Options → Display: the Game play area slider has a row of its own under its label, with its stops
+  named (2×, 1×, 0.75×, 0.5×) and a line saying what the current one does; 1× is marked as the
+  default. The slider and its − and + are the original's art, unchanged.
+- Help (main menu and in-game) shows the Vita's controls, taken from the current button bindings,
+  instead of the original's keyboard picture. The page about the Android touch controls is gone.
+- The port's own menu labels (Gameplay, the Difficulty and Gameplay pages, Help) are a bit larger
+  and lighter, and are placed by their letters like the original's images: Gameplay on the Options
+  page sat much closer to Back than to Display.
 - The game ends when a death takes the life counter (the Claw heads) to 0. In the original, and
   until now, Claw played on with 0 on the counter and the next death ended the game. Options →
-  Gameplay → Last life: Counter at 0 brings that back (`<Gameplay><LastLife>Original</LastLife>`).
+  Gameplay → Game over: below 0 lives brings that back (`<Gameplay><LastLife>Original</LastLife>`).
 - Circle goes back in every menu, like Start and Select (on the main page that is the Quit page),
   and Cross confirms, whatever the two buttons do in the game.
 - Only Cross, Circle, Square and Triangle skip a cutscene. Touches no longer do (a hand on the
@@ -227,9 +237,9 @@ How the port plays differently from Captain Claw (1997):
   They were never implemented in OpenClaw.
 - **Loaded games** start with a new game's lives, health and ammo (the score is kept). The original
   restored them from the save point; Options → Gameplay → Loaded games: As saved does that.
-- **Last life:** the game ends when a death takes the life counter to 0. The original let Claw play
-  on with 0 on the counter (Design Bible 6.2.5: "if the Claw Head meter shows 0, the next time the
-  player dies, the game is over"); Options → Gameplay → Last life: Counter at 0 does that.
+- **Game over** comes when a death takes the life counter to 0. The original let Claw play on with
+  0 on the counter (Design Bible 6.2.5: "if the Claw Head meter shows 0, the next time the
+  player dies, the game is over"); Options → Gameplay → Game over: below 0 lives does that.
 - **Movies:** they fill the screen. The original showed them interlaced (every other line black) by
   default and had a Display option for it; here it's a `config.xml` setting only, because the black
   lines turn into bands whenever the picture is scaled (Vita3K's window, a PS TV). All movies can be

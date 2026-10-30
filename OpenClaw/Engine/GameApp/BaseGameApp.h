@@ -369,6 +369,8 @@ public:
     GameOptions* GetGameConfig() { return &m_GameOptions; }
     const GlobalOptions* GetGlobalOptions() const { return &m_GlobalOptions; }
     const ControlOptions* GetControlOptions() const { return &m_ControlOptions; }
+    // The gamepad bindings, e.g. for the Help page
+    const GamepadMapper& GetGamepadMapper() const { return m_GamepadMapper; }
     const DebugOptions* GetDebugOptions() const { return &m_DebugOptions; }
 
     TiXmlElement* GetActorPrototypeElem(ActorPrototype proto);

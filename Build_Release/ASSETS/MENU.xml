@@ -559,7 +559,6 @@
     <!-- HELP PAGE -->
     <MenuPage>
         <PageName>MenuPage_Help</PageName>
-        <BackgroundImage>/STATES/HELP/SCREENS/HELP.PCX</BackgroundImage>
         <KeyboardEvent>
             <KeyType>Escape</KeyType>
             <GeneratedEvent>
@@ -568,35 +567,60 @@
             </GeneratedEvent>
         </KeyboardEvent>
         <MenuItem>
-            <Name>TOUCHSCREEN_BUTTON</Name>
-            <Type>Button</Type>
-            <State>Active</State>
-            <InactiveImage>/CONTROLS/touchscreen_title.png</InactiveImage>
-            <ActiveImage>/CONTROLS/touchscreen_title.png</ActiveImage>
-            <Position x="325" y="452" />
-            <GeneratedEvent>
-                <Type>SwitchPage</Type>
-                <PageName>MenuPage_Help_TouchScreen</PageName>
-            </GeneratedEvent>
-        </MenuItem>
-    </MenuPage>
-
-    <!-- HELP TOUCHSCREEN PAGE -->
-    <MenuPage>
-        <PageName>MenuPage_Help_TouchScreen</PageName>
-        <KeyboardEvent>
-            <KeyType>Escape</KeyType>
-            <GeneratedEvent>
-                <Type>SwitchPage</Type>
-                <PageName>MenuPage_Main</PageName>
-            </GeneratedEvent>
-        </KeyboardEvent>
-        <MenuItem>
-            <Name>CONTROL_IMAGE</Name>
+            <Name>HELP_TITLE_TEXT</Name>
             <Type>Text</Type>
-            <State>Disabled</State>
-            <DisabledImage>/CONTROLS/touchscreen_img.png</DisabledImage>
-            <Position x="10" y="135" />
+            <State>Inactive</State>
+            <Label size="30">Controls</Label>
+            <Position x="center" y="160" />
+        </MenuItem>
+        <MenuItem>
+            <Name>HELP_LINE_1_TEXT</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <Label size="17">D-pad or left stick: move, climb, duck</Label>
+            <Position x="center" y="205" />
+        </MenuItem>
+        <MenuItem>
+            <Name>HELP_LINE_2_TEXT</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <Label size="17">{Jump}: jump</Label>
+            <Position x="center" y="232" />
+        </MenuItem>
+        <MenuItem>
+            <Name>HELP_LINE_3_TEXT</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <Label size="17">{Attack}: sword, punch, kick</Label>
+            <Position x="center" y="259" />
+        </MenuItem>
+        <MenuItem>
+            <Name>HELP_LINE_4_TEXT</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <Label size="17">{Fire}: pistol, magic claw or dynamite</Label>
+            <Position x="center" y="286" />
+        </MenuItem>
+        <MenuItem>
+            <Name>HELP_LINE_5_TEXT</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <Label size="17">{SwitchAmmo}: change pistol, magic or dynamite</Label>
+            <Position x="center" y="313" />
+        </MenuItem>
+        <MenuItem>
+            <Name>HELP_LINE_6_TEXT</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <Label size="17">{Menu}: this menu</Label>
+            <Position x="center" y="340" />
+        </MenuItem>
+        <MenuItem>
+            <Name>HELP_LINE_7_TEXT</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <Label size="17">Menus: Cross chooses, Circle goes back</Label>
+            <Position x="center" y="367" />
         </MenuItem>
         <MenuItem>
             <Name>BACK_BUTTON</Name>
@@ -604,13 +628,14 @@
             <State>Active</State>
             <InactiveImage>/STATES/MENU/IMAGES/MAIN/SINGLEPLAYER/SAVE/001_PREVIOUSMENU.PCX</InactiveImage>
             <ActiveImage>/STATES/MENU/IMAGES/MAIN/SINGLEPLAYER/SAVE/002_PREVIOUSMENU.PCX</ActiveImage>
-            <Position x="266" y="420" />
+            <Position x="266" y="405" />
             <GeneratedEvent>
                 <Type>SwitchPage</Type>
                 <PageName>MenuPage_Main</PageName>
             </GeneratedEvent>
         </MenuItem>
     </MenuPage>
+
     
     <!-- LOAD GAME PAGE -->
     <MenuPage>
@@ -2363,105 +2388,17 @@
             <InactiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/003_DIFFICULTY.PCX</InactiveImage>
             <Position x="210" y="160" />
         </MenuItem>
-        <MenuItem>
-            <Name>DIFFICULTY_NORMAL_BUTTON</Name>
-            <Type>Button</Type>
-            <State>Active</State>
-            <VisibilityCondition>
-                <ConditionType>Option</ConditionType>
-                <Option>Difficulty</Option>
-                <Value>Normal</Value>
-            </VisibilityCondition>
-            <Label>Difficulty: Normal</Label>
-            <Position x="center" y="240" />
-            <GeneratedEvent>
-                <Type>SetOption</Type>
-                <Option>Difficulty</Option>
-                <Value>Easy</Value>
-            </GeneratedEvent>
-            <GeneratedEvent>
-                <Type>ModifyMenuItemVisibility</Type>
-                <MenuItemName>DIFFICULTY_NORMAL_BUTTON</MenuItemName>
-                <IsVisible>false</IsVisible>
-            </GeneratedEvent>
-            <GeneratedEvent>
-                <Type>ModifyMenuItemState</Type>
-                <MenuItemName>DIFFICULTY_NORMAL_BUTTON</MenuItemName>
-                <State>Inactive</State>
-            </GeneratedEvent>
-            <GeneratedEvent>
-                <Type>ModifyMenuItemVisibility</Type>
-                <MenuItemName>DIFFICULTY_EASY_BUTTON</MenuItemName>
-                <IsVisible>true</IsVisible>
-            </GeneratedEvent>
-            <GeneratedEvent>
-                <Type>ModifyMenuItemState</Type>
-                <MenuItemName>DIFFICULTY_EASY_BUTTON</MenuItemName>
-                <State>Active</State>
-            </GeneratedEvent>
-            <GeneratedEvent>
-                <Type>ModifyMenuItemVisibility</Type>
-                <MenuItemName>DIFFICULTY_NORMAL_TEXT</MenuItemName>
-                <IsVisible>false</IsVisible>
-            </GeneratedEvent>
-            <GeneratedEvent>
-                <Type>ModifyMenuItemVisibility</Type>
-                <MenuItemName>DIFFICULTY_EASY_TEXT</MenuItemName>
-                <IsVisible>true</IsVisible>
-            </GeneratedEvent>
-            <GeneratedEvent>
-                <Type>PlaySound</Type>
-                <SoundName>/STATES/MENU/SOUNDS/SELECT.WAV</SoundName>
-                <Volume>100</Volume>
-                <IsMusic>false</IsMusic>
-                <Loops>-0</Loops>
-            </GeneratedEvent>
-        </MenuItem>
+        <!-- One button per difficulty; » marks the current one (the coins mark the selected button) -->
         <MenuItem>
             <Name>DIFFICULTY_EASY_BUTTON</Name>
             <Type>Button</Type>
             <State>Active</State>
-            <VisibilityCondition>
-                <ConditionType>Option</ConditionType>
-                <Option>Difficulty</Option>
-                <Value>Easy</Value>
-            </VisibilityCondition>
-            <Label>Difficulty: Easy</Label>
-            <Position x="center" y="240" />
+            <Label>Easy</Label>
+            <Position x="center" y="225" />
             <GeneratedEvent>
                 <Type>SetOption</Type>
                 <Option>Difficulty</Option>
-                <Value>Normal</Value>
-            </GeneratedEvent>
-            <GeneratedEvent>
-                <Type>ModifyMenuItemVisibility</Type>
-                <MenuItemName>DIFFICULTY_EASY_BUTTON</MenuItemName>
-                <IsVisible>false</IsVisible>
-            </GeneratedEvent>
-            <GeneratedEvent>
-                <Type>ModifyMenuItemState</Type>
-                <MenuItemName>DIFFICULTY_EASY_BUTTON</MenuItemName>
-                <State>Inactive</State>
-            </GeneratedEvent>
-            <GeneratedEvent>
-                <Type>ModifyMenuItemVisibility</Type>
-                <MenuItemName>DIFFICULTY_NORMAL_BUTTON</MenuItemName>
-                <IsVisible>true</IsVisible>
-            </GeneratedEvent>
-            <GeneratedEvent>
-                <Type>ModifyMenuItemState</Type>
-                <MenuItemName>DIFFICULTY_NORMAL_BUTTON</MenuItemName>
-                <State>Active</State>
-            </GeneratedEvent>
-            <GeneratedEvent>
-                <Type>ModifyMenuItemVisibility</Type>
-                <MenuItemName>DIFFICULTY_NORMAL_TEXT</MenuItemName>
-                <IsVisible>true</IsVisible>
-            </GeneratedEvent>
-            <GeneratedEvent>
-                <Type>ModifyMenuItemVisibility</Type>
-                <MenuItemName>DIFFICULTY_EASY_TEXT</MenuItemName>
-                <IsVisible>false</IsVisible>
+                <Value>Easy</Value>
             </GeneratedEvent>
             <GeneratedEvent>
                 <Type>PlaySound</Type>
@@ -2472,7 +2409,38 @@
             </GeneratedEvent>
         </MenuItem>
         <MenuItem>
-            <Name>DIFFICULTY_NORMAL_TEXT</Name>
+            <Name>DIFFICULTY_NORMAL_BUTTON</Name>
+            <Type>Button</Type>
+            <State>Inactive</State>
+            <Label>Normal</Label>
+            <Position x="center" y="262" />
+            <GeneratedEvent>
+                <Type>SetOption</Type>
+                <Option>Difficulty</Option>
+                <Value>Normal</Value>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>PlaySound</Type>
+                <SoundName>/STATES/MENU/SOUNDS/SELECT.WAV</SoundName>
+                <Volume>100</Volume>
+                <IsMusic>false</IsMusic>
+                <Loops>-0</Loops>
+            </GeneratedEvent>
+        </MenuItem>
+        <MenuItem>
+            <Name>DIFFICULTY_EASY_MARK</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <VisibilityCondition>
+                <ConditionType>Option</ConditionType>
+                <Option>Difficulty</Option>
+                <Value>Easy</Value>
+            </VisibilityCondition>
+            <Label size="22">»</Label>
+            <Position cx="196" y="223" />
+        </MenuItem>
+        <MenuItem>
+            <Name>DIFFICULTY_NORMAL_MARK</Name>
             <Type>Text</Type>
             <State>Inactive</State>
             <VisibilityCondition>
@@ -2480,8 +2448,8 @@
                 <Option>Difficulty</Option>
                 <Value>Normal</Value>
             </VisibilityCondition>
-            <Label size="16">Enemies take the usual damage</Label>
-            <Position x="center" y="290" />
+            <Label size="22">»</Label>
+            <Position cx="196" y="260" />
         </MenuItem>
         <MenuItem>
             <Name>DIFFICULTY_EASY_TEXT</Name>
@@ -2493,7 +2461,19 @@
                 <Value>Easy</Value>
             </VisibilityCondition>
             <Label size="16">Claw's sword, punches and kicks hit four times harder</Label>
-            <Position x="center" y="290" />
+            <Position x="center" y="315" />
+        </MenuItem>
+        <MenuItem>
+            <Name>DIFFICULTY_NORMAL_TEXT</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <VisibilityCondition>
+                <ConditionType>Option</ConditionType>
+                <Option>Difficulty</Option>
+                <Value>Normal</Value>
+            </VisibilityCondition>
+            <Label size="16">Enemies take the usual damage</Label>
+            <Position x="center" y="315" />
         </MenuItem>
         <MenuItem>
             <Name>BACK_BUTTON</Name>
@@ -2538,7 +2518,7 @@
             </VisibilityCondition>
             <InactiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/DISPLAY/009_FRONT.PCX</InactiveImage>
             <ActiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/DISPLAY/011_FRONT.PCX</ActiveImage>
-            <Position x="144" y="235" />
+            <Position x="144" y="222" />
             <GeneratedEvent>
                 <Type>SetOption</Type>
                 <Option>FrontLayer</Option>
@@ -2583,7 +2563,7 @@
             </VisibilityCondition>
             <InactiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/DISPLAY/010_FRONT.PCX</InactiveImage>
             <ActiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/DISPLAY/012_FRONT.PCX</ActiveImage>
-            <Position x="144" y="235" />
+            <Position x="144" y="222" />
             <GeneratedEvent>
                 <Type>SetOption</Type>
                 <Option>FrontLayer</Option>
@@ -2623,7 +2603,9 @@
             <State>Active</State>
             <InactiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/DISPLAY/013_AREA.PCX</InactiveImage>
             <ActiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/DISPLAY/014_AREA.PCX</ActiveImage>
-            <Position x="46" y="280" />
+            <!-- The original image has the label and the slider bar side by side; the label part -->
+            <Crop x="0" y="0" w="328" h="35" />
+            <Position x="center" y="270" />
             <GeneratedEvent>
                 <Type>SetOption</Type>
                 <Option>ViewZoom</Option>
@@ -2644,12 +2626,24 @@
                     <MenuItemName>PLAY_AREA_KNOB</MenuItemName>
                     <State>Active</State>
                 </Event>
+                <Event>
+                    <ForState>Active</ForState>
+                    <Type>ModifyMenuItemState</Type>
+                    <MenuItemName>PLAY_AREA_BAR</MenuItemName>
+                    <State>Active</State>
+                </Event>
             </StateEnterEvents>
             <StateLeaveEvents>
                 <Event>
                     <ForState>Active</ForState>
                     <Type>ModifyMenuItemState</Type>
                     <MenuItemName>PLAY_AREA_KNOB</MenuItemName>
+                    <State>Inactive</State>
+                </Event>
+                <Event>
+                    <ForState>Active</ForState>
+                    <Type>ModifyMenuItemState</Type>
+                    <MenuItemName>PLAY_AREA_BAR</MenuItemName>
                     <State>Inactive</State>
                 </Event>
             </StateLeaveEvents>
@@ -2687,13 +2681,100 @@
                 </KeyEvent>
             </KeyEvents>
         </MenuItem>
+        <!-- The slider bar of the original image (its - and + are part of it), centred under the label;
+             the knob's stops (BaseGameApp::GetViewZoomStop) are named under it -->
+        <MenuItem>
+            <Name>PLAY_AREA_BAR</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <InactiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/DISPLAY/013_AREA.PCX</InactiveImage>
+            <ActiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/DISPLAY/014_AREA.PCX</ActiveImage>
+            <Crop x="331" y="0" w="217" h="35" />
+            <Position x="211" y="305" />
+        </MenuItem>
         <MenuItem>
             <Name>PLAY_AREA_KNOB</Name>
             <Type>Slider</Type>
             <State>Inactive</State>
             <InactiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/AUDIO/041_REDKNOB.PCX</InactiveImage>
             <ActiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/AUDIO/042_REDKNOB.PCX</ActiveImage>
-            <Position x="376" y="282" />
+            <Position x="210" y="307" />
+        </MenuItem>
+        <MenuItem>
+            <Name>PLAY_AREA_STOP_2</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <Label size="16">2×</Label>
+            <Position cx="218" y="342" />
+        </MenuItem>
+        <MenuItem>
+            <Name>PLAY_AREA_STOP_1</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <Label size="16">1×</Label>
+            <Position cx="283" y="342" />
+        </MenuItem>
+        <MenuItem>
+            <Name>PLAY_AREA_STOP_0_75</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <Label size="16">0.75×</Label>
+            <Position cx="348" y="342" />
+        </MenuItem>
+        <MenuItem>
+            <Name>PLAY_AREA_STOP_0_5</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <Label size="16">0.5×</Label>
+            <Position cx="413" y="342" />
+        </MenuItem>
+        <MenuItem>
+            <Name>PLAY_AREA_2_TEXT</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <VisibilityCondition>
+                <ConditionType>Option</ConditionType>
+                <Option>ViewZoom</Option>
+                <Value>2</Value>
+            </VisibilityCondition>
+            <Label size="16">Zoomed in: everything twice as big</Label>
+            <Position x="center" y="367" />
+        </MenuItem>
+        <MenuItem>
+            <Name>PLAY_AREA_1_TEXT</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <VisibilityCondition>
+                <ConditionType>Option</ConditionType>
+                <Option>ViewZoom</Option>
+                <Value>1</Value>
+            </VisibilityCondition>
+            <Label size="16">Normal (default): the view the levels were made for</Label>
+            <Position x="center" y="367" />
+        </MenuItem>
+        <MenuItem>
+            <Name>PLAY_AREA_0_75_TEXT</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <VisibilityCondition>
+                <ConditionType>Option</ConditionType>
+                <Option>ViewZoom</Option>
+                <Value>0.75</Value>
+            </VisibilityCondition>
+            <Label size="16">Zoomed out: see more of the level</Label>
+            <Position x="center" y="367" />
+        </MenuItem>
+        <MenuItem>
+            <Name>PLAY_AREA_0_5_TEXT</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <VisibilityCondition>
+                <ConditionType>Option</ConditionType>
+                <Option>ViewZoom</Option>
+                <Value>0.5</Value>
+            </VisibilityCondition>
+            <Label size="16">Zoomed out: see twice as far; may run slower</Label>
+            <Position x="center" y="367" />
         </MenuItem>
         <MenuItem>
             <Name>BACK_BUTTON</Name>
@@ -2701,7 +2782,7 @@
             <State>Active</State>
             <InactiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/DISPLAY/019_PREVIOUSMENU.PCX</InactiveImage>
             <ActiveImage>/STATES/MENU/IMAGES/MAIN/OPTIONS/DISPLAY/020_PREVIOUSMENU.PCX</ActiveImage>
-            <Position x="266" y="400" />
+            <Position x="266" y="410" />
             <GeneratedEvent>
                 <Type>SwitchPage</Type>
                 <PageName>MenuPage_Options</PageName>
@@ -3030,7 +3111,7 @@
                 <Option>LastLife</Option>
                 <Value>Counter</Value>
             </VisibilityCondition>
-            <Label>Last life: Counter at 1</Label>
+            <Label>Game over: at 0 lives</Label>
             <Position x="center" y="300" />
             <GeneratedEvent>
                 <Type>SetOption</Type>
@@ -3084,7 +3165,7 @@
                 <Option>LastLife</Option>
                 <Value>Original</Value>
             </VisibilityCondition>
-            <Label>Last life: Counter at 0</Label>
+            <Label>Game over: below 0 lives</Label>
             <Position x="center" y="300" />
             <GeneratedEvent>
                 <Type>SetOption</Type>

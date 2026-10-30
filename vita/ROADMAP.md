@@ -49,11 +49,11 @@ deciding on deliberately is the Linux host build used for profiling and smoke te
 | 26 | Zoom out: Game play area 0.5× and 0.75× | code + menu, **done (v0.6.0-alpha.2); camera fixed in alpha.4, needs hardware check** | — |
 | 27 | Touches skip cutscenes; only face buttons should | bug, **fixed (v0.6.0-alpha.4)** | — |
 | 28 | Circle goes back in every menu | code, **done (v0.6.0-alpha.4)** | — |
-| 29 | Display page: slider shows the values; layout | menu | — |
-| 30 | Difficulty: a list to choose from | menu | — |
-| 31 | Drawn labels bigger and lighter; Options spacing | menu | — |
+| 29 | Display page: slider shows the values; layout | menu, **done (v0.6.0-alpha.6)** | — |
+| 30 | Difficulty: a list to choose from | menu, **done (v0.6.0-alpha.6)** | — |
+| 31 | Drawn labels bigger and lighter; Options spacing | menu, **done (v0.6.0-alpha.6)** | — |
 | 32 | Loading screen zoomed in at Game play area 2× | bug, **fixed (v0.6.0-alpha.4)** | — |
-| 33 | In-game Help shows the Vita controls | menu | — |
+| 33 | In-game Help shows the Vita controls | menu, **done (v0.6.0-alpha.6)** | — |
 | 34 | 0.5×: level drawn only in the top-left quarter | bug, **fixed (v0.6.0-alpha.4)** | 26 |
 | 35 | Claw stutters during the portal and death fades | bug, **fixed (v0.6.0-alpha.5), needs hardware check** | — |
 | 36 | Portal entered while standing next to it | bug, **research** | — |
@@ -430,7 +430,7 @@ Found: the port already ended the game like the original, which the Design Bible
 the counter shows the lives in reserve, and "if the Claw Head meter shows 0, the next time the
 player dies, the game is over". So a death with 1 on the counter left him playing at 0. As agreed
 for changes to the original, the default is now that a death taking the counter to 0 ends the game,
-and Options -> Gameplay -> Last life: Counter at 0 restores the original rule. He also stays on the
+and Options -> Gameplay -> Game over: below 0 lives restores the original rule. He also stays on the
 death animation's last frame after every death now, until the respawn (35); before, he got up on
 the spikes at once. Desktop: game over with 1 on the counter, Claw lying down; the option saves.
 
@@ -551,20 +551,31 @@ Every menu page already reacts to Escape, so `GamepadMapper` sends Escape for Ci
 Cross) while a menu is shown (`HumanView::IsMenuShown`). On the main page Escape opens the Quit page,
 as it did with Start.
 
-## 29. Display page: Game play area slider **[todo]**
+## 29. Display page: Game play area slider **[done in v0.6.0-alpha.6]**
+
+The original's image holds the label and the slider bar side by side (548x35; label columns 0-327,
+bar 331-547 with the - and + drawn in). The page draws the two parts on two rows (`<Crop>`), the
+knob moved with the bar, the stops are named under it and a line describes the current one (1× says
+it is the default). - and + keep the original's size, being part of that image.
 
 The slider doesn't say what its stops are or which is the normal view (1×); it sits right after its
 label, and label plus slider barely fit the width; the − and + ends are small. Put the slider on its
 own row under the label with the stop values (2×, 1×, 0.75×, 0.5×) under its stops, marking 1× as the
 default, and keep the original's slider art as it is if − and + are part of it.
 
-## 30. Difficulty: a list to choose from **[todo]**
+## 30. Difficulty: a list to choose from **[done in v0.6.0-alpha.6]**
+
+Easy and Normal as buttons that set the difficulty, » before the current one (Cinzel has no check
+mark), its description below. The coins still mark the focused button.
 
 A single "Difficulty: Normal" button that changes on press doesn't read as a setting. Show Easy and
 Normal as a list, the current one marked, with its description under it. Main menu only (decided
 earlier: difficulty can't change during a game).
 
-## 31. Drawn labels bigger and lighter; Options spacing **[todo]**
+## 31. Drawn labels bigger and lighter; Options spacing **[done in v0.6.0-alpha.6]**
+
+Labels are drawn 15% larger, in a lighter gold, and trimmed to their letters: the font's line
+spacing put Gameplay's letters about 10 px below its position, next to Back.
 
 The Cinzel labels (`<Label>`) are a bit small and dark next to the original's images. Options:
 Gameplay sits much closer to Back than to Display.
@@ -574,7 +585,10 @@ Gameplay sits much closer to Back than to Display.
 The loading screen was drawn at the view zoom, so at 2× only the top-left quarter of its picture
 showed. `RenderLoadingScreen` draws at scale 1 now (desktop screenshots at 1× and 2×).
 
-## 33. In-game Help shows the Vita controls **[todo]**
+## 33. In-game Help shows the Vita controls **[done in v0.6.0-alpha.6]**
+
+Both Help pages list the controls, with the buttons filled in from the bindings (`{Jump}` etc. in a
+label). The Android touch help page was removed (the touch controls are off on the Vita).
 
 Help (main and in-game menu) shows the original's keyboard help picture (`HELP.PCX`). Show the
 Vita's buttons instead, from the current bindings (`GamepadMapper::GetActionButtons`).

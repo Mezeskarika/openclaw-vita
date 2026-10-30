@@ -121,7 +121,7 @@ Every new source file must be added to its directory's `CMakeLists.txt` (`target
 - Options → Gameplay (`MenuPage_Options_Gameplay`) holds switches for the port's changes to how the
   original played (roadmap 24). Loaded games: `LevelData::m_bIsFromLoadMenu` marks a load from the
   Load Game pages (the next-level load uses the same event); new-game stats come from level 1's
-  checkpoint 0 in `SAVES.XML`. Last life: `ClawControllableComponent::VOnAnimationLooped` turns
+  checkpoint 0 in `SAVES.XML`. Game over (`Gameplay/LastLife`): `ClawControllableComponent::VOnAnimationLooped` turns
   "0 lives left" into game over (remaining lives -1) unless it is `Original`.
 - Portal and death fades (`TeleportFadeInOutProcess`, `DeathFadeInOutProcess`) keep drawing the
   frozen scene; anything they move waits for the black screen through
@@ -139,6 +139,12 @@ Every new source file must be added to its directory's `CMakeLists.txt` (`target
   without an image in `CLAW.REZ` use `<Label size="…">Text</Label>` (drawn with Cinzel from
   `Build_Release/fonts/`), and `<Position x="center">` centres an item on the 640-wide menu.
   TinyXML reformats the file and trims trailing spaces in values when it writes it.
+  Labels are drawn 15% larger than their `size` and trimmed to their letters, so `y` is where the
+  letters start, as with the original's images; `{Jump}`, `{Attack}`, `{Fire}`, `{SwitchAmmo}`,
+  `{Menu}` in a label become the bound buttons (Help page). `<Position cx="…">` centres an item on
+  that x; `<Crop x y w h>` draws part of the item's images (the Display page splits the original's
+  "Game play area" image into label and slider). `Option` visibility conditions are re-checked
+  every update, so descriptions and markers follow a change without extra events.
   `<SelectionCoins>` in a menu file draws the original's spinning coins beside the selected button;
   the coin PIDs have no palette of their own and use `MENU.PCX`'s (read through
   `ResourceCache::GetRawResource`, since the PCX loader drops it). Before a level loads there is no

@@ -315,6 +315,12 @@ private:
     SDL_Scancode m_Hotkey;
 
     MenuItemImageMap m_Images;
+    // <Crop x y w h>: only this part of the images is drawn (w 0: all of them)
+    SDL_Rect m_Crop;
+    // <VisibilityCondition> of type Option: the item shows while the option has this value,
+    // checked every update so it follows changes made on the page
+    std::string m_VisibilityOption;
+    std::string m_VisibilityValue;
     //MenuItemImageContainerList m_MenuItemImageContainerList;
     SDL_Renderer* m_pRenderer;
 };
