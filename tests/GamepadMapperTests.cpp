@@ -123,25 +123,6 @@ TEST_CASE("----- GAMEPAD MAPPER -----")
         RequireKeyEvent(flick[1], SDL_KEYDOWN, SDLK_DOWN, SDL_SCANCODE_DOWN);
     }
 
-    SECTION("The stick is four directions: right and a little up is only Right")
-    {
-        std::vector<SDL_Event> right = Translate(mapper, AxisEvent(SDL_CONTROLLER_AXIS_LEFTX, 20000));
-        REQUIRE(right.size() == 1);
-        RequireKeyEvent(right[0], SDL_KEYDOWN, SDLK_RIGHT, SDL_SCANCODE_RIGHT);
-
-        // 45 degrees up and right: still only Right (two axes alone would press Up too)
-        REQUIRE(Translate(mapper, AxisEvent(SDL_CONTROLLER_AXIS_LEFTY, -20000)).empty());
-
-        // Within 30 degrees of vertical: Right lets go, Up goes down
-        std::vector<SDL_Event> up = Translate(mapper, AxisEvent(SDL_CONTROLLER_AXIS_LEFTX, 8000));
-        REQUIRE(up.size() == 2);
-        RequireKeyEvent(up[0], SDL_KEYUP, SDLK_RIGHT, SDL_SCANCODE_RIGHT);
-        RequireKeyEvent(up[1], SDL_KEYDOWN, SDLK_UP, SDL_SCANCODE_UP);
-
-        // Once Up is held it stays down up to 35 degrees from vertical
-        REQUIRE(Translate(mapper, AxisEvent(SDL_CONTROLLER_AXIS_LEFTX, 13000)).empty());
-    }
-
     SECTION("Other axes are ignored")
     {
         REQUIRE(Translate(mapper, AxisEvent(SDL_CONTROLLER_AXIS_RIGHTX, 32767)).empty());

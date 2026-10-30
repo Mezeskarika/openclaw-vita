@@ -41,8 +41,8 @@ deciding on deliberately is the Linux host build used for profiling and smoke te
 | 19 | Death on spikes next to a portal | bug, **noticed, not solved (seen once)** | — |
 | 20 | Claw stands up on spikes at game over | bug, **fixed (v0.6.0-alpha.3), needs hardware check** | — |
 | 21 | Loading a save keeps the stats from when it was saved | **done (v0.6.0-alpha.3): original behaviour, now a setting** | — |
-| 22 | Moving platforms push Claw; he slides off edges (hardware only) | bug, **likely fixed (v0.6.0-alpha.2), needs hardware check** | — |
-| 23 | Ladders: no jump with a direction; stuck at a ladder top (level 2) | bug, **likely fixed (v0.6.0-alpha.2), needs hardware check** | — |
+| 22 | Moving platforms push Claw; he slides off edges (hardware only) | bug, **partly addressed (physics substeps); needs hardware check** | — |
+| 23 | Ladders: no jump with a direction; stuck at a ladder top (level 2) | bug, **open: four-way stick reverted** | — |
 | 24 | Options page for changes that differ from the original | code + menu, **done (v0.6.0-alpha.3): Options → Gameplay** | — |
 | 25 | Spinning coins next to the selected menu item | code, **done (v0.6.0-alpha.2)** | — |
 | 26 | Zoom out: Game play area 0.5× and 0.75× | code + menu, **done (v0.6.0-alpha.2), needs hardware check** | — |
@@ -437,11 +437,12 @@ Bible 6.1.1.2.1.4); what it kept is to be found out. The 10-28 log also has `[Ad
 Creating checkpoint for level save which is unitialized`, to be looked at here. If the original kept
 the stats, the new-game values become a setting (24).
 
-## 22. Moving platforms push Claw; he slides off edges **[likely fixed in v0.6.0-alpha.2; needs a hardware check]**
+## 22. Moving platforms push Claw; he slides off edges **[partly addressed; needs a hardware check]**
 
-Two changes: the stick is four directions (right and a little down pressed Down, so Claw ducked and
-the platform carried him), and long frames are stepped in parts of at most 17 ms. The edge sliding
-may be something else; the input log will show whether a direction was held.
+Long frames are stepped in parts of at most 17 ms (v0.6.0-alpha.2). alpha.2 also made the stick four
+directions (right and a little down pressed Down, so Claw ducked and the platform carried him); that
+was reverted in alpha.3, see 23. The edge sliding may be something else; the input log will show
+whether a direction was held.
 
 Original analysis:
 
@@ -452,13 +453,16 @@ so Box2D takes one long step. Fix by splitting long frames into steps of at most
 60 fps behave as now), and remove the spikes' cause if it's the logging (15). The original had a
 "teeter" animation at edges (Design Bible, controls table), not sliding.
 
-## 23. Ladders **[likely fixed in v0.6.0-alpha.2; needs a hardware check]**
+## 23. Ladders **[open: the four-way stick was reverted]**
 
 Cause found in the input mapping, not in the ladder code: read as two axes, the stick pressed Up when
 pushed right and a little up. On a ladder any held Up/Down keeps Claw climbing and sets
-`m_IgnoreJump`, so he couldn't walk off the top and ignored Jump with a direction. The stick is four
-directions now (`GamepadMapper::UpdateStick`). If it still happens with the D-pad, the ladder code
-(`PhysicsComponent::VUpdate`, climbing branch) is next.
+`m_IgnoreJump`, so he couldn't walk off the top and ignored Jump with a direction. alpha.2 made the
+stick four directions. On hardware that made jumping off ladders easier, but crouching while holding
+a direction (to attack that way) stopped registering, which was worse; reverted in alpha.3, the stick
+is two axes again. Next: keep the diagonals and change the ladder side instead, e.g. let a sideways
+direction plus Jump leave the ladder while Up/Down is also held (`ClawControllableComponent`,
+`PhysicsComponent::VUpdate` climbing branch).
 
 Original analysis:
 
@@ -474,7 +478,7 @@ top-of-ladder ground (`FixtureType_TopLadderGround`).
 ## 24. Options page for changes that differ from the original **[done in v0.6.0-alpha.3]**
 
 Options → Gameplay. Of 20-23 only 21 turned out to be the original's behaviour, so the page has one
-setting so far: Loaded games. 20 was a bug; 22 and 23 came from the analog stick, which the
+setting so far: Loaded games. 20 was a bug; 22 and 23 involve the analog stick, which the
 original didn't have.
 
 
