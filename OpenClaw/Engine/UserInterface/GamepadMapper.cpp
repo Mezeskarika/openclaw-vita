@@ -38,6 +38,7 @@ namespace
 }
 
 GamepadMapper::GamepadMapper()
+    : m_bMenuMode(false)
 {
     ResetToDefaults();
 }
@@ -140,12 +141,25 @@ bool GamepadMapper::TranslateEvent(const SDL_Event& evt, std::vector<SDL_Event>&
         case SDL_CONTROLLERBUTTONDOWN:
         case SDL_CONTROLLERBUTTONUP:
         {
+            const Uint8 button = evt.cbutton.button;
+            const bool pressed = (evt.type == SDL_CONTROLLERBUTTONDOWN);
             KeyBinding key;
-            if (GetButtonBinding(evt.cbutton.button, key))
+            auto pressedIt = m_PressedButtonKeys.find(button);
+            if (!pressed && pressedIt != m_PressedButtonKeys.end())
             {
-                SetInputState(evt.cbutton.button, key, evt.type == SDL_CONTROLLERBUTTONDOWN,
-                              evt.cbutton.timestamp, outKeyEvents);
+                key = pressedIt->second;
+                m_PressedButtonKeys.erase(pressedIt);
             }
+            else if (!GetButtonBinding(button, key))
+            {
+                return true;
+            }
+
+            if (pressed)
+            {
+                m_PressedButtonKeys[button] = key;
+            }
+            SetInputState(button, key, pressed, evt.cbutton.timestamp, outKeyEvents);
             return true;
         }
         case SDL_CONTROLLERAXISMOTION:
@@ -173,6 +187,17 @@ GamepadMapper::KeyBinding GamepadMapper::GetActionKey(Action action)
 
 bool GamepadMapper::GetButtonBinding(Uint8 button, KeyBinding& outBinding) const
 {
+    if (m_bMenuMode && button == SDL_CONTROLLER_BUTTON_A)
+    {
+        outBinding = { SDLK_RETURN, SDL_SCANCODE_RETURN };
+        return true;
+    }
+    if (m_bMenuMode && button == SDL_CONTROLLER_BUTTON_B)
+    {
+        outBinding = { SDLK_ESCAPE, SDL_SCANCODE_ESCAPE };
+        return true;
+    }
+
     auto findIt = m_ButtonActions.find(button);
     if (findIt != m_ButtonActions.end())
     {

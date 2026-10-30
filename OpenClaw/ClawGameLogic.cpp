@@ -232,6 +232,12 @@ void ClawGameLogic::TeleportActorDelegate(IEventDataPtr pEventData)
         return;
     }
 
+    if (pActor == GetClawActor())
+    {
+        LOG("Claw teleported from " + pActor->GetPositionComponent()->GetPosition().ToString() + " to " +
+            pCastEventData->GetDestination().ToString() + (pCastEventData->GetHasScreenSfx() ? " (portal)" : ""));
+    }
+
     m_pPhysics->VSetPosition(pCastEventData->GetActorId(), pCastEventData->GetDestination());
     IEventMgr::Get()->VTriggerEvent(IEventDataPtr(
         new EventData_Move_Actor(pCastEventData->GetActorId(), pCastEventData->GetDestination())));
@@ -425,6 +431,12 @@ void ClawGameLogic::ClawDiedDelegate(IEventDataPtr pEventData)
     {
         return;
     }
+
+    // For hardware test reports: where he died and how many lives the HUD showed
+    shared_ptr<LifeComponent> pLifeComponent = MakeStrongPtr(pActor->GetComponent<LifeComponent>(LifeComponent::g_Name));
+    LOG("Claw died at " + pCastEventData->GetDeathPosition().ToString() + ", lives " +
+        ToStr(pLifeComponent ? pLifeComponent->GetLives() : -1) + " -> " + ToStr(pCastEventData->GetRemainingLives()) +
+        (pCastEventData->GetRemainingLives() < 0 ? " (game over)" : ""));
 
     IEventMgr* pEventMgr = IEventMgr::Get();
     pEventMgr->VTriggerEvent(IEventDataPtr(new EventData_Modify_Player_Stat(pCastEventData->GetActorId(), PlayerStat_Lives, -1, true)));

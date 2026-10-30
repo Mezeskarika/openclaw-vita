@@ -57,6 +57,9 @@ public:
 
     void SetCurrentLevelMusic(const std::string& music) { m_CurrentLevelMusic = music; }
 
+    // A menu (main, in-game or game over) is on screen
+    bool IsMenuShown() const;
+
 protected:
     virtual bool VLoadGameDelegate(TiXmlElement* pLevelXmlElem, LevelData* pLevelData) { VPushElement(m_pScene); return true; }
 

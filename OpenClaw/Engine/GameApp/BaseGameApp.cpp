@@ -578,7 +578,10 @@ void BaseGameApp::OnEvent(SDL_Event& event)
         case SDL_CONTROLLERBUTTONUP:
         case SDL_CONTROLLERAXISMOTION:
         {
-            // Views only understand keys, so the gamepad is fed to them as keyboard events
+            // Views only understand keys, so the gamepad is fed to them as keyboard events. In
+            // the menus Cross confirms and Circle goes back, whatever they do in the game
+            HumanView* pHumanView = m_pGame ? GetHumanView() : NULL;
+            m_GamepadMapper.SetMenuMode(pHumanView != NULL && pHumanView->IsMenuShown());
             std::vector<SDL_Event> keyEvents;
             m_GamepadMapper.TranslateEvent(event, keyEvents);
             if (m_GlobalOptions.logInput)

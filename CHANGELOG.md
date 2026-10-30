@@ -33,6 +33,14 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
 - Starting the game took about a minute on a PS Vita: opening `CLAW.REZ` read its directory one
   field at a time, about 197,000 small reads and seeks on the memory card. It now reads each
   directory block at once (about 2,700 calls; the result is identical for all 13,077 files).
+- Game play area changed in the menus only took effect for the camera after a restart: zoomed out
+  to 0.5×, only the top-left quarter of the screen showed the level. The camera now follows the
+  setting at once.
+- The level loading screen at Game play area 2× showed only the top-left quarter of its picture,
+  enlarged; it is now drawn the same at every setting.
+- The log has a line for each of Claw's deaths (where, lives before and after, game over) and each
+  time he is teleported (from, to, by a portal or not), and logs button presses on the Vita even
+  with a `config.xml` from before `<LogInput>`.
 - The introduction took 12 s to start on a PS Vita (a black screen after the Monolith logo):
   libsmacker found its 6,288 frames with a seek and a position query each, about 12,600 calls on
   the memory card. It now adds up the frame sizes instead, with one call of each per movie (frame
@@ -52,6 +60,8 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
   Found from the crash dumps; not reproduced on purpose.
 
 ### Changed
+- Circle goes back in every menu, like Start and Select (on the main page that is the Quit page),
+  and Cross confirms, whatever the two buttons do in the game.
 - Only Cross, Circle, Square and Triangle skip a cutscene. Touches no longer do (a hand on the
   touchscreen ended movies by accident), nor do the D-pad, L, R, Start and Select.
 

@@ -156,6 +156,11 @@ void RenderLoadingScreen(shared_ptr<Image> pBackground, SDL_Rect& renderRect, Po
     }
 
     SDL_Renderer* pRenderer = g_pApp->GetRenderer();
+
+    // Drawn unzoomed, like at view zoom 1: zoomed, only part of the background showed (at 2x its
+    // top-left quarter, enlarged). The level's zoom is restored at the end
+    Point gameScale = g_pApp->GetScale();
+    g_pApp->SetScale(Point(1.0, 1.0));
     SDL_RenderClear(pRenderer);
 
     SDL_RenderCopy(pRenderer, pBackground->GetTexture(), &renderRect, NULL);
@@ -179,6 +184,7 @@ void RenderLoadingScreen(shared_ptr<Image> pBackground, SDL_Rect& renderRect, Po
 
     SDL_DestroyTexture(pTotalProgressBar);
     SDL_DestroyTexture(pRemainingProgressBar);
+    g_pApp->SetScale(gameScale);
 }
 
 bool BaseGameLogic::VLoadGame(const char* xmlLevelResource)
@@ -201,11 +207,10 @@ bool BaseGameLogic::VLoadGame(const char* xmlLevelResource)
     // ============== LOADING SCREEN RENDERING ==============
 
     // Start rendering the loading screen
+    // In window pixels: RenderLoadingScreen draws at scale 1 whatever the view zoom is
     Point windowSize = g_pApp->GetWindowSize();
-    Point scale = g_pApp->GetScale();
-    int targetWidth = (int)(windowSize.x / scale.x);
-    int targetHeight = (int)(windowSize.y / scale.y);
-    SDL_Rect backgroundRect = { 0, 0, targetWidth, targetHeight };
+    Point scale(1.0, 1.0);
+    SDL_Rect backgroundRect = { 0, 0, (int)windowSize.x, (int)windowSize.y };
     // Background loading image
     std::string backgroundPath = "/LEVEL" + ToStr(m_pCurrentLevel->m_LeveNumber) + "/SCREENS/LOADING.PCX";
     shared_ptr<Image> pBackgroundImage = PcxResourceLoader::LoadAndReturnImage(backgroundPath.c_str());

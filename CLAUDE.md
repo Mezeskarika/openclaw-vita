@@ -78,7 +78,9 @@ Every new source file must be added to its directory's `CMakeLists.txt` (`target
   reopened the file per line), and prefixes the seconds since start. The first line is the build
   (`OpenClaw build v0.5.0-5-g…`, from `vita/build.sh`'s `git describe`; a `git archive` export
   fills `vita/version.txt` instead). Delete the log before a test run. Avoid per-frame logging;
-  `<LogInput>` logs gamepad presses.
+  `<LogInput>` logs gamepad presses (on by default on the Vita even if the element is missing).
+  Deaths ("Claw died at …, lives 1 -> 0") and teleports ("Claw teleported from … (portal)") are
+  logged by `ClawGameLogic`.
 - **Rendering:** `InitializeDisplay` forces SDL's `VITA gxm` driver (otherwise SDL picks GLES2 on
   vitaGL, which needs `libshacccg.suprx` on the device). Naming a driver makes SDL turn draw
   batching **off**, so `SDL_HINT_RENDER_BATCHING=1` is set explicitly. Without it the game ran at
@@ -99,7 +101,8 @@ Every new source file must be added to its directory's `CMakeLists.txt` (`target
   console rest on it: check the type before reacting to a finger. Taps become mouse clicks only
   from the touchscreen (`SDL_HINT_VITA_TOUCH_MOUSE_DEVICE`).
 - **Input:** `GamepadMapper` turns controller buttons and the left stick into the key events the
-  game already handles (`BaseGameApp::OnEvent`). Gameplay reacts to key *events*; nothing in
+  game already handles (`BaseGameApp::OnEvent`). While a menu is shown (`HumanView::IsMenuShown`)
+  Cross is Return and Circle is Escape; a button's release always sends the key its press sent. Gameplay reacts to key *events*; nothing in
   gameplay polls `SDL_GetKeyboardState`.
 - **Linking** is static with an explicit library list in the root `CMakeLists.txt`: the SDK's CMake
   configs and pkg-config files leave out zlib, libpng, `SceShaccCgExt` and pthread.
@@ -111,7 +114,8 @@ Every new source file must be added to its directory's `CMakeLists.txt` (`target
 
 - Options → Edit Players and Controls, plus Multiplayer and Load Custom Level, point at menu pages
   that don't exist (`SwitchPageDelegate` logs "Probably not implemented yet").
-- View zoom is the renderer scale (`Display/Scale`); the slider's stops are
+- View zoom is the renderer scale (`Display/Scale`); the camera picks up a change each frame
+  (`CameraNode::SetViewPosition`), and the loading screen draws at scale 1. The slider's stops are
   `BaseGameApp::GetViewZoomStop` (2, 1, 0.75, 0.5). Only whole numbers look right (nearest-neighbour
   scaling); 0.5 makes about 3.5 times the draw calls of 1 (level 1 start: ~1,200). The menus and the HUD (`GameHUD.cpp`, `HUDSceneNode.cpp`) draw at scale 1 and restore it.
 - Options → Gameplay (`MenuPage_Options_Gameplay`) holds switches for the port's changes to how the

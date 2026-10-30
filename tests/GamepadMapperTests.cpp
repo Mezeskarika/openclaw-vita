@@ -141,6 +141,49 @@ TEST_CASE("----- GAMEPAD MAPPER -----")
         RequireKeyEvent(up[0], SDL_KEYUP, SDLK_LEFT, SDL_SCANCODE_LEFT);
     }
 
+    SECTION("In menus Cross confirms and Circle goes back")
+    {
+        mapper.SetMenuMode(true);
+        std::vector<SDL_Event> events = Translate(mapper, ButtonEvent(SDL_CONTROLLER_BUTTON_A, true));
+        REQUIRE(events.size() == 1);
+        RequireKeyEvent(events[0], SDL_KEYDOWN, SDLK_RETURN, SDL_SCANCODE_RETURN);
+        events = Translate(mapper, ButtonEvent(SDL_CONTROLLER_BUTTON_A, false));
+        REQUIRE(events.size() == 1);
+        RequireKeyEvent(events[0], SDL_KEYUP, SDLK_RETURN, SDL_SCANCODE_RETURN);
+
+        events = Translate(mapper, ButtonEvent(SDL_CONTROLLER_BUTTON_B, true));
+        REQUIRE(events.size() == 1);
+        RequireKeyEvent(events[0], SDL_KEYDOWN, SDLK_ESCAPE, SDL_SCANCODE_ESCAPE);
+
+        // Square keeps its game key
+        events = Translate(mapper, ButtonEvent(SDL_CONTROLLER_BUTTON_X, true));
+        REQUIRE(events.size() == 1);
+        RequireKeyEvent(events[0], SDL_KEYDOWN, SDLK_LCTRL, SDL_SCANCODE_LCTRL);
+    }
+
+    SECTION("A release lets go of the key its press held when the menu opens or closes in between")
+    {
+        // Circle pressed in a menu that closes before it is released: Escape goes up, not Fire
+        mapper.SetMenuMode(true);
+        Translate(mapper, ButtonEvent(SDL_CONTROLLER_BUTTON_B, true));
+        mapper.SetMenuMode(false);
+        std::vector<SDL_Event> events = Translate(mapper, ButtonEvent(SDL_CONTROLLER_BUTTON_B, false));
+        REQUIRE(events.size() == 1);
+        RequireKeyEvent(events[0], SDL_KEYUP, SDLK_ESCAPE, SDL_SCANCODE_ESCAPE);
+
+        // Fire held in the game, then a menu opens: the release lets go of Fire
+        Translate(mapper, ButtonEvent(SDL_CONTROLLER_BUTTON_B, true));
+        mapper.SetMenuMode(true);
+        events = Translate(mapper, ButtonEvent(SDL_CONTROLLER_BUTTON_B, false));
+        REQUIRE(events.size() == 1);
+        RequireKeyEvent(events[0], SDL_KEYUP, SDLK_LALT, SDL_SCANCODE_LALT);
+
+        // And the next press in the menu goes back
+        events = Translate(mapper, ButtonEvent(SDL_CONTROLLER_BUTTON_B, true));
+        REQUIRE(events.size() == 1);
+        RequireKeyEvent(events[0], SDL_KEYDOWN, SDLK_ESCAPE, SDL_SCANCODE_ESCAPE);
+    }
+
     SECTION("Start and Select share Escape")
     {
         REQUIRE(Translate(mapper, ButtonEvent(SDL_CONTROLLER_BUTTON_START, true)).size() == 1);

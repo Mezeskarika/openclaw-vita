@@ -179,7 +179,12 @@ struct GlobalOptions
         showFps = true;
         showPosition = true;
         logFrameStats = false;
+#ifdef __vita__
+        // On while the port is being tested on hardware, also for a config.xml older than <LogInput>
+        logInput = true;
+#else
         logInput = false;
+#endif
     }
 
     double maxJumpSpeed;

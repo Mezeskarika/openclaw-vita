@@ -126,6 +126,18 @@ void HumanView::VOnUpdate(uint32 msDiff)
     }
 }
 
+bool HumanView::IsMenuShown() const
+{
+    for (const shared_ptr<IScreenElement>& pElement : m_ScreenElements)
+    {
+        if (pElement->VIsVisible() && dynamic_cast<ScreenElementMenu*>(pElement.get()) != nullptr)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 // Touches arrive as mouse events too (see BaseGameApp::InitializeDisplay). The menus have already
 // had their turn when this is asked; in gameplay a tap would otherwise act as a click, e.g. end
 // firing, so taps only reach gameplay when the touch controls are on.

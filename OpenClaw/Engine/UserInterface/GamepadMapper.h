@@ -30,6 +30,10 @@ public:
     // Returns false if the event is not a controller button or axis event.
     bool TranslateEvent(const SDL_Event& evt, std::vector<SDL_Event>& outKeyEvents);
 
+    // While a menu is shown, Cross confirms (Return) and Circle goes back (Escape), whatever they
+    // are bound to in the game. A button's release always lets go of the key its press held.
+    void SetMenuMode(bool isMenuShown) { m_bMenuMode = isMenuShown; }
+
     // Binds an action to a comma-separated list of Vita button names (see ButtonFromName), replacing
     // the buttons it had; a button taken from another action leaves that action. Returns false,
     // changing nothing, if the list is empty or has an unknown name.
@@ -65,6 +69,10 @@ private:
     // Several inputs can hold the same key (D-pad left and stick left).
     // A key goes down with the first input and up when the last one lets go.
     std::map<SDL_Keycode, std::set<int>> m_HeldKeys;
+
+    // The key each held button pressed, for its release (the menu may have opened or closed since)
+    std::map<Uint8, KeyBinding> m_PressedButtonKeys;
+    bool m_bMenuMode;
 };
 
 #endif

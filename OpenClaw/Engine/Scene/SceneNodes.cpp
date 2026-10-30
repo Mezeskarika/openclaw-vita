@@ -433,13 +433,21 @@ void CameraNode::VRender(Scene* pScene)
 
 void CameraNode::SetViewPosition(Scene* pScene)
 {
+    // The view zoom can change in the menus after the camera was made (Options -> Display -> Game
+    // play area). The visible area has to follow it: it kept the zoom from the camera's creation,
+    // so at 0.5x only the top-left quarter of the screen was drawn
+    const float zoom = (float)g_pApp->GetGameConfig()->scale;
+    if (zoom > 0.0f && (zoom != m_ScaleX || zoom != m_ScaleY))
+    {
+        SetScale(zoom, zoom);
+    }
+
     // If there is a target, make sure target is in the center of the camera
     if (m_pTarget)
     {
         Point targetPos = m_pTarget->VGetProperties()->GetPosition();
         // Center camera
-        Point scale = g_pApp->GetScale();
-        Point cameraPos = targetPos - Point((m_Width / 2) / scale.x, (m_Height / 2) / scale.y);
+        Point cameraPos = targetPos - Point((m_Width / 2) / m_ScaleX, (m_Height / 2) / m_ScaleY);
         VSetPosition(cameraPos);
     }
 }
