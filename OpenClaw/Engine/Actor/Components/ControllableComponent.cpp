@@ -967,25 +967,42 @@ void ClawControllableComponent::VOnAnimationLooped(Animation* pAnimation)
         shared_ptr<LifeComponent> pClawLifeComponent = MakeStrongPtr(m_pOwner->GetComponent<LifeComponent>());
         assert(pClawLifeComponent != nullptr);
 
-        const int remainingLives = pClawLifeComponent->GetLives() - 1;
+        // The counter shows the lives in reserve. The original let him play on with 0 on it and
+        // ended the game at the next death; by default (Gameplay -> Last life) a death that empties
+        // the counter ends it
+        int remainingLives = pClawLifeComponent->GetLives() - 1;
+        if (remainingLives == 0 && g_pApp->GetGameConfig()->gameOverWhenCounterEmpty)
+        {
+            remainingLives = -1;
+        }
         shared_ptr<EventData_Claw_Died> pEvent(new EventData_Claw_Died(
             m_pOwner->GetGUID(), 
             m_pPositionComponent->GetPosition(), 
             remainingLives));
         IEventMgr::Get()->VTriggerEvent(pEvent);
 
-        // That was the last life: the game-over screen comes up over him. He stays on the death
-        // animation's last frame instead of standing up on whatever killed him
+        // He stays on the death animation's last frame instead of standing up on whatever killed
+        // him: on the last life the game-over screen comes up over him, otherwise the death fade
+        // shows him lying there until the screen is black, and he gets up at the respawn point
+        pAnimation->SetAnimationFrame(pAnimation->GetAnimFramesSize() - 1);
+        pAnimation->Pause();
         if (remainingLives < 0)
         {
-            pAnimation->SetAnimationFrame(pAnimation->GetAnimFramesSize() - 1);
-            pAnimation->Pause();
             return;
         }
 
-        SetCurrentPhysicsState();
-        m_pPhysicsComponent->RestoreGravityScale();
-        m_pRenderComponent->SetVisible(true);
+        const uint32 clawId = m_pOwner->GetGUID();
+        HumanView::RunAtFadeMidpoint([clawId]()
+        {
+            StrongActorPtr pClaw = MakeStrongPtr(g_pApp->GetGameLogic()->VGetActor(clawId));
+            shared_ptr<ClawControllableComponent> pControllable = pClaw ?
+                MakeStrongPtr(pClaw->GetComponent<ClawControllableComponent>(ClawControllableComponent::g_Name)) :
+                nullptr;
+            if (pControllable)
+            {
+                pControllable->OnRespawnPointReached();
+            }
+        });
     }
     else if (animName == "damage1" ||
              animName == "damage2")
@@ -996,6 +1013,13 @@ void ClawControllableComponent::VOnAnimationLooped(Animation* pAnimation)
     {
         m_pClawAnimationComponent->SetAnimation("stand");
     }
+}
+
+void ClawControllableComponent::OnRespawnPointReached()
+{
+    SetCurrentPhysicsState();
+    m_pPhysicsComponent->RestoreGravityScale();
+    m_pRenderComponent->SetVisible(true);
 }
 
 bool ClawControllableComponent::IsAttackingOrShooting()

@@ -1,6 +1,7 @@
 #include "KinematicComponent.h"
 #include "../../GameApp/BaseGameApp.h"
 #include "../../GameApp/BaseGameLogic.h"
+#include "../../UserInterface/HumanView.h"
 
 #include "../../Graphics2D/Image.h"
 #include "RenderComponent.h"
@@ -292,6 +293,27 @@ void KinematicComponent::OnMoved(Point newPosition)
 
 // After claw dies, set elevators to default position
 void KinematicComponent::ClawDiedDelegate(IEventDataPtr pEventData)
+{
+    // Back to the start when the death fade has turned the screen black
+    shared_ptr<EventData_Claw_Died> pCastEventData = static_pointer_cast<EventData_Claw_Died>(pEventData);
+    if (pCastEventData->GetRemainingLives() < 0)
+    {
+        return;
+    }
+    const uint32 actorId = m_pOwner->GetGUID();
+    HumanView::RunAtFadeMidpoint([actorId]()
+    {
+        StrongActorPtr pActor = MakeStrongPtr(g_pApp->GetGameLogic()->VGetActor(actorId));
+        shared_ptr<KinematicComponent> pKinematic = pActor ?
+            MakeStrongPtr(pActor->GetComponent<KinematicComponent>(KinematicComponent::g_Name)) : nullptr;
+        if (pKinematic)
+        {
+            pKinematic->ResetForRespawn();
+        }
+    });
+}
+
+void KinematicComponent::ResetForRespawn()
 {
     if (m_Properties.hasTriggerBehaviour)
     {

@@ -2,6 +2,8 @@
 #define HUMANVIEW_H_
 
 #include <SDL2/SDL.h>
+#include <functional>
+#include <vector>
 #include "../SharedDefines.h"
 #include "../GameApp/BaseGameApp.h"
 #include "../Process/ProcessMgr.h"
@@ -60,6 +62,12 @@ public:
     // A menu (main, in-game or game over) is on screen
     bool IsMenuShown() const;
 
+    // The portal and death fades keep drawing the scene, frozen, while the screen closes to black.
+    // What moves because of them (Claw to the portal's exit or his respawn point, platforms back to
+    // their start) waits until the screen is black: pass it here. Runs at once without a human view.
+    static void RunAtFadeMidpoint(const std::function<void()>& action);
+    void RunFadeMidpointActions();
+
 protected:
     virtual bool VLoadGameDelegate(TiXmlElement* pLevelXmlElem, LevelData* pLevelData) { VPushElement(m_pScene); return true; }
 
@@ -113,6 +121,8 @@ protected:
     bool m_bPostponeRenderPresent;
 
     std::string m_CurrentLevelMusic;
+
+    std::vector<std::function<void()>> m_FadeMidpointActions;
 
 private:
     void RegisterAllDelegates();

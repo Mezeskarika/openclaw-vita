@@ -34,6 +34,8 @@ public:
     void OnMoved(Point newPosition);
 
     void ClawDiedDelegate(IEventDataPtr pEventData);
+    // Back to the start position and state, when Claw respawns
+    void ResetForRespawn();
 
 private:
     // XML Data

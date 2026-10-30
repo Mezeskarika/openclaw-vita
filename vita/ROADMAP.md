@@ -40,7 +40,7 @@ deciding on deliberately is the Linux host build used for profiling and smoke te
 | 17 | Start-up takes about a minute; loading screen | bug + code, **fixed (v0.6.0-alpha.2), needs hardware check** | — |
 | 18 | Cutscenes stutter on hardware | bug, **fixed (v0.6.0-alpha.1), needs hardware check** | — |
 | 19 | Death on spikes next to a portal | bug, **noticed, not solved (seen once)** | — |
-| 20 | Claw stands up on spikes at game over; play goes on after the last life | bug, **reopened (2026-10-30 session)** | — |
+| 20 | Claw stands up on spikes at game over; play goes on after the last life | bug, **fixed (v0.6.0-alpha.5): original rule, now a setting** | — |
 | 21 | Loading a save keeps the stats from when it was saved | **done (v0.6.0-alpha.3): original behaviour, now a setting** | — |
 | 22 | Moving platforms push Claw; he slides off edges (hardware only) | bug, **partly addressed (physics substeps); needs hardware check** | — |
 | 23 | Ladders: no jump with a direction; stuck at a ladder top (level 2) | bug, **open: four-way stick reverted** | — |
@@ -55,7 +55,7 @@ deciding on deliberately is the Linux host build used for profiling and smoke te
 | 32 | Loading screen zoomed in at Game play area 2× | bug, **fixed (v0.6.0-alpha.4)** | — |
 | 33 | In-game Help shows the Vita controls | menu | — |
 | 34 | 0.5×: level drawn only in the top-left quarter | bug, **fixed (v0.6.0-alpha.4)** | 26 |
-| 35 | Claw stutters during the portal and death fades | bug | — |
+| 35 | Claw stutters during the portal and death fades | bug, **fixed (v0.6.0-alpha.5), needs hardware check** | — |
 | 36 | Portal entered while standing next to it | bug, **research** | — |
 
 Order for 0.6.0: 15 first (one small build that the hardware tests of 16, 17, 18 and 22 need), with
@@ -424,7 +424,15 @@ Claw fell on spikes next to a portal and died; the dying sprite shook, he respaw
 other end in the air while still dying, and the portal was gone in the next life. Reproduce on the
 desktop build (`startup_commands.txt` teleport) once the level and place are known.
 
-## 20. Claw stands up on spikes at game over **[reopened after the 2026-10-30 session]**
+## 20. Claw stands up on spikes at game over **[fixed in v0.6.0-alpha.5]**
+
+Found: the port already ended the game like the original, which the Design Bible (6.2.5) states:
+the counter shows the lives in reserve, and "if the Claw Head meter shows 0, the next time the
+player dies, the game is over". So a death with 1 on the counter left him playing at 0. As agreed
+for changes to the original, the default is now that a death taking the counter to 0 ends the game,
+and Options -> Gameplay -> Last life: Counter at 0 restores the original rule. He also stays on the
+death animation's last frame after every death now, until the respawn (35); before, he got up on
+the spikes at once. Desktop: game over with 1 on the counter, Claw lying down; the option saves.
 
 2026-10-30, 16:10 (alpha.3): Claw fell on spikes with what the maintainer took for his last life,
 stood up and play went on; the next hit (a dog) ended the game. The alpha.3 change only covers the
@@ -578,7 +586,13 @@ made (at start-up): Claw was centred, but tiles and actors were only drawn for t
 area. The camera picks up the configured zoom each frame now. The earlier desktop test set the zoom
 in `config.xml` before start, which hid this; checked now the way it was hit.
 
-## 35. Claw stutters during the portal and death fades **[todo]**
+## 35. Claw stutters during the portal and death fades **[fixed in v0.6.0-alpha.5; needs a hardware check]**
+
+Both fades now draw the frozen scene under the closing black, and what they move waits for the
+black screen (`HumanView::RunAtFadeMidpoint`): Claw through the portal (1.15 s after entering) or to
+the respawn point (1.45 s after dying), and the platforms and crumbling pegs a death resets. Desktop
+screenshots: the portal's entry under the fade-in, the exit under the fade-out, Claw lying down under
+the death fade. The jitter itself only showed on the Vita.
 
 2026-10-30, 16:02, and earlier with a death: while the screen fades to black on a portal, Claw
 jitters. Both fades (`TeleportFadeInOutProcess`, `DeathFadeInOutProcess` in `HumanView.cpp`) stop

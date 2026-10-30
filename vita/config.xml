@@ -39,6 +39,9 @@
     <!-- Games loaded from the menu: NewGame (a new game's lives, health and ammo, keeping the score)
          or AsSaved (as when the save point was reached, as in the original). Options -> Gameplay -->
     <LoadedGames>NewGame</LoadedGames>
+    <!-- When the game ends: Counter (when a death takes the life counter to 0) or Original (Claw
+         plays on with 0 on the counter; the next death ends it). Options -> Gameplay -->
+    <LastLife>Counter</LastLife>
   </Gameplay>
   <Font>
     <Fontt>clacon.ttf</Fontt>

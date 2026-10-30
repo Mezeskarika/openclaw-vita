@@ -2899,7 +2899,7 @@
                 <Value>NewGame</Value>
             </VisibilityCondition>
             <Label>Loaded games: New game</Label>
-            <Position x="center" y="240" />
+            <Position x="center" y="215" />
             <GeneratedEvent>
                 <Type>SetOption</Type>
                 <Option>LoadedGames</Option>
@@ -2953,7 +2953,7 @@
                 <Value>AsSaved</Value>
             </VisibilityCondition>
             <Label>Loaded games: As saved</Label>
-            <Position x="center" y="240" />
+            <Position x="center" y="215" />
             <GeneratedEvent>
                 <Type>SetOption</Type>
                 <Option>LoadedGames</Option>
@@ -3007,7 +3007,7 @@
                 <Value>NewGame</Value>
             </VisibilityCondition>
             <Label size="16">Start with a new game's lives, health and ammo</Label>
-            <Position x="center" y="290" />
+            <Position x="center" y="250" />
         </MenuItem>
         <MenuItem>
             <Name>LOADED_GAMES_SAVED_TEXT</Name>
@@ -3019,7 +3019,139 @@
                 <Value>AsSaved</Value>
             </VisibilityCondition>
             <Label size="16">Lives, health and ammo as at the save point (original)</Label>
-            <Position x="center" y="290" />
+            <Position x="center" y="250" />
+        </MenuItem>
+        <MenuItem>
+            <Name>LAST_LIFE_COUNTER_BUTTON</Name>
+            <Type>Button</Type>
+            <State>Active</State>
+            <VisibilityCondition>
+                <ConditionType>Option</ConditionType>
+                <Option>LastLife</Option>
+                <Value>Counter</Value>
+            </VisibilityCondition>
+            <Label>Last life: Counter at 1</Label>
+            <Position x="center" y="300" />
+            <GeneratedEvent>
+                <Type>SetOption</Type>
+                <Option>LastLife</Option>
+                <Value>Original</Value>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemVisibility</Type>
+                <MenuItemName>LAST_LIFE_COUNTER_BUTTON</MenuItemName>
+                <IsVisible>false</IsVisible>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemState</Type>
+                <MenuItemName>LAST_LIFE_COUNTER_BUTTON</MenuItemName>
+                <State>Inactive</State>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemVisibility</Type>
+                <MenuItemName>LAST_LIFE_ORIGINAL_BUTTON</MenuItemName>
+                <IsVisible>true</IsVisible>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemState</Type>
+                <MenuItemName>LAST_LIFE_ORIGINAL_BUTTON</MenuItemName>
+                <State>Active</State>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemVisibility</Type>
+                <MenuItemName>LAST_LIFE_COUNTER_TEXT</MenuItemName>
+                <IsVisible>false</IsVisible>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemVisibility</Type>
+                <MenuItemName>LAST_LIFE_ORIGINAL_TEXT</MenuItemName>
+                <IsVisible>true</IsVisible>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>PlaySound</Type>
+                <SoundName>/STATES/MENU/SOUNDS/SELECT.WAV</SoundName>
+                <Volume>100</Volume>
+                <IsMusic>false</IsMusic>
+                <Loops>-0</Loops>
+            </GeneratedEvent>
+        </MenuItem>
+        <MenuItem>
+            <Name>LAST_LIFE_ORIGINAL_BUTTON</Name>
+            <Type>Button</Type>
+            <State>Active</State>
+            <VisibilityCondition>
+                <ConditionType>Option</ConditionType>
+                <Option>LastLife</Option>
+                <Value>Original</Value>
+            </VisibilityCondition>
+            <Label>Last life: Counter at 0</Label>
+            <Position x="center" y="300" />
+            <GeneratedEvent>
+                <Type>SetOption</Type>
+                <Option>LastLife</Option>
+                <Value>Counter</Value>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemVisibility</Type>
+                <MenuItemName>LAST_LIFE_ORIGINAL_BUTTON</MenuItemName>
+                <IsVisible>false</IsVisible>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemState</Type>
+                <MenuItemName>LAST_LIFE_ORIGINAL_BUTTON</MenuItemName>
+                <State>Inactive</State>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemVisibility</Type>
+                <MenuItemName>LAST_LIFE_COUNTER_BUTTON</MenuItemName>
+                <IsVisible>true</IsVisible>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemState</Type>
+                <MenuItemName>LAST_LIFE_COUNTER_BUTTON</MenuItemName>
+                <State>Active</State>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemVisibility</Type>
+                <MenuItemName>LAST_LIFE_COUNTER_TEXT</MenuItemName>
+                <IsVisible>true</IsVisible>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>ModifyMenuItemVisibility</Type>
+                <MenuItemName>LAST_LIFE_ORIGINAL_TEXT</MenuItemName>
+                <IsVisible>false</IsVisible>
+            </GeneratedEvent>
+            <GeneratedEvent>
+                <Type>PlaySound</Type>
+                <SoundName>/STATES/MENU/SOUNDS/SELECT.WAV</SoundName>
+                <Volume>100</Volume>
+                <IsMusic>false</IsMusic>
+                <Loops>-0</Loops>
+            </GeneratedEvent>
+        </MenuItem>
+        <MenuItem>
+            <Name>LAST_LIFE_COUNTER_TEXT</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <VisibilityCondition>
+                <ConditionType>Option</ConditionType>
+                <Option>LastLife</Option>
+                <Value>Counter</Value>
+            </VisibilityCondition>
+            <Label size="16">The game ends when a death takes the counter to 0</Label>
+            <Position x="center" y="335" />
+        </MenuItem>
+        <MenuItem>
+            <Name>LAST_LIFE_ORIGINAL_TEXT</Name>
+            <Type>Text</Type>
+            <State>Inactive</State>
+            <VisibilityCondition>
+                <ConditionType>Option</ConditionType>
+                <Option>LastLife</Option>
+                <Value>Original</Value>
+            </VisibilityCondition>
+            <Label size="16">At 0 Claw plays on; the next death ends the game (original)</Label>
+            <Position x="center" y="335" />
         </MenuItem>
         <MenuItem>
             <Name>BACK_BUTTON</Name>

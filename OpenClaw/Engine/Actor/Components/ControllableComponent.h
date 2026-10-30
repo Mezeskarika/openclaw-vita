@@ -171,6 +171,8 @@ private:
     void BossFightEndedDelegate(IEventDataPtr pEvent);
 
     void SetCurrentPhysicsState();
+    // After a death: up again at the respawn point
+    void OnRespawnPointReached();
     bool IsAttackingOrShooting();
 
     bool m_bIsInBossFight;

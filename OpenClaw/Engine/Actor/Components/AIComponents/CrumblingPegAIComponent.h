@@ -28,6 +28,8 @@ public:
     virtual void VOnAnimationLooped(Animation* pAnimation) override;
 
     void ClawDiedDelegate(IEventDataPtr pEventData);
+    // Whole and in place again, when Claw respawns
+    void ResetForRespawn();
 
 private:
     shared_ptr<IGamePhysics> m_pPhysics;

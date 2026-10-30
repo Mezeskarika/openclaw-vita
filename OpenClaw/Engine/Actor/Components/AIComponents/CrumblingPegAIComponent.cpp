@@ -1,6 +1,7 @@
 #include "CrumblingPegAIComponent.h"
 #include "../../../GameApp/BaseGameApp.h"
 #include "../../../GameApp/BaseGameLogic.h"
+#include "../../../UserInterface/HumanView.h"
 
 #include "../../../Graphics2D/Image.h"
 #include "../RenderComponent.h"
@@ -92,6 +93,27 @@ void CrumblingPegAIComponent::OnContact(b2Body* pBody)
 
 // After claw dies, "recreate" crumbling pegs
 void CrumblingPegAIComponent::ClawDiedDelegate(IEventDataPtr pEventData)
+{
+    // Back in place when the death fade has turned the screen black
+    shared_ptr<EventData_Claw_Died> pCastEventData = static_pointer_cast<EventData_Claw_Died>(pEventData);
+    if (pCastEventData->GetRemainingLives() < 0)
+    {
+        return;
+    }
+    const uint32 actorId = m_pOwner->GetGUID();
+    HumanView::RunAtFadeMidpoint([actorId]()
+    {
+        StrongActorPtr pActor = MakeStrongPtr(g_pApp->GetGameLogic()->VGetActor(actorId));
+        shared_ptr<CrumblingPegAIComponent> pPeg = pActor ?
+            MakeStrongPtr(pActor->GetComponent<CrumblingPegAIComponent>(CrumblingPegAIComponent::g_Name)) : nullptr;
+        if (pPeg)
+        {
+            pPeg->ResetForRespawn();
+        }
+    });
+}
+
+void CrumblingPegAIComponent::ResetForRespawn()
 {
     shared_ptr<AnimationComponent> pAnimationComponent =
         MakeStrongPtr(m_pOwner->GetComponent<AnimationComponent>(AnimationComponent::g_Name));

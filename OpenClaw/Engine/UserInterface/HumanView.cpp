@@ -126,6 +126,28 @@ void HumanView::VOnUpdate(uint32 msDiff)
     }
 }
 
+void HumanView::RunAtFadeMidpoint(const std::function<void()>& action)
+{
+    HumanView* pHumanView = (g_pApp && g_pApp->GetGameLogic()) ? g_pApp->GetHumanView() : NULL;
+    if (pHumanView == NULL)
+    {
+        action();
+        return;
+    }
+    pHumanView->m_FadeMidpointActions.push_back(action);
+}
+
+void HumanView::RunFadeMidpointActions()
+{
+    // An action may queue another one (a teleport that starts a fade): run what is here now
+    std::vector<std::function<void()>> actions;
+    actions.swap(m_FadeMidpointActions);
+    for (const std::function<void()>& action : actions)
+    {
+        action();
+    }
+}
+
 bool HumanView::IsMenuShown() const
 {
     for (const shared_ptr<IScreenElement>& pElement : m_ScreenElements)
@@ -291,6 +313,7 @@ void HumanView::LoadScoreScreen(TiXmlElement* pScoreScreenRootElem)
 bool HumanView::LoadGame(TiXmlElement* pLevelXmlElem, LevelData* pLevelData)
 {
     m_pScene->SortSceneNodesByZCoord();
+    m_FadeMidpointActions.clear();
 
     // Start playing background music
     m_CurrentLevelMusic = "/LEVEL" + ToStr(pLevelData->GetLevelNumber()) +
@@ -979,8 +1002,9 @@ void DeathFadeInOutProcess::VOnInit()
     // Stop game logic update during fade in/out
     g_pApp->GetGameLogic()->SetRunning(false);
 
-    // Also we will render as we want to
-    g_pApp->GetHumanView()->SetRendering(false);
+    // The scene is still drawn, frozen, under the fade; this process presents each frame. With the
+    // scene not drawn, the Vita showed its old frames in turn and Claw jittered while the screen
+    // went black. What moves because he died waits for the black screen (RunAtFadeMidpoint)
     g_pApp->GetHumanView()->SetPostponeRenderPresent(true);
 
     // Calculate graphics fade speed
@@ -1019,6 +1043,7 @@ void DeathFadeInOutProcess::VOnUpdate(uint32 msDiff)
                 IEventMgr::Get()->VTriggerEvent(IEventDataPtr(
                     new EventData_Request_Play_Sound(soundInfo)));
 
+                g_pApp->GetHumanView()->RunFadeMidpointActions();
                 g_pApp->GetHumanView()->SetRendering(true);
                 m_CurrentTime = 0;
                 m_DeathFadeState = DeathFadeState_FadingOut;
@@ -1276,10 +1301,10 @@ void TeleportFadeInOutProcess::VOnInit()
     assert(g_pApp->GetHumanView());
     assert(g_pApp->GetHumanView()->GetCamera());
 
-    // Stop game logic update during fade in/out
+    // Stop game logic update during fade in/out. The scene is still drawn, frozen, under the fade
+    // (see DeathFadeInOutProcess::VOnInit); Claw goes through the portal when the screen is black
     g_pApp->GetGameLogic()->SetRunning(false);
     g_pApp->GetHumanView()->SetPostponeRenderPresent(true);
-    g_pApp->GetHumanView()->SetRendering(false);
 
     Point windowSize = g_pApp->GetWindowSizeScaled();
 
@@ -1328,6 +1353,7 @@ void TeleportFadeInOutProcess::VOnUpdate(uint32 msDiff)
             {
                 m_CurrentTime = 0;
                 m_TeleportState = TeleportState_FadingOut;
+                g_pApp->GetHumanView()->RunFadeMidpointActions();
                 g_pApp->GetHumanView()->SetRendering(true);
 
                 /*for (shared_ptr<FadingLine> pLine : m_Lines)

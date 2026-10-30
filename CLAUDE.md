@@ -121,7 +121,12 @@ Every new source file must be added to its directory's `CMakeLists.txt` (`target
 - Options → Gameplay (`MenuPage_Options_Gameplay`) holds switches for the port's changes to how the
   original played (roadmap 24). Loaded games: `LevelData::m_bIsFromLoadMenu` marks a load from the
   Load Game pages (the next-level load uses the same event); new-game stats come from level 1's
-  checkpoint 0 in `SAVES.XML`.
+  checkpoint 0 in `SAVES.XML`. Last life: `ClawControllableComponent::VOnAnimationLooped` turns
+  "0 lives left" into game over (remaining lives -1) unless it is `Original`.
+- Portal and death fades (`TeleportFadeInOutProcess`, `DeathFadeInOutProcess`) keep drawing the
+  frozen scene; anything they move waits for the black screen through
+  `HumanView::RunAtFadeMidpoint` (Claw's teleport and respawn pose, platforms, crumbling pegs). Not
+  drawing the scene made the Vita cycle through old frames.
 - Difficulty: `GameApp/Difficulty.h`. Easy only changes Claw's melee damage (`GetClawMeleeDamage`,
   unit-tested); it's read at each swing, so a change applies at once.
 - Settings saving: `BaseGameApp::SaveGameOptions` writes only the options the menus change (today:

@@ -28,8 +28,13 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
   reopened for every line.
 
 ### Fixed
-- After losing the last life, Claw stood up on whatever killed him (e.g. spikes) while the game-over
-  screen came up; he now stays down.
+- Claw jittered while the screen faded to black after entering a portal or dying, on a PS Vita: the
+  fades stopped drawing the level but kept showing frames, and the Vita showed its old frames in
+  turn. The level is drawn, frozen, under the fade now, and Claw is moved (through the portal, or to
+  the respawn point) only when the screen is black. Platforms and crumbling pegs go back to their
+  start at the same moment instead of jumping back as the fade begins.
+- After a death Claw stood up on whatever killed him (e.g. spikes) before the respawn, and at game
+  over while the game-over screen came up; he now stays down until the respawn.
 - Starting the game took about a minute on a PS Vita: opening `CLAW.REZ` read its directory one
   field at a time, about 197,000 small reads and seeks on the memory card. It now reads each
   directory block at once (about 2,700 calls; the result is identical for all 13,077 files).
@@ -60,6 +65,9 @@ The base is OpenClaw at [pjasicek/OpenClaw@5ee5740](https://github.com/pjasicek/
   Found from the crash dumps; not reproduced on purpose.
 
 ### Changed
+- The game ends when a death takes the life counter (the Claw heads) to 0. In the original, and
+  until now, Claw played on with 0 on the counter and the next death ended the game. Options →
+  Gameplay → Last life: Counter at 0 brings that back (`<Gameplay><LastLife>Original</LastLife>`).
 - Circle goes back in every menu, like Start and Select (on the main page that is the Quit page),
   and Cross confirms, whatever the two buttons do in the game.
 - Only Cross, Circle, Square and Triangle skip a cutscene. Touches no longer do (a hand on the
@@ -219,6 +227,9 @@ How the port plays differently from Captain Claw (1997):
   They were never implemented in OpenClaw.
 - **Loaded games** start with a new game's lives, health and ammo (the score is kept). The original
   restored them from the save point; Options → Gameplay → Loaded games: As saved does that.
+- **Last life:** the game ends when a death takes the life counter to 0. The original let Claw play
+  on with 0 on the counter (Design Bible 6.2.5: "if the Claw Head meter shows 0, the next time the
+  player dies, the game is over"); Options → Gameplay → Last life: Counter at 0 does that.
 - **Movies:** they fill the screen. The original showed them interlaced (every other line black) by
   default and had a Display option for it; here it's a `config.xml` setting only, because the black
   lines turn into bands whenever the picture is scaled (Vita3K's window, a PS TV). All movies can be

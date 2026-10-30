@@ -78,6 +78,7 @@ USB mode, edit, copy back). Delete the file to get the defaults back. Options wo
 | `Audio/Frequency` | 22050 | Mixer rate. The game's sounds are 22,050 Hz; 44100 makes each sound get resampled the first time it plays (stutter). |
 | `Audio/SoundVolume`, `Audio/MusicVolume` | 10, 15 | Volumes, sound 0–100 in steps of 10, music 0–20. Set by the Audio page. |
 | `Audio/SoundOn`, `Audio/MusicOn` | true, true | Set by the Audio page. |
+| `Gameplay/LastLife` | Counter | The game ends when a death takes the life counter to 0; `Original` lets Claw play on with 0 on the counter, ending the game at the next death, as the original did. Set by Options → Gameplay. |
 | `Gameplay/LoadedGames` | NewGame | A game loaded from the menu starts with a new game's lives, health and ammo (the score is kept); `AsSaved` restores them from the save point, as the original did. Set by Options → Gameplay. |
 | `Gameplay/PlayIntroMovies` | true | Monolith logo and introduction at start-up (needs `CLAW.FEC`). |
 | `Gameplay/Difficulty` | Normal | `Easy`: Claw's sword, punches and kicks hit harder, as in the original's Easy mode. Set by the Difficulty page. |

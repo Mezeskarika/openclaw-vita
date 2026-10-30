@@ -232,10 +232,23 @@ void ClawGameLogic::TeleportActorDelegate(IEventDataPtr pEventData)
         return;
     }
 
+    // A portal: the human view fades the screen out, and he goes through when it is black
+    if (pCastEventData->GetHasScreenSfx())
+    {
+        LOG("Claw entered a portal at " + pActor->GetPositionComponent()->GetPosition().ToString());
+        const uint32 actorId = pCastEventData->GetActorId();
+        const Point destination = pCastEventData->GetDestination();
+        HumanView::RunAtFadeMidpoint([actorId, destination]()
+        {
+            IEventMgr::Get()->VTriggerEvent(IEventDataPtr(new EventData_Teleport_Actor(actorId, destination)));
+        });
+        return;
+    }
+
     if (pActor == GetClawActor())
     {
         LOG("Claw teleported from " + pActor->GetPositionComponent()->GetPosition().ToString() + " to " +
-            pCastEventData->GetDestination().ToString() + (pCastEventData->GetHasScreenSfx() ? " (portal)" : ""));
+            pCastEventData->GetDestination().ToString());
     }
 
     m_pPhysics->VSetPosition(pCastEventData->GetActorId(), pCastEventData->GetDestination());
@@ -457,7 +470,19 @@ void ClawGameLogic::ClawDiedDelegate(IEventDataPtr pEventData)
         spawnPoint = spawnPoint + Point(0, deltaY - 9);
     }
 
-    pEventMgr->VQueueEvent(IEventDataPtr(new EventData_Teleport_Actor(pCastEventData->GetActorId(), spawnPoint)));
+    // Moved when the death fade has turned the screen black; at game over there is no fade
+    const uint32 actorId = pCastEventData->GetActorId();
+    if (pCastEventData->GetRemainingLives() >= 0)
+    {
+        HumanView::RunAtFadeMidpoint([actorId, spawnPoint]()
+        {
+            IEventMgr::Get()->VTriggerEvent(IEventDataPtr(new EventData_Teleport_Actor(actorId, spawnPoint)));
+        });
+    }
+    else
+    {
+        pEventMgr->VQueueEvent(IEventDataPtr(new EventData_Teleport_Actor(actorId, spawnPoint)));
+    }
 }
 
 void ClawGameLogic::UpdatedPowerupStatusDelegate(IEventDataPtr pEventData)
