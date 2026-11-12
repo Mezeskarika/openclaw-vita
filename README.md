@@ -3,8 +3,8 @@
 A PlayStation Vita port of [OpenClaw](https://github.com/pjasicek/OpenClaw), the open-source
 reimplementation of Captain Claw (1997).
 
-> **Status:** pre-release. Runs in the Vita3K emulator (level 1 at 60 fps, with music);
-> not yet tested on a real Vita.
+> **Status:** pre-release. Tested on a real PS Vita (playtest sessions on hardware) and in the
+> Vita3K emulator (level 1 at 60 fps, with music).
 
 **Download:** the `.vpk` from the latest [release](https://github.com/Mezeskarika/openclaw-vita/releases).
 What changed in each version: [`CHANGELOG.md`](CHANGELOG.md).
